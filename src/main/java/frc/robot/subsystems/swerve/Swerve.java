@@ -62,7 +62,6 @@ public class Swerve extends SubsystemBase {
       SwerveModuleSystemCheckRequest.DO_NOTHING;
   private double m_characterizationVolts = 0.0;
 
-  private MovingAverage m_smoothedPitchVelocity = new MovingAverage(10);
 
   public enum ControlMode {
     X_OUT,
@@ -232,10 +231,6 @@ public class Swerve extends SubsystemBase {
                 ? m_gyroInputs.yawVelocityRadPerSec
                 : chassisSpeeds.omegaRadiansPerSecond);
 
-    if (getRawGyroPitchDegPerSec().isPresent()) {
-      m_smoothedPitchVelocity.add(getRawGyroPitchDegPerSec().get());
-    }
-
     Logger.recordOutput(kSubsystemName + "/ChassisSpeeds/VX", m_fieldVelocity.dx);
     Logger.recordOutput(kSubsystemName + "/ChassisSpeeds/VY", m_fieldVelocity.dy);
     Logger.recordOutput(kSubsystemName + "/ChassisSpeeds/VTHETA", m_fieldVelocity.dtheta);
@@ -292,31 +287,11 @@ public class Swerve extends SubsystemBase {
     // in sim
   }
 
-  public Optional<Double> getRawGyroYawDegPerSec() {
-    if (m_gyroInputs.connected) {
-      return Optional.of(Units.radiansToDegrees(m_gyroInputs.yawVelocityRadPerSec));
-    }
-    return Optional.empty(); // hack so that the gyro offset in the pose estimator doesn't
-    // glitch
-    // in sim
-  }
-
   public Optional<Rotation2d> getRawGyroPitch() {
     if (m_gyroInputs.connected) {
       return Optional.of(Rotation2d.fromRadians(m_gyroInputs.pitchPositionRad));
     }
     return Optional.empty();
-  }
-
-  public Optional<Double> getRawGyroPitchDegPerSec() {
-    if (m_gyroInputs.connected) {
-      return Optional.of(Units.radiansToDegrees(m_gyroInputs.pitchVelocityRadPerSec));
-    }
-    return Optional.empty();
-  }
-
-  public double getSmoothedPitchVelocityDegPerSec() {
-    return m_smoothedPitchVelocity.get();
   }
 
   public SwerveSetpoint getSwerveSetpoint() {
