@@ -29,6 +29,8 @@ public class Constants {
     //public static final int kShooterMotor = 0;
     //public static final int kClimbMotor = 0;
     public static final int kIntakeMotor = 0;
+    public static final int kRollerMotor = 0;
+    public static final int kWristMotor = 0;
 
     // public static final int kLedsDIO = 9;
   }

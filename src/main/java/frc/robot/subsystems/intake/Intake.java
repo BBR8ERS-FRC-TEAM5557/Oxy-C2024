@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -28,7 +27,7 @@ public class Intake extends SubsystemBase{
 
     public Intake(IntakeIO io){
 
-        System.out.println("[Init] Creating Roller");
+        System.out.println("[Init] Creating Intake");
         this.m_io = io;
 
         ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Intake");
@@ -59,7 +58,7 @@ public class Intake extends SubsystemBase{
 
     }
 
-    public void setRollerState(State desState) {
+    public void setIntakeState(State desState) {
         this.currentState = desState;
     }
 
@@ -84,7 +83,11 @@ public class Intake extends SubsystemBase{
     public enum State {
         
 
-        DO_NOTHING(0.0), IDLE(1.0);
+        DO_NOTHING(0.0), IDLE(1.0), 
+
+        INTAKING_NOTE(10.0), EJECT_NOTE(-7.0), 
+        
+        HOLD_NOTE(2.0);
         
 
         private double motorVoltage;
@@ -98,7 +101,31 @@ public class Intake extends SubsystemBase{
         }
     }
 
+    public Command intakeNoteCommand() {
+        return Commands
+                .sequence(
+                    setIntakeStateCommand(State.INTAKING_NOTE), 
+                    new WaitCommand(0.5),
+                    waitForNote())
+                .finallyDo(interrupted -> setIntakeState(State.HOLD_NOTE));
+    }
 
+    public Command idleCommand() {
+        return setIntakeStateCommand(State.IDLE);
+    }
 
+    public Command scoreCone() {
+        return Commands.sequence(setIntakeStateCommand(State.EJECT_NOTE), new WaitCommand(0.5),
+                setIntakeStateCommand(State.IDLE));
+    }
+
+    public Command setIntakeStateCommand(State state) {
+        return new InstantCommand(() -> setIntakeState(state));
+    }
+
+    public Command waitForNote(){
+        return new WaitUntilCommand(this::isStalled);
+
+    }
 
 }

@@ -162,7 +162,7 @@ public class SwerveConstants {
    * This is a commonly used function when setting the range of a radian measurement from [-pi, pi)
    * to [0,2pi]. This is requred a lot when ensuring that the number being sent in to the NEO's
    * onboard angle PID Controller is within the range necessary. Note that this also performs
-   * modular dision first on the angle which allows for an angle like -3pi be sent in, and return
+   * modular division first on the angle which allows for an angle like -3pi be sent in, and return
    * 1pi.
    *
    * @param radians - the

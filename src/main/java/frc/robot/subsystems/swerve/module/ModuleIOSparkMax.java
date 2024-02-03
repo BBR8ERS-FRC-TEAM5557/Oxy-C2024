@@ -2,13 +2,13 @@ package frc.robot.subsystems.swerve.module;
 
 import static frc.robot.subsystems.swerve.SwerveConstants.*;
 
-import com.ctre.phoenix.ErrorCode;
 //import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 //import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix6.hardware.CANcoder;
 //import com.ctre.phoenix.sensors.CANCoderConfiguration;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANcoderConfigurator;
 //import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 //import com.ctre.phoenix.sensors.SensorTimeBase;
 import com.ctre.phoenix6.StatusCode;
@@ -80,26 +80,27 @@ public class ModuleIOSparkMax implements ModuleIO {
   private void configAngleEncoder(int id) {
     m_absoluteEncoder = new CANcoder(id);
 
-   //m_absoluteEncoder.configFactoryDefault();
     m_absoluteEncoder.getConfigurator().apply(new CANcoderConfiguration());
 
-    /** 
-    CANcoderConfiguration config = new CANcoderConfiguration();
-    config.absoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
-    config.sensorDirection = kCanCoderInverted;
-    config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
-    config.magnetOffsetDegrees = this.m_angleOffsetDeg;
-    config.sensorTimeBase = SensorTimeBase.PerSecond;
-    m_absoluteEncoder.configAllSettings(config);
-*/
+        CANcoderConfigurator configurator = m_absoluteEncoder.getConfigurator();
+    CANcoderConfiguration configs = new CANcoderConfiguration();
+
+    configurator.refresh(configs);
+    //config.absoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
+    //configs.sensorDirection = kCanCoderInverted;
+    //config.initializationStrategy = SensorInitializationStrategy.BootToAbsolutePosition;
+    //config.magnetOffsetDegrees = this.m_angleOffsetDeg;
+    //config.sensorTimeBase = SensorTimeBase.PerSecond;
+   // m_absoluteEncoder.configAllSettings(config);
+
   }
 
   private void configDriveMotor(int id) {
-    m_driveMotor = SparkMaxFactory.createNEO(id, kDriveMotorConfiguration);
+    m_driveMotor = SparkMaxFactory.createMotor(id, kDriveMotorConfiguration);
   }
 
   private void configAngleMotor(int id) {
-    m_angleMotor = SparkMaxFactory.createNEO(id, kAngleMotorConfiguration);
+    m_angleMotor = SparkMaxFactory.createMotor(id, kAngleMotorConfiguration);
   }
 
   /** Updates the set of loggable inputs. */
@@ -205,7 +206,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   }
 
   public boolean resetToAbsolute() {
-    if (m_absoluteEncoder.getFaultField().getStatus() == StatusCode.OK) {
+    if (m_absoluteEncoder.getFaultField().refresh().getStatus() == StatusCode.OK) {
       double absoluteAngle = getCanCoderRotation().getRadians();
       m_angleMotorEncoder.setPosition(
           radiansToRotations(absoluteAngle, kAngleGearReduction)); // fix units
