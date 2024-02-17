@@ -17,7 +17,7 @@ public class SparkMaxFactory {
 
   private static final CANDeviceFinder can = new CANDeviceFinder();
 
-  public static class SparkMaxConfiguration {
+  public static class Configuration {
     public String label;
     public CANDeviceId canID;
 
@@ -48,12 +48,20 @@ public class SparkMaxFactory {
     public double kLowerLimit = Double.NaN;
   }
 
+<<<<<<< Updated upstream
   public static CANSparkMax createMotor(int id, SparkMaxConfiguration config) {
+=======
+  public static CANSparkMax createNEO(int id, Configuration config) {
+>>>>>>> Stashed changes
     config.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, id);
     return createMotor(config);
   }
 
+<<<<<<< Updated upstream
   public static CANSparkMax createMotor(SparkMaxConfiguration config) {
+=======
+  public static CANSparkMax createNEO(Configuration config) {
+>>>>>>> Stashed changes
     can.isDevicePresent(config.canID.getDeviceType(), config.canID.getDeviceNumber(), config.label);
 
     CANSparkMax sparkMax = new CANSparkMax(config.canID.getDeviceNumber(), MotorType.kBrushless);

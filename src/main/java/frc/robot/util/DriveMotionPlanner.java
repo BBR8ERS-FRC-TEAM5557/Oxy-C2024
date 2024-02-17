@@ -70,7 +70,7 @@ public class DriveMotionPlanner extends VirtualSubsystem {
     }
     
     public static double calculateSnap(Rotation2d goalAngle) {
-        return snapController.calculate(swerve.getYaw().getRadians(), goalAngle.getRadians());
+        return snapController.calculate(swerve.getGyroYaw().getRadians(), goalAngle.getRadians());
     }
 
     public static PIDController getForwardController() {

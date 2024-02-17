@@ -87,7 +87,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
     for (int i = 0; i < 4; i++) {
       m_lastModulePositions[i] = positions[i];
     }
-    m_poseEstimator.updateWithTime(MathSharedStore.getTimestamp(), gyroAngle, positions);
+    m_poseEstimator.update(gyroAngle, positions);
   }
 
   public void addVisionData(List<TimestampedVisionUpdate> visionData) {
@@ -102,7 +102,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
   public void setPose(Pose2d pose) {
     m_poseEstimator.resetPosition(
-        RobotContainer.m_swerve.getRawGyroYaw().orElse(pose.getRotation()),
+        RobotContainer.m_swerve.getGyroYaw(),
         m_lastModulePositions,
         pose);
   }

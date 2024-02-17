@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve.module;
 
 import static frc.robot.subsystems.swerve.SwerveConstants.*;
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -10,7 +11,9 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import frc.lib.team6328.Alert;
 import frc.robot.subsystems.swerve.module.ModuleIO.ModuleIOInputs;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.Util;
 import org.littletonrobotics.junction.Logger;
 
@@ -21,11 +24,28 @@ public class Module {
   private final int moduleNumber;
   private final String moduleLabel;
   private double lastAngle;
+  private SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(kDrivekS, kDrivekV);
+
+  private final Alert driveMotorDisconnected;
+  private final Alert turnMotorDisconnected;
+
+  private static final LoggedTunableNumber drivekP = new LoggedTunableNumber("Swerve/Module/DrivekP",
+      kDrivekP);
+  private static final LoggedTunableNumber drivekD = new LoggedTunableNumber("Swerve/Module/DrivekD",
+      kDrivekD);
+  private static final LoggedTunableNumber drivekS = new LoggedTunableNumber("Swerve/Module/DrivekS",
+      kDrivekS);
+  private static final LoggedTunableNumber drivekV = new LoggedTunableNumber("Swerve/Module/DrivekV",
+      kDrivekV);
+  private static final LoggedTunableNumber anglekP = new LoggedTunableNumber("Swerve/Module/AnglekP",
+      kAnglekP);
+  private static final LoggedTunableNumber anglekD = new LoggedTunableNumber("Swerve/Module/AnglekD",
+      kAnglekD);
 
   /**
    * Create a new swerve module.
    *
-   * @param io the hardware-abstracted swerve module object
+   * @param io           the hardware-abstracted swerve module object
    * @param moduleNumber the module number (0-3)
    */
   public Module(ModuleIO io, int moduleNumber) {
@@ -52,11 +72,15 @@ public class Module {
         break;
     }
 
+    driveMotorDisconnected = new Alert(
+        "Drive", moduleLabel + " drive motor disconnected!", Alert.AlertType.WARNING);
+    turnMotorDisconnected = new Alert(
+        "Drive", moduleLabel + " turn motor disconnected!", Alert.AlertType.WARNING);
+
     ShuffleboardTab tab = Shuffleboard.getTab("Swerve");
-    ShuffleboardLayout container =
-        tab.getLayout(moduleLabel + " Module", BuiltInLayouts.kList)
-            .withSize(2, 2)
-            .withPosition(2 * this.moduleNumber, 3);
+    ShuffleboardLayout container = tab.getLayout(moduleLabel + " Module", BuiltInLayouts.kList)
+        .withSize(2, 2)
+        .withPosition(2 * this.moduleNumber, 3);
     container.addNumber(
         "Absolute",
         () -> Util.truncate(Units.radiansToDegrees(m_inputs.angleAbsolutePositionRad), 2));
@@ -70,25 +94,39 @@ public class Module {
   /**
    * Update this swerve module's inputs and log them.
    *
-   * <p>This method must be invoked by the drivetrain subsystem's periodic method.
+   * <p>
+   * This method must be invoked by the drivetrain subsystem's periodic method.
    */
   public void updateAndProcessInputs() {
     m_io.updateInputs(m_inputs);
     Logger.processInputs(kSubsystemName + "/" + moduleLabel + " Module", m_inputs);
+
+    // Update ff and controllers
+    LoggedTunableNumber.ifChanged(
+        hashCode(),
+        () -> m_driveFeedforward = new SimpleMotorFeedforward(drivekS.get(), drivekV.get(), 0),
+        drivekS,
+        drivekV);
+    LoggedTunableNumber.ifChanged(
+        hashCode(), () -> m_io.setDrivePID(drivekP.get(), 0, drivekD.get()), drivekP, drivekD);
+    LoggedTunableNumber.ifChanged(
+        hashCode(), () -> m_io.setAnglePID(anglekP.get(), 0, anglekD.get()), anglekP, anglekD);
+
+    // Display alerts
+    driveMotorDisconnected.set(!m_inputs.driveMotorConnected);
+    turnMotorDisconnected.set(!m_inputs.angleMotorConnected);
   }
 
   public SwerveModuleState runSetpoint(
       SwerveModuleState state, boolean isOpenLoop, boolean forceAngle) {
-    state =
-        SwerveModuleState.optimize(
-            state, Rotation2d.fromRadians(m_inputs.angleAbsolutePositionRad));
+    state = SwerveModuleState.optimize(
+        state, Rotation2d.fromRadians(m_inputs.angleAbsolutePositionRad));
 
     if (isOpenLoop) {
-      double driveVoltage =
-          12.0 * state.speedMetersPerSecond / kMaxSpeed; // FIX ME: 6.0 volts for sim stuff
+      double driveVoltage = 12.0 * state.speedMetersPerSecond / kMaxSpeed; // FIX ME: 6.0 volts for sim stuff
       m_io.setDriveVoltage(driveVoltage);
     } else {
-      m_io.setDriveVelocity(state.speedMetersPerSecond);
+      m_io.setDriveVelocity(state.speedMetersPerSecond, m_driveFeedforward.calculate(state.speedMetersPerSecond));
     }
 
     // Unless the angle is forced (e.g., X-stance), don't rotate the module if speed
@@ -112,14 +150,16 @@ public class Module {
   }
 
   public void stop() {
-    m_io.setDriveVoltage(0.0);
-    m_io.setAngleVoltage(0.0);
+    m_io.stop();
   }
 
   /**
-   * Set the drive motor to the specified voltage. This is only used for characterization via the
-   * FeedForwardCharacterization command. The module will be set to 0 degrees throughout the
-   * characterization; as a result, the wheels don't need to be clamped to hold them straight.
+   * Set the drive motor to the specified voltage. This is only used for
+   * characterization via the
+   * FeedForwardCharacterization command. The module will be set to 0 degrees
+   * throughout the
+   * characterization; as a result, the wheels don't need to be clamped to hold
+   * them straight.
    *
    * @param voltage the specified voltage for the drive motor
    */
@@ -130,7 +170,8 @@ public class Module {
   }
 
   /**
-   * Set the steer motor to the specified voltage. This is only used for systems check via the
+   * Set the steer motor to the specified voltage. This is only used for systems
+   * check via the
    * Drivetrain Systems Check command. The module will spin slowly in a circle.
    *
    * @param voltage the specified voltage for the drive motor
@@ -175,7 +216,8 @@ public class Module {
   /**
    * Set the brake mode of the drive motor.
    *
-   * @param enable if true, the drive motor will be set to brake mode; if false, coast mode.
+   * @param enable if true, the drive motor will be set to brake mode; if false,
+   *               coast mode.
    */
   public void setDriveBrakeMode(boolean enable) {
     m_io.setDriveBrakeMode(enable);
@@ -184,7 +226,8 @@ public class Module {
   /**
    * Set the brake mode of the angle motor.
    *
-   * @param enable if true, the angle motor will be set to brake mode; if false, coast mode.
+   * @param enable if true, the angle motor will be set to brake mode; if false,
+   *               coast mode.
    */
   public void setAngleBrakeMode(boolean enable) {
     m_io.setAngleBrakeMode(enable);
