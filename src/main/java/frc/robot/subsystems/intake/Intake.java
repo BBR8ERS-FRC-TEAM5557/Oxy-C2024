@@ -114,7 +114,7 @@ public class Intake extends SubsystemBase{
         return setIntakeStateCommand(State.IDLE);
     }
 
-    public Command scoreCone() {
+    public Command scoreNote() {
         return Commands.sequence(setIntakeStateCommand(State.EJECT_NOTE), new WaitCommand(0.5),
                 setIntakeStateCommand(State.IDLE));
     }

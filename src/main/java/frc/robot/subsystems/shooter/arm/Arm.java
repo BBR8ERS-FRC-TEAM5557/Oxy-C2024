@@ -1,12 +1,13 @@
-package frc.robot.subsystems.shooter.wrist;
+package frc.robot.subsystems.shooter.arm;
 
-import static frc.robot.subsystems.shooter.wrist.WristConstants.constrainDegrees;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kCruiseVelocity;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kEncoderHomePosition;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kHomeAmpsThreshold;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kHomeVoltage;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kPadding;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kTimeToCruise;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.constrainDegrees;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kCruiseVelocity;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kEncoderHomePosition;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kHomeAmpsThreshold;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kHomeVoltage;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kPadding;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kTimeToCruise;
+
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -21,12 +22,12 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.lib.team6328.TunableNumber;
-import frc.robot.subsystems.shooter.wrist.WristIO.WristIOInputs;
+import frc.robot.subsystems.shooter.arm.ArmIO.ArmIOInputs;
 import frc.robot.util.Util;
 
-public class Wrist extends SubsystemBase {
-    private final WristIO m_io;
-    private final WristIOInputs m_inputs = new WristIOInputs();
+public class Arm extends SubsystemBase {
+    private final ArmIO m_io;
+    private final ArmIOInputs m_inputs = new ArmIOInputs();
 
     private ControlMode m_mode = ControlMode.OPEN_LOOP;
 
@@ -40,26 +41,26 @@ public class Wrist extends SubsystemBase {
     private double m_demand = 0.0;
 
     public final TunableNumber cruiseVelocity = 
-            new TunableNumber("Wrist/cruiseVelocity", kCruiseVelocity);
+            new TunableNumber("Arm/cruiseVelocity", kCruiseVelocity);
     public final TunableNumber desiredTimeToSpeed =
-            new TunableNumber("Wrist/desiredTimeToSpeed", kTimeToCruise);
+            new TunableNumber("Arm/desiredTimeToSpeed", kTimeToCruise);
 
     public enum ControlMode {
         OPEN_LOOP, VOLTAGE, POSITION, MOTION_PROFILE
     }
 
-    public Wrist(WristIO io) {
-        System.out.println("[Init] Creating Wrist");
+    public Arm(ArmIO io) {
+        System.out.println("[Init] Creating Arm");
         this.m_io = io;
 
-        ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Wrist");
+        ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Arm");
         shuffleboardTab.addNumber("Position Internal", () -> Util.truncate(getState().position, 2))
                 .withWidget(BuiltInWidgets.kGraph);
         shuffleboardTab.addNumber("Velocity", () -> Util.truncate(getState().velocity, 2))
                 .withWidget(BuiltInWidgets.kGraph);
         shuffleboardTab.addNumber("Demand", () -> Util.truncate(m_demand, 2))
                 .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addNumber("Output", () -> Util.truncate(m_inputs.WristAppliedVolts, 2))
+        shuffleboardTab.addNumber("Output", () -> Util.truncate(m_inputs.ArmAppliedVolts, 2))
                 .withWidget(BuiltInWidgets.kGraph);
 
         shuffleboardTab.addString("Control Mode", () -> getControlMode().name());
@@ -70,8 +71,8 @@ public class Wrist extends SubsystemBase {
     @Override
     public void periodic() {
         m_io.updateInputs(m_inputs);
-        Logger.processInputs("Wrist", m_inputs);
-        Logger.recordOutput("Wrist/Demand", m_demand);
+        Logger.processInputs("Arm", m_inputs);
+        Logger.recordOutput("Arm/Demand", m_demand);
 
         if (m_mode == ControlMode.OPEN_LOOP) {
             m_io.setPercent(m_demand);
@@ -83,7 +84,7 @@ public class Wrist extends SubsystemBase {
             m_setpoint = m_profile.calculate(Timer.getFPGATimestamp() - m_profileTimestamp, getState(), m_goal);
             m_io.setAngleDegrees(m_setpoint.position, m_setpoint.velocity);
 
-            Logger.recordOutput("Wrist/Setpoint", m_setpoint.position);
+            Logger.recordOutput("Arm/Setpoint", m_setpoint.position);
         }
 
         if (cruiseVelocity.hasChanged(cruiseVelocity.hashCode())
@@ -125,31 +126,31 @@ public class Wrist extends SubsystemBase {
     }
 
     public synchronized TrapezoidProfile.State getState() {
-        //return new TrapezoidProfile.State(m_inputs.WristAbsolutePositionDeg, m_inputs.WristAbsoluteVelocityDegPerSec);
-        return new TrapezoidProfile.State(m_inputs.WristInternalPositionDeg, m_inputs.WristInternalVelocityDegPerSec);
+        //return new TrapezoidProfile.State(m_inputs.ArmAbsolutePositionDeg, m_inputs.ArmAbsoluteVelocityDegPerSec);
+        return new TrapezoidProfile.State(m_inputs.ArmInternalPositionDeg, m_inputs.ArmInternalVelocityDegPerSec);
     }
 
     // Command Building Bloacks
-    public Command runWristOpenLoop(DoubleSupplier percent) {
+    public Command runArmOpenLoop(DoubleSupplier percent) {
         return new RunCommand(() -> runOpenLoop(percent.getAsDouble()), this);
     }
 
-    public Command homeWrist() {
+    public Command homeArm() {
         return Commands
                 .sequence(new InstantCommand(() -> m_io.shouldEnableUpperLimit(false)),
                         new RunCommand(() -> runVoltage(kHomeVoltage), this)
-                                .until(() -> m_inputs.WristCurrentAmps[0] > kHomeAmpsThreshold),
+                                .until(() -> m_inputs.ArmCurrentAmps[0] > kHomeAmpsThreshold),
                         new InstantCommand(() -> m_io.resetSensorPosition(kEncoderHomePosition)),
-                        setWristAngleProfiled(kEncoderHomePosition))
+                        setArmAngleProfiled(kEncoderHomePosition))
                 .finallyDo(
                         interupted -> new InstantCommand(() -> m_io.shouldEnableUpperLimit(true)));
     }
 
-    public Command setWristAngle(double targetAngle) {
+    public Command setArmAngle(double targetAngle) {
         return new InstantCommand(() -> runPosition(targetAngle), this);
     }
 
-    public Command setWristAngleProfiled(double targetAngle) {
+    public Command setArmAngleProfiled(double targetAngle) {
         return new InstantCommand(() -> runMotionProfile(targetAngle), this);
     }
 

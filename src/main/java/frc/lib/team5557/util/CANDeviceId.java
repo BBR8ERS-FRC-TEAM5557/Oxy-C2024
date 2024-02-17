@@ -11,7 +11,8 @@ public class CANDeviceId implements Comparable<CANDeviceId> {
     PCM,
     TALON,
     VICTOR_SPX,
-    SPARK_MAX
+    SPARK_MAX,
+    KRAKEN;
   }
 
   private CANDeviceType deviceType;

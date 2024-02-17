@@ -1,17 +1,18 @@
-package frc.robot.subsystems.shooter.wrist;
+package frc.robot.subsystems.shooter.arm;
 
-import static frc.robot.subsystems.shooter.wrist.WristConstants.constrainDegrees;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.degreesToRotations;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kEncoderHomePosition;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kMasterMotorConfiguration;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kWristkA;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kWristkD;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kWristkG;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kWristkI;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kWristkP;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kWristkS;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.kWristkV;
-import static frc.robot.subsystems.shooter.wrist.WristConstants.rotationsToDegrees;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.constrainDegrees;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.degreesToRotations;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kEncoderHomePosition;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kMasterMotorConfiguration;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kArmkA;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kArmkD;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kArmkG;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kArmkI;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kArmkP;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kArmkS;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.kArmkV;
+import static frc.robot.subsystems.shooter.arm.ArmConstants.rotationsToDegrees;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -22,8 +23,10 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 import frc.lib.team6328.TunableNumber;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 
-public class WristIOSparkMax implements WristIO {
+public class ArmIOSparkMax implements ArmIO {
 
     private final CANSparkMax m_master;
 
@@ -31,12 +34,12 @@ public class WristIOSparkMax implements WristIO {
     private final SparkPIDController m_pid;
     private final ArmFeedforward m_feedforward;
 
-    private final TunableNumber wristkP = new TunableNumber("Wrist/WristkP", kWristkP);
-    private final TunableNumber wristkI = new TunableNumber("Wrist/WristkI", kWristkI);
-    private final TunableNumber wristkD = new TunableNumber("Wrist/WristkD", kWristkD);
+    private final TunableNumber armkP = new TunableNumber("Arm/ArmkP", kArmkP);
+    private final TunableNumber armkI = new TunableNumber("Arm/ArmkI", kArmkI);
+    private final TunableNumber armkD = new TunableNumber("Arm/ArmkD", kArmkD);
 
-    public WristIOSparkMax() {
-        System.out.println("[Init] Creating WristIOSparkMax");
+    public ArmIOSparkMax() {
+        System.out.println("[Init] Creating ArmIOSparkMax");
         m_master = SparkMaxFactory.createMotor(kMasterMotorConfiguration);
         m_encoder = m_master.getEncoder();
         m_pid = m_master.getPIDController();
@@ -48,27 +51,27 @@ public class WristIOSparkMax implements WristIO {
         SparkMaxFactory.configFramesPositionBoost(m_master);
         SparkMaxFactory.configFramesAbsoluteEncoderBoost(m_master);
 
-        m_feedforward = new ArmFeedforward(kWristkS, kWristkG, kWristkV, kWristkA);
+        m_feedforward = new ArmFeedforward(kArmkS, kArmkG, kArmkV, kArmkA);
     }
 
     /** Updates the set of loggable inputs. */
-    public void updateInputs(WristIOInputs inputs) {
-        inputs.WristInternalPositionDeg = rotationsToDegrees(m_encoder.getPosition());
-        inputs.WristInternalVelocityDegPerSec = rotationsToDegrees(m_encoder.getVelocity()) / 60.0;
-        inputs.WristAppliedVolts = m_master.getAppliedOutput() * m_master.getBusVoltage();
-        inputs.WristCurrentAmps = new double[] { m_master.getOutputCurrent() };
-        inputs.WristTempCelsius = new double[] { m_master.getMotorTemperature() };
+    public void updateInputs(ArmIOInputs inputs) {
+        inputs.ArmInternalPositionDeg = rotationsToDegrees(m_encoder.getPosition());
+        inputs.ArmInternalVelocityDegPerSec = rotationsToDegrees(m_encoder.getVelocity()) / 60.0;
+        inputs.ArmAppliedVolts = m_master.getAppliedOutput() * m_master.getBusVoltage();
+        inputs.ArmCurrentAmps = new double[] { m_master.getOutputCurrent() };
+        inputs.ArmTempCelsius = new double[] { m_master.getMotorTemperature() };
 
         // update tunables
-        if (wristkP.hasChanged(wristkP.hashCode()) || wristkI.hasChanged(wristkI.hashCode())
-                || wristkD.hasChanged(wristkD.hashCode())) {
-            m_pid.setP(wristkP.get());
-            m_pid.setI(wristkI.get());
-            m_pid.setD(wristkD.get());
+        if (armkP.hasChanged(armkP.hashCode()) || armkI.hasChanged(armkI.hashCode())
+                || armkD.hasChanged(armkD.hashCode())) {
+            m_pid.setP(armkP.get());
+            m_pid.setI(armkI.get());
+            m_pid.setD(armkD.get());
         }
     }
 
-    /** Run the Wrist open loop at the specified voltage. */
+    /** Run the Arm open loop at the specified voltage. */
     public void setVoltage(double volts) {
         m_pid.setReference(volts, ControlType.kVoltage);
     }

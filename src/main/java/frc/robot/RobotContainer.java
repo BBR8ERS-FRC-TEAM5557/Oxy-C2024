@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto.AutoRoutineManager;
 import frc.robot.auto.SystemsCheckManager;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.arm.Arm;
+import frc.robot.subsystems.shooter.roller.Roller;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.swerve.commands.TeleopDrive;
@@ -37,6 +39,8 @@ public class RobotContainer {
     public static final XboxController m_operator = new XboxController(1);
     public static Swerve m_swerve;
     public static Intake m_intake;
+    public static Arm m_arm;
+    public static Roller m_roller;
 
     public static RobotStateEstimator m_stateEstimator;
 
@@ -108,16 +112,10 @@ public class RobotContainer {
         return -square(deadband(m_driver.getRightX(), 0.15));
     }
 
-    public double getElevatorJogger() {
-        return -square(deadband(m_operator.getLeftY(), 0.15));
-    }
-
-    public double getWristJogger() {
+    public double getArmJogger() {
         return -square(deadband(m_operator.getRightY(), 0.15));
     }
 
-
-    
 
     private static double deadband(double value, double tolerance) {
         if (Math.abs(value) < tolerance)

@@ -33,8 +33,6 @@ public class AutoRoutineManager {
     private void generateAutoChoices() {
         m_chooser.addDefaultOption("Do Nothing", null);
 
-       
-
     }
 
         public Command getAutoCommand() {

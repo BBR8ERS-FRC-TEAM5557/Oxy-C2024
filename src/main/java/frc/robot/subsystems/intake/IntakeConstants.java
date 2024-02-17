@@ -9,16 +9,16 @@ import frc.robot.Constants.RobotMap;
 
 public class IntakeConstants {
 
-    public static SparkMaxConfiguration kIntakeMotorConfiguration = new SparkMaxConfiguration();
+    public static SparkMaxConfiguration kMasterIntakeMotorConfiguration = new SparkMaxConfiguration();
         static {
-            kIntakeMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kIntakeMotor);
-            kIntakeMotorConfiguration.label = "Intake Motor";
+            kMasterIntakeMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kLIntakeMotor);
+            kMasterIntakeMotorConfiguration.label = "Intake Motor";
 
-            kIntakeMotorConfiguration.kSmartCurrentLimit = 30.0;
-            kIntakeMotorConfiguration.kShouldInvert = false;
-            kIntakeMotorConfiguration.kOpenLoopRampRate = 0.25;
-            kIntakeMotorConfiguration.kIdleMode = IdleMode.kBrake;
-            kIntakeMotorConfiguration.kVoltageCompensation = 12.0;
+            kMasterIntakeMotorConfiguration.kSmartCurrentLimit = 30.0;
+            kMasterIntakeMotorConfiguration.kShouldInvert = false;
+            kMasterIntakeMotorConfiguration.kOpenLoopRampRate = 0.25;
+            kMasterIntakeMotorConfiguration.kIdleMode = IdleMode.kBrake;
+            kMasterIntakeMotorConfiguration.kVoltageCompensation = 12.0;
 
         }
 
