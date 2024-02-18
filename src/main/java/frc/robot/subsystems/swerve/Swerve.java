@@ -277,45 +277,15 @@ public class Swerve extends SubsystemBase {
     this.drive(new ChassisSpeeds(), ControlMode.X_OUT);
   }
 
-<<<<<<< Updated upstream
-  public Rotation2d getYaw() {
-    return RobotStateEstimator.getInstance().getPose().getRotation();
-  }
-
-  public Optional<Rotation2d> getRawGyroYaw() {
-    if (m_gyroInputs.connected) {
-      return Optional.of(Rotation2d.fromRadians(m_gyroInputs.yawPositionRad));
-    }
-    return Optional.empty(); // hack so that the gyro offset in the pose estimator doesn't
-    // glitch
-    // in sim
-  }
-
-  public Optional<Double> getRawGyroYawDegPerSec() {
-    if (m_gyroInputs.connected) {
-      return Optional.of(Units.radiansToDegrees(m_gyroInputs.yawVelocityRadPerSec));
-    }
-    return Optional.empty(); // hack so that the gyro offset in the pose estimator doesn't
-    // glitch
-    // in sim
-  }
-
-  public Optional<Rotation2d> getRawGyroPitch() {
-    if (m_gyroInputs.connected) {
-      return Optional.of(Rotation2d.fromRadians(m_gyroInputs.pitchPositionRad));
-    }
-    return Optional.empty();
-=======
   public Rotation2d getGyroYaw() {
     return m_gyroInputs.connected
         ? m_gyroInputs.yawPosition
         : RobotStateEstimator.getInstance().getPose().getRotation();
->>>>>>> Stashed changes
   }
 
   public Optional<Double> getRawGyroPitchDegPerSec() {
     if (m_gyroInputs.connected) {
-      return Optional.of(Units.radiansToDegrees(m_gyroInputs.pitchVelocityRadPerSec));
+      return Optional.of(Units.radiansToDegrees(m_gyroInputs.yawVelocityRadPerSec));
     }
     return Optional.empty();
   }

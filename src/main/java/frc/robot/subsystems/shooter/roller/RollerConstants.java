@@ -2,14 +2,14 @@ package frc.robot.subsystems.shooter.roller;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 
-import frc.lib.team5557.factory.SparkMaxFactory.SparkMaxConfiguration;
+import frc.lib.team5557.factory.SparkMaxFactory.Configuration;
 import frc.lib.team5557.util.CANDeviceId;
 import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
 import frc.robot.Constants.RobotMap;
 
 public class RollerConstants {
 
-    public static SparkMaxConfiguration kRollerMotorConfiguration = new SparkMaxConfiguration();
+    public static Configuration kRollerMotorConfiguration = new Configuration();
         static {
             kRollerMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kRollerMotor);
             kRollerMotorConfiguration.label = "Roller Motor";

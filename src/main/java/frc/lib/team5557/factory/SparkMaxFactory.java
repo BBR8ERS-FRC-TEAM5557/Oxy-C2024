@@ -48,20 +48,12 @@ public class SparkMaxFactory {
     public double kLowerLimit = Double.NaN;
   }
 
-<<<<<<< Updated upstream
-  public static CANSparkMax createMotor(int id, SparkMaxConfiguration config) {
-=======
   public static CANSparkMax createNEO(int id, Configuration config) {
->>>>>>> Stashed changes
     config.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, id);
-    return createMotor(config);
+    return createNEO(config);
   }
 
-<<<<<<< Updated upstream
-  public static CANSparkMax createMotor(SparkMaxConfiguration config) {
-=======
   public static CANSparkMax createNEO(Configuration config) {
->>>>>>> Stashed changes
     can.isDevicePresent(config.canID.getDeviceType(), config.canID.getDeviceNumber(), config.label);
 
     CANSparkMax sparkMax = new CANSparkMax(config.canID.getDeviceNumber(), MotorType.kBrushless);

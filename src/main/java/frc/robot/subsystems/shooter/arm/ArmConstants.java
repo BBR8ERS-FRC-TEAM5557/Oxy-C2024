@@ -4,7 +4,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.MathUtil;
 import frc.lib.team5557.factory.SparkMaxFactory.PIDConfiguration;
 import frc.lib.team5557.factory.SparkMaxFactory.SoftLimitsConfiguration;
-import frc.lib.team5557.factory.SparkMaxFactory.SparkMaxConfiguration;
+import frc.lib.team5557.factory.SparkMaxFactory.Configuration;
 import frc.lib.team5557.util.CANDeviceId;
 import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
 import frc.robot.Constants;
@@ -50,7 +50,7 @@ public class ArmConstants {
         kPIDConfiguration.kTolerance = degreesToRotations(kPadding);
     }
 
-    public static final SparkMaxConfiguration kMasterMotorConfiguration = new SparkMaxConfiguration();
+    public static final Configuration kMasterMotorConfiguration = new Configuration();
     static {
         kMasterMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, Constants.RobotMap.kArmMotor);
     

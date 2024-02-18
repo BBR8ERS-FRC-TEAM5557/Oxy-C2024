@@ -111,8 +111,6 @@ public class RobotContainer {
         // return -square(deadband(m_driver.getRightX(), 0.15));
     }
 
-<<<<<<< HEAD
-=======
     public double getAimBotXInput() {
         return -(m_driver.getRightX());
     }
@@ -121,15 +119,10 @@ public class RobotContainer {
         return -(m_driver.getRightY());
     }
 
->>>>>>> 1fbe7aa312462d6aa3a698de75270ad5a912b3a0
     public double getArmJogger() {
         return -square(deadband(m_operator.getRightY(), 0.15));
     }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 1fbe7aa312462d6aa3a698de75270ad5a912b3a0
     private static double deadband(double value, double tolerance) {
         if (Math.abs(value) < tolerance)
             return 0.0;

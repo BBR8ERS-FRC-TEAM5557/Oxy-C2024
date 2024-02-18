@@ -2,14 +2,14 @@ package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 
-import frc.lib.team5557.factory.SparkMaxFactory.SparkMaxConfiguration;
+import frc.lib.team5557.factory.SparkMaxFactory.Configuration;
 import frc.lib.team5557.util.CANDeviceId;
 import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
 import frc.robot.Constants.RobotMap;
 
 public class IntakeConstants {
 
-    public static SparkMaxConfiguration kMasterIntakeMotorConfiguration = new SparkMaxConfiguration();
+    public static Configuration kMasterIntakeMotorConfiguration = new Configuration();
         static {
             kMasterIntakeMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kLIntakeMotor);
             kMasterIntakeMotorConfiguration.label = "Intake Motor";

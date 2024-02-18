@@ -13,7 +13,7 @@ public class IntakeIOSparkMax implements IntakeIO {
     
     public IntakeIOSparkMax() {
         System.out.println("[Init] Creating RollerIOSparkMax");
-        motor = SparkMaxFactory.createMotor(kMasterIntakeMotorConfiguration);
+        motor = SparkMaxFactory.createNEO(kMasterIntakeMotorConfiguration);
         BurnManager.burnFlash(motor);
     }
 

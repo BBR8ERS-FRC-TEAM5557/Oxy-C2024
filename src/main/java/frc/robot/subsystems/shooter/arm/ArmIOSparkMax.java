@@ -38,7 +38,7 @@ public class ArmIOSparkMax implements ArmIO {
 
     public ArmIOSparkMax() {
         System.out.println("[Init] Creating ArmIOSparkMax");
-        m_master = SparkMaxFactory.createMotor(kMasterMotorConfiguration);
+        m_master = SparkMaxFactory.createNEO(kMasterMotorConfiguration);
         m_encoder = m_master.getEncoder();
         m_pid = m_master.getPIDController();
         m_pid.setFeedbackDevice(m_encoder);
