@@ -18,7 +18,7 @@ public interface RollerIO {
             table.put("RollerCurrentAmps", RollerCurrentAmps);
             table.put("RollerTempCelcius", RollerTempCelcius);
         }
-
+//can do like talon.setNeutralMode() and stuff look at the Talon FX Class
         @Override
         public void fromLog(LogTable table) {
             RollerAppliedVolts = table.get("RollerAppliedVolts", RollerAppliedVolts);

@@ -1,11 +1,12 @@
 package frc.robot.subsystems.swerve.commands;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
@@ -18,40 +19,55 @@ public class TeleopDrive extends Command {
     private final DoubleSupplier m_translationXSupplier;
     private final DoubleSupplier m_translationYSupplier;
     private final DoubleSupplier m_rotationSupplier;
+    private final DoubleSupplier m_aimbotXSupplier;
+    private final DoubleSupplier m_aimbotYSupplier;
 
-    private final BooleanSupplier m_scoreLockSupplier;
 
     public TeleopDrive(DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
-            DoubleSupplier rotationSupplier, BooleanSupplier scoreLockSupplier) {
+            DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier) {
         this.swerve = RobotContainer.m_swerve;
         this.m_translationXSupplier = translationXSupplier;
         this.m_translationYSupplier = translationYSupplier;
         this.m_rotationSupplier = rotationSupplier;
-        this.m_scoreLockSupplier = scoreLockSupplier;
+        this.m_aimbotXSupplier = aimbotXSupplier;
+        this.m_aimbotYSupplier = aimbotYSupplier;
 
         addRequirements(swerve);
     }
 
     @Override
     public void execute() {
-        // Go to X right before the end of the match
-        if (DriverStation.getMatchTime() >= 0.0 && DriverStation.getMatchTime() < 0.25) {
-            swerve.stopWithX();
-            return;
+        var limit = swerve.getKinematicLimit();
+        Rotation2d driveRotation = swerve.getGyroYaw();
+
+        double rotationalVelocity = m_rotationSupplier.getAsDouble() * limit.kMaxAngularVelocity;
+        double xVelocity = m_translationXSupplier.getAsDouble() * limit.kMaxDriveVelocity;
+        double yVelocity = m_translationYSupplier.getAsDouble() * limit.kMaxDriveVelocity;
+
+        double[] rightJoyPolarCoordinate = Util.toPolarCoordinate(m_aimbotYSupplier.getAsDouble(), m_aimbotXSupplier.getAsDouble());
+        double r = Util.scaledDeadband(rightJoyPolarCoordinate[0], 1.0, 0.15);
+        double theta = Units.radiansToDegrees(rightJoyPolarCoordinate[1]);
+
+
+        if(r > 0.8){
+            theta /= 45;
+            theta = Math.round(theta) * 45;
         }
 
-        var driveRotation = swerve.getYaw();
+        if(DriverStation.getAlliance().get() != Alliance.Blue) {
+            theta = theta + 180.0;
+            xVelocity = -xVelocity;
+            yVelocity = -yVelocity;
+        }
 
-        var rotationalVelocity = m_rotationSupplier.getAsDouble() * swerve.getKinematicLimit().kMaxAngularVelocity;
-        if (m_scoreLockSupplier.getAsBoolean()) {
-            rotationalVelocity = DriveMotionPlanner.calculateSnap(Rotation2d.fromDegrees(180.0));
+        if (r > 0.05) {
+            rotationalVelocity = DriveMotionPlanner.calculateSnap(Rotation2d.fromDegrees(theta));
         }
 
         ChassisSpeeds velocity = ChassisSpeeds.fromFieldRelativeSpeeds(
-                m_translationXSupplier.getAsDouble() * swerve.getKinematicLimit().kMaxDriveVelocity,
-                m_translationYSupplier.getAsDouble() * swerve.getKinematicLimit().kMaxDriveVelocity,
-                Util.clamp(rotationalVelocity, -swerve.getKinematicLimit().kMaxAngularVelocity,
-                        swerve.getKinematicLimit().kMaxAngularVelocity),
+                xVelocity,
+                yVelocity,
+                Util.clamp(rotationalVelocity, -limit.kMaxAngularVelocity, limit.kMaxAngularVelocity),
                 driveRotation);
 
         swerve.driveOpenLoop(velocity);

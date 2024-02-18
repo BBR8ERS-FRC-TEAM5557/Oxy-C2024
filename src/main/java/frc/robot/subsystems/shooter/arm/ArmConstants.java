@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter.arm;
 
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.MathUtil;
 import frc.lib.team5557.factory.SparkMaxFactory.PIDConfiguration;
 import frc.lib.team5557.factory.SparkMaxFactory.SoftLimitsConfiguration;

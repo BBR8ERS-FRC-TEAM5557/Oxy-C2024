@@ -23,8 +23,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 import frc.lib.team6328.TunableNumber;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 
 public class ArmIOSparkMax implements ArmIO {
 

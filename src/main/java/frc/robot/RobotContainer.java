@@ -6,15 +6,9 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto.AutoRoutineManager;
 import frc.robot.auto.SystemsCheckManager;
@@ -22,12 +16,12 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.arm.Arm;
 import frc.robot.subsystems.shooter.roller.Roller;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.swerve.SwerveConstants;
 import frc.robot.subsystems.swerve.commands.TeleopDrive;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.swerve.module.ModuleIO;
-import frc.robot.subsystems.swerve.module.ModuleIOSparkMax;
+import frc.robot.subsystems.swerve.module.ModuleIOKrakenSparkMax;
+import frc.robot.subsystems.swerve.module.ModuleIOSim;
 import frc.robot.util.DriveMotionPlanner;
 import frc.robot.util.RobotStateEstimator;
 import static frc.robot.Constants.*;
@@ -50,11 +44,15 @@ public class RobotContainer {
     public RobotContainer() {
         if (kIsReal) {
             m_swerve = new Swerve(new GyroIOPigeon2(),
-                    new ModuleIOSparkMax(0, kFLDriveMotor, kFLTurnMotor, kFLCancoder, kFLOffset),
-                    new ModuleIOSparkMax(1, kFRDriveMotor, kFRTurnMotor, kFRCancoder, kFROffset),
-                    new ModuleIOSparkMax(2, kBLDriveMotor, kBLTurnMotor, kBLCancoder, kBLOffset),
-                    new ModuleIOSparkMax(3, kBRDriveMotor, kBRTurnMotor, kBRCancoder, kBROffset));            
-        } 
+                    new ModuleIOKrakenSparkMax(0, kFLDriveMotor, kFLTurnMotor, kFLOffset),
+                    new ModuleIOKrakenSparkMax(1, kFRDriveMotor, kFRTurnMotor, kFROffset),
+                    new ModuleIOKrakenSparkMax(2, kBLDriveMotor, kBLTurnMotor, kBLOffset),
+                    new ModuleIOKrakenSparkMax(3, kBRDriveMotor, kBRTurnMotor, kBROffset));
+        } else {
+            m_swerve = new Swerve(new GyroIO() {
+            }, new ModuleIOSim(), new ModuleIOSim(),
+                    new ModuleIOSim(), new ModuleIOSim());
+        }
 
         // Instantiate missing subsystems
         if (m_swerve == null) {
@@ -73,9 +71,6 @@ public class RobotContainer {
         DriveMotionPlanner.configureControllers();
 
         configureBindings();
-
-        ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Driver");
-        
     }
 
     private void configureBindings() {
@@ -84,7 +79,7 @@ public class RobotContainer {
         DriverStation.silenceJoystickConnectionWarning(true);
 
         m_swerve.setDefaultCommand(new TeleopDrive(this::getForwardInput, this::getStrafeInput,
-                this::getRotationInput, m_driver::getRightBumper));
+                this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput));
 
         // Reset swerve heading
         new Trigger(m_driver::getStartButton)
@@ -109,22 +104,43 @@ public class RobotContainer {
     }
 
     public double getRotationInput() {
-        return -square(deadband(m_driver.getRightX(), 0.15));
+        double leftTrigger = square(deadband(m_driver.getLeftTriggerAxis(), 0.05));
+        double rightTrigger = square(deadband(m_driver.getRightTriggerAxis(), 0.05));
+
+        return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
+        // return -square(deadband(m_driver.getRightX(), 0.15));
     }
 
+<<<<<<< HEAD
+=======
+    public double getAimBotXInput() {
+        return -(m_driver.getRightX());
+    }
+
+    public double getAimBotYInput() {
+        return -(m_driver.getRightY());
+    }
+
+>>>>>>> 1fbe7aa312462d6aa3a698de75270ad5a912b3a0
     public double getArmJogger() {
         return -square(deadband(m_operator.getRightY(), 0.15));
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1fbe7aa312462d6aa3a698de75270ad5a912b3a0
     private static double deadband(double value, double tolerance) {
         if (Math.abs(value) < tolerance)
             return 0.0;
-
         return Math.copySign(value, (value - tolerance) / (1.0 - tolerance));
     }
 
     public static double square(double value) {
         return Math.copySign(value * value, value);
+    }
+
+    public static double cube(double value) {
+        return Math.copySign(value * value * value, value);
     }
 }

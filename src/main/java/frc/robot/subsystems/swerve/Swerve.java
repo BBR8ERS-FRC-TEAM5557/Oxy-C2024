@@ -87,7 +87,7 @@ public class Swerve extends SubsystemBase {
 
     ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Swerve");
     shuffleboardTab
-        .addNumber("Heading", () -> Util.truncate(getYaw().getDegrees(), 2))
+        .addNumber("Heading", () -> Util.truncate(getGyroYaw().getDegrees(), 2))
         .withWidget(BuiltInWidgets.kGraph);
     shuffleboardTab
         .addNumber(
@@ -212,8 +212,7 @@ public class Swerve extends SubsystemBase {
 
     // Update Pose Estimator
     if (m_gyroInputs.connected) {
-      RobotStateEstimator.getInstance()
-          .addDriveData(getRawGyroYaw().orElse(getYaw()), measuredPositions);
+      RobotStateEstimator.getInstance().addDriveData(getGyroYaw(), measuredPositions);
     } else {
       RobotStateEstimator.getInstance().addDriveData(measuredPositions);
     }
@@ -222,7 +221,7 @@ public class Swerve extends SubsystemBase {
     ChassisSpeeds chassisSpeeds = m_kinematics.toChassisSpeeds(measuredStates);
     Translation2d linearFieldVelocity =
         new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond)
-            .rotateBy(getYaw());
+            .rotateBy(getGyroYaw());
     m_fieldVelocity =
         new Twist2d(
             linearFieldVelocity.getX(),
@@ -278,6 +277,7 @@ public class Swerve extends SubsystemBase {
     this.drive(new ChassisSpeeds(), ControlMode.X_OUT);
   }
 
+<<<<<<< Updated upstream
   public Rotation2d getYaw() {
     return RobotStateEstimator.getInstance().getPose().getRotation();
   }
@@ -305,6 +305,12 @@ public class Swerve extends SubsystemBase {
       return Optional.of(Rotation2d.fromRadians(m_gyroInputs.pitchPositionRad));
     }
     return Optional.empty();
+=======
+  public Rotation2d getGyroYaw() {
+    return m_gyroInputs.connected
+        ? m_gyroInputs.yawPosition
+        : RobotStateEstimator.getInstance().getPose().getRotation();
+>>>>>>> Stashed changes
   }
 
   public Optional<Double> getRawGyroPitchDegPerSec() {

@@ -6,17 +6,23 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 public interface ModuleIO {
 
   public static class ModuleIOInputs implements LoggableInputs {
+    public boolean driveMotorConnected = true;
+    public boolean angleMotorConnected = true;
+    public boolean hasCurrentControl = false;
+
     double driveDistanceMeters = 0.0;
     double driveVelocityMetersPerSec = 0.0;
     double driveAppliedVolts = 0.0;
-    double[] driveCurrentAmps = new double[] {};
+    double[] driveSupplyCurrentAmps = new double[] {};
+    double[] driveTorqueCurrentAmps = new double[] {};
     double[] driveTempCelsius = new double[] {};
 
     double angleAbsolutePositionRad = 0.0;
     double angleInternalPositionRad = 0.0;
     double angleInternalVelocityRadPerSec = 0.0;
     double angleAppliedVolts = 0.0;
-    double[] angleCurrentAmps = new double[] {};
+    double[] angleSupplyCurrentAmps = new double[] {};
+    double[] angleTorqueCurrentAmps = new double[] {};
     double[] angleTempCelsius = new double[] {};
 
     @Override
@@ -24,46 +30,61 @@ public interface ModuleIO {
       table.put("DriveDistanceMeters", driveDistanceMeters);
       table.put("DriveVelocityMetersPerSec", driveVelocityMetersPerSec);
       table.put("DriveAppliedVolts", driveAppliedVolts);
-      table.put("DriveCurrentAmps", driveCurrentAmps);
+      table.put("DriveCurrentAmps", driveSupplyCurrentAmps);
       table.put("DriveTempCelsius", driveTempCelsius);
 
       table.put("AngleAbsolutePositionRad", angleAbsolutePositionRad);
       table.put("AngleInternalPositionRad", angleInternalPositionRad);
       table.put("AngleInternalVelocityRadPerSec", angleInternalVelocityRadPerSec);
       table.put("AngleAppliedVolts", angleAppliedVolts);
-      table.put("AngleCurrentAmps", angleCurrentAmps);
+      table.put("AngleCurrentAmps", angleSupplyCurrentAmps);
       table.put("AngleTempCelsius", angleTempCelsius);
     }
 
     @Override
-    public void fromLog(LogTable table) {}
+    public void fromLog(LogTable table) {
+    }
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(ModuleIOInputs inputs) {}
-
-  /** Run the drive motor at the specified percentage of full power. */
-  public default void setDriveMotorPercentage(double percentage) {}
+  public default void updateInputs(ModuleIOInputs inputs) {
+  }
 
   /** Run the drive motor at the specified voltage. */
-  public default void setDriveVoltage(double voltage) {}
+  public default void setDriveVoltage(double voltage) {
+  }
 
   /** Run the drive motor at the specified velocity. */
-  public default void setDriveVelocity(double velocity) {}
+  public default void setDriveVelocity(double velocity, double feedforward) {
+  }
 
   /** Run the drive motor at the specified voltage. */
-  public default void setAngleVoltage(double voltage) {}
+  public default void setAngleVoltage(double voltage) {
+  }
 
   /** Run the turn motor to the specified angle. */
-  public default void setAnglePosition(double radians) {}
+  public default void setAnglePosition(double radians) {
+  }
 
   /** Enable or disable brake mode on the drive motor. */
-  public default void setDriveBrakeMode(boolean enable) {}
+  public default void setDriveBrakeMode(boolean enable) {
+  }
 
   /** Enable or disable brake mode on the turn motor. */
-  public default void setAngleBrakeMode(boolean enable) {}
+  public default void setAngleBrakeMode(boolean enable) {
+  }
+
+  public default void setAnglePID(double kP, double kI, double kD) {
+  }
+
+  public default void setDrivePID(double kP, double kI, double kD) {
+  }
 
   public default boolean resetToAbsolute() {
     return false;
+  }
+
+  /** Disable output to all motors */
+  default void stop() {
   }
 }

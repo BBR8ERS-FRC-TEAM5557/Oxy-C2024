@@ -7,19 +7,22 @@ import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.ControlFrame;
+
 import com.reduxrobotics.sensors.canandcoder.Canandcoder;
+import frc.lib.team5557.factory.TalonFactory;
+import com.ctre.phoenix6.signals.ControlModeValue;
 
 import static frc.robot.subsystems.intake.IntakeConstants.*;
 
-public class RollerIOSparkMax implements RollerIO {
 
-    private CANSparkMax motor;
-    //private TalonFX motor;
-    
-    public RollerIOSparkMax() {
-        System.out.println("[Init] Creating RollerIOSparkMax");
-        motor = SparkMaxFactory.createMotor(kRollerMotorConfiguration);
-        BurnManager.burnFlash(motor);
+public class RollerIOTalon implements RollerIO {
+
+    private TalonFX motor;
+
+    public RollerIOTalon() {
+        System.out.println("[Init] Creating RollerIOTalon");
+        motor = TalonFactory.createTalon(kRollerMotorConfiguration);
+        //BurnManager.burnFlash(motor);
     }
 
     public void updateInputs(RollerIOInputs inputs) {
