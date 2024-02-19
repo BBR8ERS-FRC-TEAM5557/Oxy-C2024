@@ -31,6 +31,11 @@ import frc.robot.util.RobotStateEstimator;
 import frc.robot.util.Util;
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 public class Swerve extends SubsystemBase {
   private final GyroIO m_gyroIO;
   private final GyroIOInputs m_gyroInputs = new GyroIOInputs();
@@ -114,6 +119,32 @@ public class Swerve extends SubsystemBase {
             null);
       }
     });
+
+/**
+    AutoBuilder.configureHolonomic(
+            RobotStateEstimator.getInstance().getPose(), 
+            this::resetPose(), 
+            this::getRobotRelativeSpeeds, 
+            this::drive, 
+            new HolonomicPathFollowerConfig( 
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+                    4.5, // Max module speed, in m/s
+                    0.4, // Drive base radius in meters. Distance from robot center to furthest module.
+                    new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this 
+    ); */
   }
 
   @Override

@@ -50,20 +50,36 @@ public class ArmConstants {
         kPIDConfiguration.kTolerance = degreesToRotations(kPadding);
     }
 
-    public static final Configuration kMasterMotorConfiguration = new Configuration();
+    public static final Configuration kArmLeaderMotorConfiguration = new Configuration();
     static {
-        kMasterMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, Constants.RobotMap.kArmMotor);
-    
+        kArmLeaderMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, Constants.RobotMap.kArmLeaderMotor);
+        
+        kArmLeaderMotorConfiguration.pid = kPIDConfiguration;
+        kArmLeaderMotorConfiguration.limits = kLimitConfiguration;
 
-        kMasterMotorConfiguration.pid = kPIDConfiguration;
-        kMasterMotorConfiguration.limits = kLimitConfiguration;
+        kArmLeaderMotorConfiguration.kVoltageCompensation = 12.0;
+        kArmLeaderMotorConfiguration.kShouldInvert = true;
+        kArmLeaderMotorConfiguration.kIdleMode = IdleMode.kCoast;
+        kArmLeaderMotorConfiguration.kOpenLoopRampRate = 1.0;
+        kArmLeaderMotorConfiguration.kClosedLoopRampRate = 0.5;
+        kArmLeaderMotorConfiguration.kSmartCurrentLimit = 30.0;
+    }
 
-        kMasterMotorConfiguration.kVoltageCompensation = 12.0;
-        kMasterMotorConfiguration.kShouldInvert = true;
-        kMasterMotorConfiguration.kIdleMode = IdleMode.kCoast;
-        kMasterMotorConfiguration.kOpenLoopRampRate = 1.0;
-        kMasterMotorConfiguration.kClosedLoopRampRate = 0.5;
-        kMasterMotorConfiguration.kSmartCurrentLimit = 30.0;
+    public static final Configuration kArmFollowerMotorConfiguration = new Configuration();
+    static {
+        kArmFollowerMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, Constants.RobotMap.kArmFollowerMotor);
+        
+        kArmLeaderMotorConfiguration.pid = kPIDConfiguration;
+        kArmLeaderMotorConfiguration.limits = kLimitConfiguration;
+        
+        kArmFollowerMotorConfiguration.kShouldInvert = false;
+
+        kArmLeaderMotorConfiguration.kVoltageCompensation = 12.0;
+        kArmLeaderMotorConfiguration.kIdleMode = IdleMode.kCoast;
+        kArmLeaderMotorConfiguration.kOpenLoopRampRate = 1.0;
+        kArmLeaderMotorConfiguration.kClosedLoopRampRate = 0.5;
+        kArmLeaderMotorConfiguration.kSmartCurrentLimit = 30.0;
+        
     }
 
     public static double rotationsToDegrees(double rotations) {

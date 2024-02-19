@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto.AutoRoutineManager;
 import frc.robot.auto.SystemsCheckManager;
+import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.flywheels.Flywheels;
 import frc.robot.subsystems.flywheels.FlywheelsIO;
 import frc.robot.subsystems.intake.Intake;
@@ -37,6 +38,7 @@ public class RobotContainer {
     public static Swerve m_swerve;
     public static Intake m_intake;
     public static Flywheels m_flywheels;
+    public static Arm m_arm;
 
     public static RobotStateEstimator m_stateEstimator;
 

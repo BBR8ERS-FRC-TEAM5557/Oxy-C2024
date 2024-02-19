@@ -40,32 +40,19 @@ public class Arm extends SubsystemBase {
     private double m_profileTimestamp = 0.0;
     private double m_demand = 0.0;
 
-    public final TunableNumber cruiseVelocity = 
-            new TunableNumber("Arm/cruiseVelocity", kCruiseVelocity);
-    public final TunableNumber desiredTimeToSpeed =
-            new TunableNumber("Arm/desiredTimeToSpeed", kTimeToCruise);
+    public final TunableNumber cruiseVelocity =  new TunableNumber("Arm/cruiseVelocity", kCruiseVelocity);
+    public final TunableNumber desiredTimeToSpeed = new TunableNumber("Arm/desiredTimeToSpeed", kTimeToCruise);
 
     public enum ControlMode {
-        OPEN_LOOP, VOLTAGE, POSITION, MOTION_PROFILE
+        OPEN_LOOP, 
+        VOLTAGE, 
+        POSITION, 
+        MOTION_PROFILE
     }
 
     public Arm(ArmIO io) {
         System.out.println("[Init] Creating Arm");
         this.m_io = io;
-
-        ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Arm");
-        shuffleboardTab.addNumber("Position Internal", () -> Util.truncate(getState().position, 2))
-                .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addNumber("Velocity", () -> Util.truncate(getState().velocity, 2))
-                .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addNumber("Demand", () -> Util.truncate(m_demand, 2))
-                .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addNumber("Output", () -> Util.truncate(m_inputs.ArmAppliedVolts, 2))
-                .withWidget(BuiltInWidgets.kGraph);
-
-        shuffleboardTab.addString("Control Mode", () -> getControlMode().name());
-        shuffleboardTab.addString("Command",
-                () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "NONE");
     }
 
     @Override
@@ -126,11 +113,10 @@ public class Arm extends SubsystemBase {
     }
 
     public synchronized TrapezoidProfile.State getState() {
-        //return new TrapezoidProfile.State(m_inputs.ArmAbsolutePositionDeg, m_inputs.ArmAbsoluteVelocityDegPerSec);
         return new TrapezoidProfile.State(m_inputs.ArmInternalPositionDeg, m_inputs.ArmInternalVelocityDegPerSec);
     }
 
-    // Command Building Bloacks
+    // Command Building Blocks
     public Command runArmOpenLoop(DoubleSupplier percent) {
         return new RunCommand(() -> runOpenLoop(percent.getAsDouble()), this);
     }
