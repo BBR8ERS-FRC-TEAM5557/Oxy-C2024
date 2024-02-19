@@ -5,15 +5,26 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto.AutoRoutineManager;
 import frc.robot.auto.SystemsCheckManager;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmIO;
+import frc.robot.subsystems.arm.ArmIOSparkMax;
+import frc.robot.subsystems.feeder.Feeder;
+import frc.robot.subsystems.feeder.FeederIO;
+import frc.robot.subsystems.feeder.FeederIOSparkMax;
 import frc.robot.subsystems.flywheels.Flywheels;
 import frc.robot.subsystems.flywheels.FlywheelsIO;
+import frc.robot.subsystems.flywheels.FlywheelsIOKraken;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
@@ -25,18 +36,22 @@ import frc.robot.subsystems.swerve.module.ModuleIO;
 import frc.robot.subsystems.swerve.module.ModuleIOKrakenSparkMax;
 import frc.robot.subsystems.swerve.module.ModuleIOSim;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
+import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.FieldConstants;
 import frc.robot.util.RobotStateEstimator;
 import static frc.robot.Constants.*;
 import static frc.robot.Constants.RobotMap.*;
 
 public class RobotContainer {
 
-    public static final XboxController m_driver = new XboxController(0);
-    public static final XboxController m_operator = new XboxController(1);
+    public static final CommandXboxController mDriver = new CommandXboxController(0);
+    public static final CommandXboxController mOperator = new CommandXboxController(1);
 
-    public static Swerve m_swerve;
-    public static Intake m_intake;
-    public static Flywheels m_flywheels;
+    public static Swerve mSwerve;
+    public static Intake mIntake;
+    public static Feeder mFeeder;
+    public static Flywheels mFlywheels;
+    public static Arm mArm;
 
     public static RobotStateEstimator m_stateEstimator;
 
@@ -45,22 +60,24 @@ public class RobotContainer {
 
     public RobotContainer() {
         if (kIsReal) {
-            m_swerve = new Swerve(new GyroIOPigeon2(),
+            mSwerve = new Swerve(new GyroIOPigeon2(),
                     new ModuleIOKrakenSparkMax(0, kFLDriveMotor, kFLTurnMotor, kFLOffset),
                     new ModuleIOKrakenSparkMax(1, kFRDriveMotor, kFRTurnMotor, kFROffset),
                     new ModuleIOKrakenSparkMax(2, kBLDriveMotor, kBLTurnMotor, kBLOffset),
                     new ModuleIOKrakenSparkMax(3, kBRDriveMotor, kBRTurnMotor, kBROffset));
-            m_intake = new Intake(new IntakeIOSparkMax());
-            m_flywheels = new Flywheels(new FlywheelsIO() {});
+            mIntake = new Intake(new IntakeIOSparkMax());
+            mFeeder = new Feeder(new FeederIOSparkMax());
+            mFlywheels = new Flywheels(new FlywheelsIOKraken());
+            mArm = new Arm(new ArmIOSparkMax());
         } else {
-            m_swerve = new Swerve(new GyroIO() {
+            mSwerve = new Swerve(new GyroIO() {
             }, new ModuleIOSim(), new ModuleIOSim(),
                     new ModuleIOSim(), new ModuleIOSim());
         }
 
         // Instantiate missing subsystems
-        if (m_swerve == null) {
-            m_swerve = new Swerve(new GyroIO() {
+        if (mSwerve == null) {
+            mSwerve = new Swerve(new GyroIO() {
             }, new ModuleIO() {
             }, new ModuleIO() {
             },
@@ -68,16 +85,25 @@ public class RobotContainer {
                     }, new ModuleIO() {
                     });
         }
-        if (m_intake == null) {
-            m_intake = new Intake(new IntakeIO() {});
+        if (mIntake == null) {
+            mIntake = new Intake(new IntakeIO() {
+            });
+        }
+        if (mFeeder == null) {
+            mFeeder = new Feeder(new FeederIO() {
+            });
+        }
+        if (mFlywheels == null) {
+            mFlywheels = new Flywheels(new FlywheelsIO() {
+            });
+        }
+        if (mArm == null) {
+            mArm = new Arm(new ArmIO() {
+            });
         }
 
-        if (m_flywheels == null) {
-            m_flywheels = new Flywheels(new FlywheelsIO() {});
-        }
-
-        m_autoManager = new AutoRoutineManager(m_swerve);
-        m_systemCheckManager = new SystemsCheckManager(m_swerve);
+        m_autoManager = new AutoRoutineManager(mSwerve);
+        m_systemCheckManager = new SystemsCheckManager(mSwerve);
         m_stateEstimator = RobotStateEstimator.getInstance();
         DriveMotionPlanner.configureControllers();
 
@@ -89,15 +115,69 @@ public class RobotContainer {
         System.out.println("[Init] Binding controls");
         DriverStation.silenceJoystickConnectionWarning(true);
 
-        m_swerve.setDefaultCommand(new TeleopDrive(this::getForwardInput, this::getStrafeInput,
-                this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput));
+        /* SWERVING */
+        TeleopDrive teleop = new TeleopDrive(this::getForwardInput, this::getStrafeInput,
+                this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput, this::getAutoAimInput);
+        mSwerve.setDefaultCommand(teleop);
 
-        // Reset swerve heading
-        new Trigger(m_driver::getStartButton)
-                .onTrue(new InstantCommand(() -> m_stateEstimator.setPose(new Pose2d())));
+        mDriver.start()
+                .onTrue(Commands.runOnce(
+                        () -> m_stateEstimator.setPose(
+                                new Pose2d(
+                                        m_stateEstimator.getPose().getTranslation(),
+                                        AllianceFlipUtil.apply(new Rotation2d()))))
+                        .ignoringDisable(true));
+        mDriver.back()
+                .onTrue(Commands.runOnce(
+                        () -> m_stateEstimator.setPose(
+                                AllianceFlipUtil.apply(
+                                        new Pose2d(
+                                                Units.inchesToMeters(36.0),
+                                                FieldConstants.Speaker.centerSpeakerOpening.getY(),
+                                                new Rotation2d()))))
+                        .ignoringDisable(true));
 
-        new Trigger(m_operator::getRightBumper)
-                .whileTrue(m_intake.intake());
+        mDriver.x().onTrue(Commands.runOnce(() -> mSwerve.stopWithX()));
+
+        /* INTAKING */
+        mOperator.rightBumper()
+                .whileTrue(mArm.intake()
+                        .alongWith(Commands.waitUntil(mArm::atGoal)
+                                .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
+                                        .until(() -> mFeeder.hasGamepiece()))));
+
+        /* EJECTING */
+        mOperator.leftBumper()
+            .whileTrue(mArm.forceCoast());
+
+        /* SHOOTING */
+        mOperator.b().whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shoot()));
+        Trigger readyToShootFender = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.b());
+        mOperator.rightTrigger().and(mOperator.b())
+                .onTrue(Commands.parallel(
+                        Commands.waitSeconds(0.5),
+                        Commands.waitUntil(mOperator.rightTrigger().negate()))
+                        .deadlineWith(mFeeder.shoot()));
+
+        /* AMPING */
+        mOperator.x().whileTrue(Commands.parallel(mArm.amp(), mFlywheels.eject()));
+        Trigger readyToEjectAmp = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.x());
+        mOperator.rightTrigger().and(mOperator.x())
+                .onTrue(Commands.parallel(
+                        Commands.waitSeconds(0.5),
+                        Commands.waitUntil(mOperator.rightTrigger().negate()))
+                        .deadlineWith(mFeeder.ejectAmp()));
+
+        readyToShootFender.or(readyToEjectAmp)
+                .whileTrue(
+                        Commands.run(
+                                () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0)))
+                .whileFalse(
+                        Commands.run(
+                                () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
+        /* CLIMBING */
+        mOperator.pov(0).onTrue(mArm.prepClimb());
+        mOperator.pov(180).onTrue(mArm.retractClimb());
 
     }
 
@@ -110,31 +190,35 @@ public class RobotContainer {
     }
 
     public double getForwardInput() {
-        return -square(deadband(m_driver.getLeftY(), 0.15));
+        return -square(deadband(mDriver.getLeftY(), 0.15));
     }
 
     public double getStrafeInput() {
-        return -square(deadband(m_driver.getLeftX(), 0.15));
+        return -square(deadband(mDriver.getLeftX(), 0.15));
     }
 
     public double getRotationInput() {
-        double leftTrigger = square(deadband(m_driver.getLeftTriggerAxis(), 0.05));
-        double rightTrigger = square(deadband(m_driver.getRightTriggerAxis(), 0.05));
+        double leftTrigger = square(deadband(mDriver.getLeftTriggerAxis(), 0.05));
+        double rightTrigger = square(deadband(mDriver.getRightTriggerAxis(), 0.05));
 
         return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
         // return -square(deadband(m_driver.getRightX(), 0.15));
     }
 
     public double getAimBotXInput() {
-        return -(m_driver.getRightX());
+        return -(mDriver.getRightX());
     }
 
     public double getAimBotYInput() {
-        return -(m_driver.getRightY());
+        return -(mDriver.getRightY());
+    }
+
+    public boolean getAutoAimInput() {
+        return mOperator.a().getAsBoolean();
     }
 
     public double getArmJogger() {
-        return -square(deadband(m_operator.getRightY(), 0.15));
+        return -square(deadband(mOperator.getRightY(), 0.15));
     }
 
     private static double deadband(double value, double tolerance) {

@@ -23,6 +23,8 @@ public class SwerveConstants {
 
 	public static final double kTrackWidth = Units.inchesToMeters(26.0 - 2 * 2.625);
 	public static final double kWheelBase = Units.inchesToMeters(23.0 - 2 * 2.625);
+	public static final double kChassisToBullBar = Units.inchesToMeters(5.764957);
+	public static final double kTrueChassisCenterOffset = kChassisToBullBar / 2;
 
 	public static final double kKrakenFreeSpeed = 6000;
 	public static final double kKrakenFreeSpeedFOC = 5800;
@@ -121,10 +123,10 @@ public class SwerveConstants {
 	}
 
 	public static final Translation2d[] kSwerveModuleLocations = {
-			new Translation2d(kWheelBase / 2.0, kTrackWidth / 2.0),
-			new Translation2d(kWheelBase / 2.0, -kTrackWidth / 2.0),
-			new Translation2d(-kWheelBase / 2.0, kTrackWidth / 2.0),
-			new Translation2d(-kWheelBase / 2.0, -kTrackWidth / 2.0)
+			new Translation2d((kWheelBase / 2.0) - kTrueChassisCenterOffset, kTrackWidth / 2.0),
+			new Translation2d((kWheelBase / 2.0) - kTrueChassisCenterOffset, -kTrackWidth / 2.0),
+			new Translation2d((-kWheelBase / 2.0) - kTrueChassisCenterOffset, kTrackWidth / 2.0),
+			new Translation2d((-kWheelBase / 2.0) - kTrueChassisCenterOffset, -kTrackWidth / 2.0)
 	};
 
 	public static final SwerveModuleState[] kXOutSwerveModuleStates = {

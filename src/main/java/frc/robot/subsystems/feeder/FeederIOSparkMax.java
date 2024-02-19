@@ -21,7 +21,7 @@ public class FeederIOSparkMax implements FeederIO {
     }
 
     public void updateInputs(FeederIOInputs inputs) {
-        inputs.hasGamepiece = mBanner.get();
+        inputs.hasGamepiece = !mBanner.get();
         inputs.feederPositionRotations = mMotor.getEncoder().getPosition() / kGearReduction;
         inputs.feederVelocityRPM = mMotor.getEncoder().getVelocity() / kGearReduction;
         inputs.feederAppliedVolts = mMotor.getAppliedOutput() * mMotor.getBusVoltage();

@@ -19,7 +19,7 @@ public class Intake extends SubsystemBase {
     private State mState = State.STOP;
 
     private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Intake/ShootingVoltage", 8.0);
-    private static final LoggedTunableNumber mIdleVoltage = new LoggedTunableNumber("Intake/IdleVoltage", 1.0);
+    private static final LoggedTunableNumber mIdleVoltage = new LoggedTunableNumber("Intake/IdleVoltage", 0.0);
     private static final LoggedTunableNumber mEjectingVoltage = new LoggedTunableNumber("Intake/EjectingVoltage", -8.0);
 
     private static final LoggedTunableNumber mVelocityThreshold = new LoggedTunableNumber("Intake/VelocityThreshold", 200.0);
@@ -38,7 +38,7 @@ public class Intake extends SubsystemBase {
         if (DriverStation.isDisabled()) {
             setState(State.STOP);
         }
-
+        
         mIO.setIntakeVoltage(this.mState.getTopMotorVoltage());
 
         Logger.recordOutput("state", mState);

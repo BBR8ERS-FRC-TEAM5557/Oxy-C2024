@@ -1,34 +1,47 @@
 package frc.robot.subsystems.swerve.commands;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.RobotStateEstimator;
 import frc.robot.util.Util;
 
 public class TeleopDrive extends Command {
     private final Swerve swerve;
 
-    private final DoubleSupplier m_translationXSupplier;
-    private final DoubleSupplier m_translationYSupplier;
-    private final DoubleSupplier m_rotationSupplier;
-    private final DoubleSupplier m_aimbotXSupplier;
-    private final DoubleSupplier m_aimbotYSupplier;
+    private final DoubleSupplier mTranslationXSupplier;
+    private final DoubleSupplier mTranslationYSupplier;
+    private final DoubleSupplier mRotationSupplier;
+    private final DoubleSupplier mAimbotXSupplier;
+    private final DoubleSupplier mAimbotYSupplier;
+    private final BooleanSupplier mAutoaimSupplier;
+
+    private LoggedTunableNumber headingPadding = new LoggedTunableNumber("Aiming/HeadingPaddingDeg", 1.0);
+    private boolean atHeadingGoal = false;
 
     public TeleopDrive(DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
-            DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier) {
-        this.swerve = RobotContainer.m_swerve;
-        this.m_translationXSupplier = translationXSupplier;
-        this.m_translationYSupplier = translationYSupplier;
-        this.m_rotationSupplier = rotationSupplier;
-        this.m_aimbotXSupplier = aimbotXSupplier;
-        this.m_aimbotYSupplier = aimbotYSupplier;
+            DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier,
+            BooleanSupplier autoAimSupplier) {
+        this.swerve = RobotContainer.mSwerve;
+        this.mTranslationXSupplier = translationXSupplier;
+        this.mTranslationYSupplier = translationYSupplier;
+        this.mRotationSupplier = rotationSupplier;
+        this.mAimbotXSupplier = aimbotXSupplier;
+        this.mAimbotYSupplier = aimbotYSupplier;
+        this.mAutoaimSupplier = autoAimSupplier;
 
         addRequirements(swerve);
     }
@@ -36,30 +49,35 @@ public class TeleopDrive extends Command {
     @Override
     public void execute() {
         var limit = swerve.getKinematicLimit();
-        Rotation2d driveRotation = swerve.getGyroYaw();
+        Rotation2d driveRotation = RobotStateEstimator.getInstance().getPose().getRotation();
 
-        double rotationalVelocity = m_rotationSupplier.getAsDouble() * limit.maxLinearVelocity();
-        double xVelocity = m_translationXSupplier.getAsDouble() * limit.maxLinearVelocity();
-        double yVelocity = m_translationYSupplier.getAsDouble() * limit.maxLinearVelocity();
+        double rotationalVelocity = mRotationSupplier.getAsDouble() * limit.maxLinearVelocity();
+        double xVelocity = mTranslationXSupplier.getAsDouble() * limit.maxLinearVelocity();
+        double yVelocity = mTranslationYSupplier.getAsDouble() * limit.maxLinearVelocity();
 
-        double[] rightJoyPolarCoordinate = Util.toPolarCoordinate(m_aimbotYSupplier.getAsDouble(),
-                m_aimbotXSupplier.getAsDouble());
+        double[] rightJoyPolarCoordinate = Util.toPolarCoordinate(mAimbotYSupplier.getAsDouble(),
+                mAimbotXSupplier.getAsDouble());
         double r = Util.scaledDeadband(rightJoyPolarCoordinate[0], 1.0, 0.15);
-        double theta = Units.radiansToDegrees(rightJoyPolarCoordinate[1]);
+        Rotation2d theta = Rotation2d.fromRadians(rightJoyPolarCoordinate[1]);
 
         if (r > 0.8) {
-            theta /= 45;
-            theta = Math.round(theta) * 45;
+            var mod = theta.getDegrees() / 45;
+            theta = Rotation2d.fromDegrees(Math.round(mod) * 45);
         }
 
-        if (RobotStateEstimator.isRedAlliance) {
-            theta = theta + 180.0;
+        if (AllianceFlipUtil.shouldFlip()) {
+            theta.rotateBy(Rotation2d.fromDegrees(180.0));
             xVelocity = -xVelocity;
             yVelocity = -yVelocity;
         }
 
-        if (r > 0.05) {
-            rotationalVelocity = DriveMotionPlanner.calculateSnap(Rotation2d.fromDegrees(theta));
+        boolean wantsAutoAim = mAutoaimSupplier.getAsBoolean();
+        if (r > 0.05 || wantsAutoAim) {
+            theta = wantsAutoAim ? theta : theta; // fix for vehicle stuff from 6328
+            rotationalVelocity = DriveMotionPlanner.calculateSnap(theta);
+            atHeadingGoal = Util.epsilonEquals(theta.getDegrees(), driveRotation.getDegrees(), headingPadding.getAsDouble());
+        } else {
+            theta = Rotation2d.fromDegrees(0.0);
         }
 
         ChassisSpeeds velocity = ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -69,11 +87,18 @@ public class TeleopDrive extends Command {
                 driveRotation);
 
         swerve.driveOpenLoop(velocity);
+
+        Logger.recordOutput("RobotState/Aiming/HeadingGoal", theta);
+        Logger.recordOutput("RobotState/Aiming/atHeadingGoal", theta);
     }
 
     @Override
     public void end(boolean interrupted) {
         swerve.stop();
+    }
+
+    public boolean atHeadingGoal() {
+        return atHeadingGoal;
     }
 
 }

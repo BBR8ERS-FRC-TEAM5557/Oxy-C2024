@@ -8,10 +8,12 @@ import frc.lib.team6328.TunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.util.RobotStateEstimator;
+
 import static frc.robot.subsystems.swerve.SwerveConstants.*;
 
 public class DriveMotionPlanner extends VirtualSubsystem {
-    private static final Swerve swerve = RobotContainer.m_swerve;
+    private static final Swerve swerve = RobotContainer.mSwerve;
 
     private static final PIDController forwardController =
             new PIDController(kTranslationkP, kTranslationkI, kTranslationkD);
@@ -70,7 +72,7 @@ public class DriveMotionPlanner extends VirtualSubsystem {
     }
     
     public static double calculateSnap(Rotation2d goalAngle) {
-        return snapController.calculate(swerve.getGyroYaw().getRadians(), goalAngle.getRadians());
+        return snapController.calculate(RobotStateEstimator.getInstance().getPose().getRotation().getRadians(), goalAngle.getRadians());
     }
 
     public static PIDController getForwardController() {

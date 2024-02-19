@@ -17,11 +17,11 @@ public class Feeder extends SubsystemBase {
 
     private State mState = State.STOP;
 
-    private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Feeder/IntakeVoltage", 8.0);
+    private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Feeder/IntakeVoltage", 1.5);
     private static final LoggedTunableNumber mShootVoltage = new LoggedTunableNumber("Feeder/ShootingVoltage", 8.0);
     private static final LoggedTunableNumber mIdleVoltage = new LoggedTunableNumber("Feeder/IdleVoltage", 0.0);
     private static final LoggedTunableNumber mEjectingAmpVoltage = new LoggedTunableNumber("Feeder/EjectingAmpVoltage",
-            8.0);
+            4.0);
     private static final LoggedTunableNumber mEjectingFloorVoltage = new LoggedTunableNumber(
             "Feeder/EjectingFloorVoltage", -8.0);
 
@@ -70,6 +70,10 @@ public class Feeder extends SubsystemBase {
         return Math.abs(mInputs.feederVelocityRPM) <= mVelocityThreshold.get();
     }
 
+    public boolean hasGamepiece() {
+        return mInputs.hasGamepiece;
+    }
+
     @RequiredArgsConstructor
     public enum State {
         INTAKE(mIntakeVoltage),
@@ -87,15 +91,19 @@ public class Feeder extends SubsystemBase {
     }
 
     public Command intake() {
-        return startEnd(() -> setState(State.INTAKE), () -> setState(State.IDLE)).withName("IntakePickup");
+        return startEnd(() -> setState(State.INTAKE), () -> setState(State.IDLE)).withName("FeederPickup");
+    }
+
+    public Command shoot() {
+        return startEnd(() -> setState(State.SHOOT), () -> setState(State.IDLE)).withName("FeederShoot");
     }
 
     public Command ejectAmp() {
-        return startEnd(() -> setState(State.EJECT_AMP), () -> setState(State.IDLE)).withName("IntakeEject");
+        return startEnd(() -> setState(State.EJECT_AMP), () -> setState(State.IDLE)).withName("FeederEjectAmp");
     }
 
     public Command ejectFloor() {
-        return startEnd(() -> setState(State.EJECT_FLOOR), () -> setState(State.IDLE)).withName("IntakeEject");
+        return startEnd(() -> setState(State.EJECT_FLOOR), () -> setState(State.IDLE)).withName("FeederEjectFloor");
     }
 
     public Command idle() {

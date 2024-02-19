@@ -5,6 +5,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -13,23 +14,25 @@ import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 import frc.lib.team5557.factory.TalonFactory;
 import static frc.robot.subsystems.swerve.SwerveConstants.*;
 
 public class ModuleIOKrakenSparkMax implements ModuleIO {
     // Drive Hardware
-    private final TalonFX m_driveMotor;
+    private final TalonFX mDriveMotor;
 
     // Angle Hardware
-    private final CANSparkMax m_angleMotor;
-    private final SparkPIDController m_angleMotorPID;
-    private final RelativeEncoder m_angleMotorEncoder;
-    private final AbsoluteEncoder m_absoluteEncoder;
+    private final CANSparkMax mAngleMotor;
+    private final SparkPIDController mAngleMotorPID;
+    private final RelativeEncoder mAngleMotorEncoder;
+    private final AbsoluteEncoder mAbsoluteEncoder;
 
     // Status Signals
     private final StatusSignal<Double> drivePosition;
@@ -51,31 +54,34 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
         System.out.println("[Init] Creating ModuleIOKrakenSparkMax" + moduleNumber);
 
         // ANGLE MOTOR
-        m_angleMotor = SparkMaxFactory.createNEO(angleMotorID, kAngleMotorConfiguration);
-        m_angleMotorPID = m_angleMotor.getPIDController();
-        m_angleMotorEncoder = m_angleMotor.getEncoder();
-        m_absoluteEncoder = m_angleMotor.getAbsoluteEncoder();
+        mAngleMotor = SparkMaxFactory.createNEO(angleMotorID, kAngleMotorConfiguration);
+        mAngleMotorPID = mAngleMotor.getPIDController();
+        mAngleMotorEncoder = mAngleMotor.getEncoder();
+        mAbsoluteEncoder = mAngleMotor.getAbsoluteEncoder();
 
-        SparkMaxFactory.configFramesLeaderOrFollower(m_angleMotor);
-        m_absoluteEncoder.setInverted(kAbsoluteEncoderInverted);
-        m_absoluteEncoder.setPositionConversionFactor(1.0);
-        m_absoluteEncoder.setZeroOffset(angleOffset.getRotations());
-        m_absoluteEncoder.setAverageDepth(4); // ? idk what depth to put ://
-        m_angleMotorPID.setPositionPIDWrappingMinInput(0.0);
-        m_angleMotorPID.setPositionPIDWrappingMaxInput(kAngleGearReduction);
-        m_angleMotorPID.setPositionPIDWrappingEnabled(true);
-        //BurnManager.burnFlash(m_angleMotor);
-        int resetIteration = 4;
-        while (resetIteration < 0)
-            resetToAbsolute();
+        SparkMaxFactory.configFramesDefault(mAngleMotor);
+        SparkMaxFactory.configFramesAbsoluteEncoderBoost(mAngleMotor);
+        mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted);
+        //mAbsoluteEncoder.setPositionConversionFactor(1.0);
+        mAbsoluteEncoder.setZeroOffset(angleOffset.getRotations());
+        mAbsoluteEncoder.setAverageDepth(2);
+        mAngleMotorPID.setPositionPIDWrappingMinInput(0.0);
+        mAngleMotorPID.setPositionPIDWrappingMaxInput(kAngleGearReduction);
+        mAngleMotorPID.setPositionPIDWrappingEnabled(true);
+        BurnManager.burnFlash(mAngleMotor);
+
+        boolean resetSuccesful = false;
+        int resetIteration = 0;
+        while (!resetSuccesful && resetIteration < 5)
+            resetSuccesful = resetToAbsolute();
 
         // DRIVE MOTOR
-        m_driveMotor = TalonFactory.createTalon(driveMotorID, kDriveMotorConfiguration);
+        mDriveMotor = TalonFactory.createTalon(driveMotorID, kDriveMotorConfiguration);
 
-        driveVelocity = m_driveMotor.getVelocity();
-        driveAppliedVolts = m_driveMotor.getMotorVoltage();
-        driveSupplyCurrent = m_driveMotor.getSupplyCurrent();
-        driveTorqueCurrent = m_driveMotor.getTorqueCurrent();
+        driveVelocity = mDriveMotor.getVelocity();
+        driveAppliedVolts = mDriveMotor.getMotorVoltage();
+        driveSupplyCurrent = mDriveMotor.getSupplyCurrent();
+        driveTorqueCurrent = mDriveMotor.getTorqueCurrent();
         BaseStatusSignal.setUpdateFrequencyForAll(
                 50.0,
                 driveVelocity,
@@ -83,7 +89,7 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
                 driveSupplyCurrent,
                 driveTorqueCurrent);
 
-        drivePosition = m_driveMotor.getPosition();
+        drivePosition = mDriveMotor.getPosition();
         BaseStatusSignal.setUpdateFrequencyForAll(50.0, drivePosition);
     }
 
@@ -107,21 +113,21 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
                 kWheelCircumference,
                 kDriveGearReduction);
         inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
-        inputs.driveSupplyCurrentAmps = new double[] { driveSupplyCurrent.getValueAsDouble() };
-        inputs.driveTorqueCurrentAmps = new double[] { driveTorqueCurrent.getValueAsDouble() };
+        inputs.driveSupplyCurrentAmps = driveSupplyCurrent.getValueAsDouble();
+        inputs.driveTorqueCurrentAmps = driveTorqueCurrent.getValueAsDouble();
 
         inputs.angleAbsolutePositionRad = getAbsoluteRotation().getRadians();
-        inputs.angleInternalPositionRad = rotationsToRadians(m_angleMotorEncoder.getPosition(), kAngleGearReduction);
-        inputs.angleInternalVelocityRadPerSec = rotationsToRadians(m_angleMotorEncoder.getVelocity(),
+        inputs.angleInternalPositionRad = rotationsToRadians(mAngleMotorEncoder.getPosition(), kAngleGearReduction);
+        inputs.angleInternalVelocityRadPerSec = rotationsToRadians(mAngleMotorEncoder.getVelocity(),
                 kAngleGearReduction) / 60.0;
-        inputs.angleAppliedVolts = m_angleMotor.getAppliedOutput() * m_angleMotor.getBusVoltage();
-        inputs.angleSupplyCurrentAmps = new double[] { m_angleMotor.getOutputCurrent() };
-        inputs.angleTempCelsius = new double[] { m_angleMotor.getMotorTemperature() };
+        inputs.angleAppliedVolts = mAngleMotor.getAppliedOutput() * mAngleMotor.getBusVoltage();
+        inputs.angleSupplyCurrentAmps = mAngleMotor.getOutputCurrent();
+        inputs.angleTempCelsius = mAngleMotor.getMotorTemperature();
     }
 
     @Override
     public void setDriveVoltage(double voltage) {
-        m_driveMotor.setControl(driveVoltage.withOutput(voltage));
+        mDriveMotor.setControl(driveVoltage.withOutput(voltage));
     }
 
     /** Run the drive motor at the specified velocity. */
@@ -132,12 +138,12 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
                 kWheelCircumference,
                 kDriveGearReduction);
 
-        m_driveMotor.setControl(driveVelocityControl.withVelocity(rotationsPerSecond).withFeedForward(feedforward));
+        mDriveMotor.setControl(driveVelocityControl.withVelocity(rotationsPerSecond).withFeedForward(feedforward));
     }
 
     @Override
     public void setAngleVoltage(double voltage) {
-        if (m_angleMotorEncoder.getVelocity() < kAbsoluteResetMaxOmega) {
+        if (mAngleMotorEncoder.getVelocity() < kAbsoluteResetMaxOmega) {
             if (++resetIteration >= kAbsoluteResetIterations) {
                 resetIteration = 0;
                 resetToAbsolute();
@@ -146,7 +152,7 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
             resetIteration = 0;
         }
 
-        m_angleMotorPID.setReference(voltage, ControlType.kVoltage);
+        mAngleMotorPID.setReference(voltage, ControlType.kVoltage);
     }
 
     /** Run the turn motor to the specified angle. */
@@ -154,7 +160,7 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     public void setAnglePosition(double radians) {
         double desiredAngleRotations = radiansToRotations(radians, kAngleGearReduction);
 
-        if (m_angleMotorEncoder.getVelocity() < kAbsoluteResetMaxOmega) {
+        if (mAngleMotorEncoder.getVelocity() < kAbsoluteResetMaxOmega) {
             if (++resetIteration >= kAbsoluteResetIterations) {
                 resetIteration = 0;
                 resetToAbsolute();
@@ -163,26 +169,26 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
             resetIteration = 0;
         }
 
-        m_angleMotorPID.setReference(desiredAngleRotations, ControlType.kPosition);
+        mAngleMotorPID.setReference(desiredAngleRotations, ControlType.kPosition);
     }
 
     /** Enable or disable brake mode on the drive motor. */
     @Override
     public void setDriveBrakeMode(boolean enable) {
-        m_driveMotor.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+        mDriveMotor.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
     }
 
     /** Enable or disable brake mode on the turn motor. */
     @Override
     public void setAngleBrakeMode(boolean enable) {
-        m_angleMotor.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
+        mAngleMotor.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
     }
 
     @Override
     public void setAnglePID(double kP, double kI, double kD) {
-        m_angleMotorPID.setP(kP);
-        m_angleMotorPID.setI(kI);
-        m_angleMotorPID.setD(kD);
+        mAngleMotorPID.setP(kP);
+        mAngleMotorPID.setI(kI);
+        mAngleMotorPID.setD(kD);
     }
 
     @Override
@@ -191,24 +197,23 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
         driveFeedbackConfig.kP = kP;
         driveFeedbackConfig.kI = kI;
         driveFeedbackConfig.kD = kD;
-        m_driveMotor.getConfigurator().apply(driveFeedbackConfig, 0.01);
+        mDriveMotor.getConfigurator().apply(driveFeedbackConfig, 0.01);
     }
 
     @Override
     public void stop() {
-        m_driveMotor.setControl(driveNeutral);
-        m_angleMotor.set(0.0);
+        mDriveMotor.setControl(driveNeutral);
+        mAngleMotor.set(0.0);
     }
 
     @Override
     public boolean resetToAbsolute() {
         double absoluteAngle = getAbsoluteRotation().getRadians();
-        m_angleMotorEncoder.setPosition(radiansToRotations(absoluteAngle, kAngleGearReduction));
-        return true;
+        return mAngleMotorEncoder.setPosition(radiansToRotations(absoluteAngle, kAngleGearReduction)) == REVLibError.kOk;
     }
 
     private Rotation2d getAbsoluteRotation() {
-        return Rotation2d.fromRotations(m_absoluteEncoder.getPosition());
+        return Rotation2d.fromRotations(mAbsoluteEncoder.getPosition());
     }
 
 }

@@ -30,13 +30,13 @@ public class Constants {
     public static final int kIntakeBottomMotor = 27;
     public static final int kIntakeTopMotor = 28;
 
-    public static final int kFeederMotor = 0;
+    public static final int kFeederMotor = 31;
     public static final int kFeederBanner = 0;
 
-    public static final int kFlywheelsLeftMotor = 0;
-    public static final int kFlywheelRightMotor = 0;
+    public static final int kFlywheelsLeftMotor = 11;
+    public static final int kFlywheelRightMotor = 16;
 
-    public static final int kArmLeaderMotor = 0;
-    public static final int kArmFollowerMotor = 0;
+    public static final int kArmLeaderMotor = 26;
+    public static final int kArmFollowerMotor = 25;
   }
 }

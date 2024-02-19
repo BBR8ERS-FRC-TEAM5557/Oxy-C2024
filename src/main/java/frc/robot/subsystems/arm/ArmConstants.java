@@ -2,6 +2,7 @@ package frc.robot.subsystems.arm;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
 import frc.lib.team5557.factory.SparkMaxFactory.PIDConfiguration;
 import frc.lib.team5557.factory.SparkMaxFactory.SoftLimitsConfiguration;
 import frc.lib.team5557.factory.SparkMaxFactory.Configuration;
@@ -10,68 +11,63 @@ import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
 import frc.robot.Constants;
 
 public class ArmConstants {
-    public static final double kGearReduction = 36.0;
-    public static final double kFirstSprocketTeethCount = 16.0; //teeth
-    public static final double kSecondSprocketTeethCount = 48.0; //teeth
-    public static final double kRotationsPerDegree = kGearReduction * (kSecondSprocketTeethCount / kFirstSprocketTeethCount) / 360.0;
+    public static final double kAbsoluteEncoderOffset = Units.degreesToRotations(180.0);
+    public static final boolean kAbsoluteEncoderInverted = false;
 
-    public static final double kEncoderHomePosition = 279.5; //degrees
+    public static final double kPlanetaryReduction = 4.0 * 5.0;
+    public static final double kGearRatio = kPlanetaryReduction * (64.0 / 16.0) * (64.0 / 36.0);
+
     public static final double kPadding = 1.0; // degrees
-    public static final double kCruiseVelocity = 150.0; // degrees/sec
-    public static final double kTimeToCruise = 0.1; // sec
+    public static final double kCruiseVelocity = 200.0; // degrees/sec
+    public static final double kTimeToCruise = 0.5; // sec
 
-    public static final double kHomeVoltage = 2.0;
-    public static final double kHomeAmpsThreshold = 15.0;
+    public static final double kMinAngle = 155.0; // degrees
+    public static final double kMaxAngle = 270.0; // degrees
 
-    public static final double kMinAngle = 170.0; //degrees
-    public static final double kMaxAngle = 270.0; //degrees
+    public static final double kArmP = 15.0;
+    public static final double kArmI = 0.0;
+    public static final double kArmD = 0.0;
 
-    public static final double kArmkP = 0.08;
-    public static final double kArmkI = 0.0;
-    public static final double kArmkD = 0.0;
+    public static final double kArmS = 0.0;
+    public static final double kArmG = 0.0;
+    public static final double kArmV = 0.0;
+    public static final double kArmA = 0.0;
 
-    public static final double kArmkS = 0.0;
-    public static final double kArmkG = 0.0;
-    public static final double kArmkA = 0.0;
-    public static final double kArmkV = 0.0;
-    
     public static final SoftLimitsConfiguration kLimitConfiguration = new SoftLimitsConfiguration();
     static {
-        kLimitConfiguration.kUpperLimit = degreesToRotations(kMaxAngle);
-        kLimitConfiguration.kLowerLimit = degreesToRotations(kMinAngle);
+        kLimitConfiguration.kUpperLimit = Units.degreesToRotations(kMaxAngle);
+        kLimitConfiguration.kLowerLimit = Units.degreesToRotations(kMinAngle);
     }
 
     public static final PIDConfiguration kPIDConfiguration = new PIDConfiguration();
     static {
-        kPIDConfiguration.kP = kArmkP;
-        kPIDConfiguration.kI = kArmkI;
-        kPIDConfiguration.kD = kArmkD;
-        kPIDConfiguration.kF = 0.0;
-        kPIDConfiguration.kTolerance = degreesToRotations(kPadding);
+        kPIDConfiguration.kP = kArmP;
+        kPIDConfiguration.kI = kArmI;
+        kPIDConfiguration.kD = kArmD;
     }
 
-    public static final Configuration kMasterMotorConfiguration = new Configuration();
+    public static final Configuration kLeaderMotorConfiguration = new Configuration();
     static {
-        kMasterMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, Constants.RobotMap.kArmMotor);
-    
+        kLeaderMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, Constants.RobotMap.kArmLeaderMotor);
 
-        kMasterMotorConfiguration.pid = kPIDConfiguration;
-        kMasterMotorConfiguration.limits = kLimitConfiguration;
+        kLeaderMotorConfiguration.pid = kPIDConfiguration;
+        kLeaderMotorConfiguration.limits = kLimitConfiguration;
 
-        kMasterMotorConfiguration.kVoltageCompensation = 12.0;
-        kMasterMotorConfiguration.kShouldInvert = true;
-        kMasterMotorConfiguration.kIdleMode = IdleMode.kCoast;
-        kMasterMotorConfiguration.kOpenLoopRampRate = 1.0;
-        kMasterMotorConfiguration.kClosedLoopRampRate = 0.5;
-        kMasterMotorConfiguration.kSmartCurrentLimit = 30.0;
+        kLeaderMotorConfiguration.kVoltageCompensation = 12.0;
+        kLeaderMotorConfiguration.kShouldInvert = false;
+        kLeaderMotorConfiguration.kIdleMode = IdleMode.kBrake;
+        kLeaderMotorConfiguration.kOpenLoopRampRate = 1.0;
+        kLeaderMotorConfiguration.kClosedLoopRampRate = 0.5;
+        kLeaderMotorConfiguration.kSmartCurrentLimit = 30.0;
     }
 
-    public static double rotationsToDegrees(double rotations) {
-        return rotations / kRotationsPerDegree;
-    }
+    public static final Configuration kFollowerMotorConfiguration = new Configuration();
+    static {
+        kFollowerMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, Constants.RobotMap.kArmFollowerMotor);
 
-    public static double degreesToRotations(double degrees) {
-        return degrees * kRotationsPerDegree;
+        kFollowerMotorConfiguration.kVoltageCompensation = 12.0;
+        kFollowerMotorConfiguration.kIdleMode = IdleMode.kBrake;
+        kFollowerMotorConfiguration.kSmartCurrentLimit = 30.0;
     }
 
     public static double constrainDegrees(double degrees) {

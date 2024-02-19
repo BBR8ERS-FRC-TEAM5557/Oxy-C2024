@@ -13,17 +13,17 @@ public interface ModuleIO {
     double driveDistanceMeters = 0.0;
     double driveVelocityMetersPerSec = 0.0;
     double driveAppliedVolts = 0.0;
-    double[] driveSupplyCurrentAmps = new double[] {};
-    double[] driveTorqueCurrentAmps = new double[] {};
-    double[] driveTempCelsius = new double[] {};
+    double driveSupplyCurrentAmps = 0.0;
+    double driveTorqueCurrentAmps = 0.0;
+    double driveTempCelsius = 0.0;
 
     double angleAbsolutePositionRad = 0.0;
     double angleInternalPositionRad = 0.0;
     double angleInternalVelocityRadPerSec = 0.0;
     double angleAppliedVolts = 0.0;
-    double[] angleSupplyCurrentAmps = new double[] {};
-    double[] angleTorqueCurrentAmps = new double[] {};
-    double[] angleTempCelsius = new double[] {};
+    double angleSupplyCurrentAmps = 0.0;
+    double angleTorqueCurrentAmps = 0.0;
+    double angleTempCelsius = 0.0;
 
     @Override
     public void toLog(LogTable table) {

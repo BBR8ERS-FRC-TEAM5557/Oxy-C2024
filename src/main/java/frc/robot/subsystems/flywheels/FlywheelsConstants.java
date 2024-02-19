@@ -37,7 +37,7 @@ public class FlywheelsConstants {
         kLeftMotorConfiguration.canID = new CANDeviceId(CANDeviceType.TALON, RobotMap.kFlywheelsLeftMotor);
         kLeftMotorConfiguration.label = "Left Motor";
 
-        kLeftMotorConfiguration.setInverted = true;
+        kLeftMotorConfiguration.setInverted = false;
         kLeftMotorConfiguration.pid = kPIDConfiguration;
         kLeftMotorConfiguration.neutralMode = NeutralModeValue.Coast;
         kLeftMotorConfiguration.supplyCurrentLimit = 40.0;
@@ -48,7 +48,7 @@ public class FlywheelsConstants {
         kRightMotorConfiguration.canID = new CANDeviceId(CANDeviceType.TALON, RobotMap.kFlywheelRightMotor);
         kRightMotorConfiguration.label = "Right Motor";
 
-        kRightMotorConfiguration.setInverted = false;
+        kRightMotorConfiguration.setInverted = true;
         kRightMotorConfiguration.pid = kPIDConfiguration;
         kRightMotorConfiguration.neutralMode = NeutralModeValue.Coast;
         kRightMotorConfiguration.supplyCurrentLimit = 40.0;

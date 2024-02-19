@@ -2,6 +2,7 @@ package frc.robot.subsystems.arm;
 
 import static frc.robot.subsystems.arm.ArmConstants.*;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -9,89 +10,89 @@ import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.util.Units;
 import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 import frc.lib.team6328.TunableNumber;
 
 public class ArmIOSparkMax implements ArmIO {
 
-    private final CANSparkMax m_master;
+    private final CANSparkMax mLeader;
+    private final CANSparkMax mFollower;
 
-    private final RelativeEncoder m_encoder;
-    private final SparkPIDController m_pid;
-    private final ArmFeedforward m_feedforward;
-
-    private final TunableNumber armkP = new TunableNumber("Arm/ArmkP", kArmkP);
-    private final TunableNumber armkI = new TunableNumber("Arm/ArmkI", kArmkI);
-    private final TunableNumber armkD = new TunableNumber("Arm/ArmkD", kArmkD);
+    private final RelativeEncoder mInternalEncoder;
+    private final AbsoluteEncoder mAbsoluteEncoder;
+    private final SparkPIDController mPid;
 
     public ArmIOSparkMax() {
         System.out.println("[Init] Creating ArmIOSparkMax");
-        m_master = SparkMaxFactory.createNEO(kMasterMotorConfiguration);
-        m_encoder = m_master.getEncoder();
-        m_pid = m_master.getPIDController();
-        m_pid.setFeedbackDevice(m_encoder);
-        m_encoder.setPosition(degreesToRotations(kEncoderHomePosition));
-        BurnManager.burnFlash(m_master);
 
-        SparkMaxFactory.configFramesLeaderOrFollower(m_master);
-        SparkMaxFactory.configFramesPositionBoost(m_master);
-        SparkMaxFactory.configFramesAbsoluteEncoderBoost(m_master);
+        mLeader = SparkMaxFactory.createNEO(kLeaderMotorConfiguration);
+        mFollower = SparkMaxFactory.createNEO(kFollowerMotorConfiguration);
+        mInternalEncoder = mLeader.getEncoder();
+        mAbsoluteEncoder = mLeader.getAbsoluteEncoder();
+        mPid = mLeader.getPIDController();
 
-        m_feedforward = new ArmFeedforward(kArmkS, kArmkG, kArmkV, kArmkA);
+        mAbsoluteEncoder.setZeroOffset(kAbsoluteEncoderOffset);
+        mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted);
+        mInternalEncoder.setPosition(mAbsoluteEncoder.getPosition() / kGearRatio);
+        mPid.setFeedbackDevice(mAbsoluteEncoder);
+        mFollower.follow(mLeader, true);
+
+        BurnManager.burnFlash(mLeader);
+        BurnManager.burnFlash(mFollower);
+
+        SparkMaxFactory.configFramesDefault(mLeader);
+        SparkMaxFactory.configFramesAbsoluteEncoderBoost(mLeader);
+        SparkMaxFactory.configFramesDefault(mFollower);
+        SparkMaxFactory.configFramesFollower(mFollower);
     }
 
-    /** Updates the set of loggable inputs. */
+    @Override
     public void updateInputs(ArmIOInputs inputs) {
-        inputs.ArmInternalPositionDeg = rotationsToDegrees(m_encoder.getPosition());
-        inputs.ArmInternalVelocityDegPerSec = rotationsToDegrees(m_encoder.getVelocity()) / 60.0;
-        inputs.ArmAppliedVolts = m_master.getAppliedOutput() * m_master.getBusVoltage();
-        inputs.ArmCurrentAmps = new double[] { m_master.getOutputCurrent() };
-        inputs.ArmTempCelsius = new double[] { m_master.getMotorTemperature() };
+        inputs.armAbsolutePositionDeg = Units.rotationsToDegrees(mAbsoluteEncoder.getPosition());
+        inputs.armAbsoluteVelocityDegPerSec = Units.rotationsToDegrees(mAbsoluteEncoder.getVelocity());
 
-        // update tunables
-        if (armkP.hasChanged(armkP.hashCode()) || armkI.hasChanged(armkI.hashCode())
-                || armkD.hasChanged(armkD.hashCode())) {
-            m_pid.setP(armkP.get());
-            m_pid.setI(armkI.get());
-            m_pid.setD(armkD.get());
-        }
+        inputs.armInternalPositionDeg = Units.rotationsToDegrees(mInternalEncoder.getPosition() / kGearRatio);
+        inputs.armInternalVelocityDegPerSec = Units.rotationsToDegrees(mInternalEncoder.getVelocity() / kGearRatio)
+                / 60;
+        inputs.armAppliedVolts = new double[] { mLeader.getAppliedOutput() * mLeader.getBusVoltage(),
+                mFollower.getAppliedOutput() * mFollower.getBusVoltage() };
+        inputs.armSupplyCurrentAmps = new double[] { mLeader.getOutputCurrent(), mFollower.getOutputCurrent() };
+        inputs.armTempCelsius = new double[] { mLeader.getMotorTemperature(), mFollower.getMotorTemperature() };
     }
 
-    /** Run the Arm open loop at the specified voltage. */
+    @Override
     public void setVoltage(double volts) {
-        m_pid.setReference(volts, ControlType.kVoltage);
+        mLeader.setVoltage(volts);
     }
 
+    @Override
     public void setPercent(double percent) {
-        m_pid.setReference(percent, ControlType.kDutyCycle);
+        mLeader.set(percent);
     }
 
-    public void setAngleDegrees(double targetAngleDegrees, double targetVelocityDegreesPerSec) {
-        double ff = m_feedforward.calculate(targetAngleDegrees, targetVelocityDegreesPerSec);
-        targetAngleDegrees = constrainDegrees(targetAngleDegrees);
-        double targetRotation = degreesToRotations(targetAngleDegrees);
-        //m_pid.setReference(targetRotation, ControlType.kPosition, 0, ff);
-        m_pid.setReference(targetRotation, ControlType.kPosition, 0, ff);
+    @Override
+    public void setPosition(double degrees, double feedforward) {
+        mPid.setReference(Units.degreesToRotations(degrees), ControlType.kPosition, 0, feedforward);
     }
 
-    public void resetSensorPosition(double angleDegrees) {
-        m_encoder.setPosition(degreesToRotations(angleDegrees));
+    @Override
+    public void setBrakeMode(boolean enable) {
+        mLeader.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
+        mFollower.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
     }
 
-    public void brakeOff() {
-        m_master.setIdleMode(IdleMode.kCoast);
+    @Override
+    public void setSoftLimits(boolean enable) {
+        mLeader.enableSoftLimit(SoftLimitDirection.kReverse, enable);
+        mLeader.enableSoftLimit(SoftLimitDirection.kForward, enable);
     }
 
-    public void brakeOn() {
-        m_master.setIdleMode(IdleMode.kBrake);
-    }
-
-    public void shouldEnableUpperLimit(boolean value) {
-        m_master.enableSoftLimit(SoftLimitDirection.kForward, value);
-    }
-
-    public void shouldEnableLowerLimit(boolean value) {
-        m_master.enableSoftLimit(SoftLimitDirection.kReverse, value);
+    @Override
+    public void setPID(double kP, double kI, double kD) {
+        mPid.setP(kP);
+        mPid.setI(kI);
+        mPid.setD(kD);
     }
 }

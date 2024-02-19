@@ -23,149 +23,144 @@ import org.littletonrobotics.junction.Logger;
 
 public class RobotStateEstimator extends VirtualSubsystem {
 
-  public static RobotStateEstimator m_instance = null;
+	private static RobotStateEstimator m_instance = null;
 
-  private final Swerve m_swerve = RobotContainer.m_swerve;
-  private final Field2d m_field2d = new Field2d();
-  private final Pose2d[] modulePoses = new Pose2d[4];
-  public static boolean isRedAlliance = false;
+	private final Field2d m_field2d = new Field2d();
 
-  public static RobotStateEstimator getInstance() {
-    if (m_instance == null) {
-      System.out.println("[Init] Creating RobotStateEstimator");
-      m_instance = new RobotStateEstimator();
-    }
-    return m_instance;
-  }
+	public static RobotStateEstimator getInstance() {
+		if (m_instance == null) {
+			System.out.println("[Init] Creating RobotStateEstimator");
+			m_instance = new RobotStateEstimator();
+		}
+		return m_instance;
+	}
 
-  private SwerveDrivePoseEstimator m_poseEstimator;
-  private SwerveModulePosition[] m_lastModulePositions =
-      new SwerveModulePosition[] {
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition()
-      };
+	private SwerveDrivePoseEstimator m_poseEstimator;
+	private SwerveModulePosition[] m_lastModulePositions = new SwerveModulePosition[] {
+			new SwerveModulePosition(),
+			new SwerveModulePosition(),
+			new SwerveModulePosition(),
+			new SwerveModulePosition()
+	};
 
-  private RobotStateEstimator() {
-    m_poseEstimator =
-        new SwerveDrivePoseEstimator(
-            Swerve.m_kinematics, new Rotation2d(), m_lastModulePositions, new Pose2d());
+	private RobotStateEstimator() {
+		m_poseEstimator = new SwerveDrivePoseEstimator(
+				Swerve.mKinematics, new Rotation2d(), m_lastModulePositions, new Pose2d());
 
-    ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Driver");
-    shuffleboardTab.add(m_field2d);
-  }
+		ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Driver");
+		shuffleboardTab.add(m_field2d);
+	}
 
-  @Override
-  public void periodic() {
-    isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
-    clampPoseToField();
-    updateFieldWidget();
+	@Override
+	public void periodic() {
+		clampPoseToField();
+		updateFieldWidget();
 
-    Logger.recordOutput("Odometry/Robot", getPose());
-  }
+		Logger.recordOutput("Odometry/Robot", getPose());
+	}
 
-  /** Records a new drive movement without gyro. */
-  public void addDriveData(SwerveModulePosition[] positions) {
-    SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
-    for (int i = 0; i < 4; i++) {
-      wheelDeltas[i] =
-          new SwerveModulePosition(
-              (positions[i].distanceMeters - m_lastModulePositions[i].distanceMeters),
-              positions[i].angle);
-      m_lastModulePositions[i] = positions[i];
-    }
-    var twist = Swerve.m_kinematics.toTwist2d(wheelDeltas);
-    var simulatedGyroAngle =
-        Rotation2d.fromRadians(getPose().getRotation().getRadians() + twist.dtheta);
+	/** Records a new drive movement without gyro. */
+	public void addDriveData(SwerveModulePosition[] positions) {
+		SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
+		for (int i = 0; i < 4; i++) {
+			wheelDeltas[i] = new SwerveModulePosition(
+					(positions[i].distanceMeters - m_lastModulePositions[i].distanceMeters),
+					positions[i].angle);
+			m_lastModulePositions[i] = positions[i];
+		}
+		var twist = Swerve.mKinematics.toTwist2d(wheelDeltas);
+		var simulatedGyroAngle = Rotation2d.fromRadians(getPose().getRotation().getRadians() + twist.dtheta);
 
-    addDriveData(simulatedGyroAngle, positions);
-  }
+		addDriveData(simulatedGyroAngle, positions);
+	}
 
-  /** Records a new drive movement with gyro. */
-  public void addDriveData(Rotation2d gyroAngle, SwerveModulePosition[] positions) {
-    for (int i = 0; i < 4; i++) {
-      m_lastModulePositions[i] = positions[i];
-    }
-    m_poseEstimator.update(gyroAngle, positions);
-  }
+	/** Records a new drive movement with gyro. */
+	public void addDriveData(Rotation2d gyroAngle, SwerveModulePosition[] positions) {
+		for (int i = 0; i < 4; i++) {
+			m_lastModulePositions[i] = positions[i];
+		}
+		m_poseEstimator.update(gyroAngle, positions);
+	}
 
-  public void addVisionData(List<TimestampedVisionUpdate> visionData) {
-    for (var update : visionData) {
-      m_poseEstimator.addVisionMeasurement(update.pose(), update.timestamp(), update.stdDevs());
-    }
-  }
+	public void addVisionData(List<TimestampedVisionUpdate> visionData) {
+		for (var update : visionData) {
+			m_poseEstimator.addVisionMeasurement(update.pose(), update.timestamp(), update.stdDevs());
+		}
+	}
 
-  public Pose2d getPose() {
-    return m_poseEstimator.getEstimatedPosition();
-  }
+	public Pose2d getPose() {
+		return m_poseEstimator.getEstimatedPosition();
+	}
 
-  public void setPose(Pose2d pose) {
-    m_poseEstimator.resetPosition(
-        RobotContainer.m_swerve.getGyroYaw(),
-        m_lastModulePositions,
-        pose);
-  }
+	public void setPose(Pose2d pose) {
+		m_poseEstimator.resetPosition(
+				RobotContainer.mSwerve.getGyroYaw(),
+				m_lastModulePositions,
+				pose);
+	}
 
-  private void clampPoseToField() {
-    // if out of bounds, clamp to field
-    double estimatedXPos = m_poseEstimator.getEstimatedPosition().getX();
-    double estimatedYPos = m_poseEstimator.getEstimatedPosition().getY();
-    if (estimatedYPos < 0.0
-        || estimatedYPos > 8.35
-        || estimatedXPos < 0.0
-        || estimatedXPos > Units.feetToMeters(52)) {
-      double clampedYPosition = MathUtil.clamp(estimatedYPos, 0.0, 8.35);
-      double clampedXPosition = MathUtil.clamp(estimatedXPos, 0.0, Units.feetToMeters(52.0));
-      this.setPose(new Pose2d(clampedXPosition, clampedYPosition, getPose().getRotation()));
-    }
-  }
+	private void clampPoseToField() {
+		// if out of bounds, clamp to field
+		double estimatedXPos = m_poseEstimator.getEstimatedPosition().getX();
+		double estimatedYPos = m_poseEstimator.getEstimatedPosition().getY();
+		if (estimatedYPos < 0.0
+				|| estimatedYPos > 8.35
+				|| estimatedXPos < 0.0
+				|| estimatedXPos > Units.feetToMeters(52)) {
+			double clampedYPosition = MathUtil.clamp(estimatedYPos, 0.0, 8.35);
+			double clampedXPosition = MathUtil.clamp(estimatedXPos, 0.0, Units.feetToMeters(52.0));
+			this.setPose(new Pose2d(clampedXPosition, clampedYPosition, getPose().getRotation()));
+		}
+	}
 
-  private void updateFieldWidget() {
-    Pose2d robotPose = getPose();
-    m_field2d.setRobotPose(robotPose);
-  }
+	private void updateFieldWidget() {
+		Pose2d robotPose = getPose();
+		m_field2d.setRobotPose(robotPose);
+	}
 
-  public void addFieldPose(String name, Pose2d pose) {
-    if (pose != null) {
-      m_field2d.getObject(name).setPose(pose);
-    }
-  }
+	public void addFieldPose(String name, Pose2d pose) {
+		if (pose != null) {
+			m_field2d.getObject(name).setPose(pose);
+		}
+	}
 
-  private void addFieldPose(String name, Pose2d... pose) {
-    if (pose != null) {
-      m_field2d.getObject(name).setPoses(pose);
-    }
-  }
+	private void addFieldPose(String name, Pose2d... pose) {
+		if (pose != null) {
+			m_field2d.getObject(name).setPoses(pose);
+		}
+	}
 
-  public void addFieldTrajectory(String name, Trajectory traj) {
-    if (traj != null) {
-      m_field2d.getObject(name).setTrajectory(traj);
-    }
-  }
+	public void addFieldTrajectory(String name, Trajectory traj) {
+		if (traj != null) {
+			m_field2d.getObject(name).setTrajectory(traj);
+		}
+	}
 
-  /** Represents a single vision pose with a timestamp and associated standard deviations. */
-  public static class TimestampedVisionUpdate {
-    private final double timestamp;
-    private final Pose2d pose;
-    private final Matrix<N3, N1> stdDevs;
+	/**
+	 * Represents a single vision pose with a timestamp and associated standard
+	 * deviations.
+	 */
+	public static class TimestampedVisionUpdate {
+		private final double timestamp;
+		private final Pose2d pose;
+		private final Matrix<N3, N1> stdDevs;
 
-    public TimestampedVisionUpdate(double timestamp, Pose2d pose, Matrix<N3, N1> stdDevs) {
-      this.timestamp = timestamp;
-      this.pose = pose;
-      this.stdDevs = stdDevs;
-    }
+		public TimestampedVisionUpdate(double timestamp, Pose2d pose, Matrix<N3, N1> stdDevs) {
+			this.timestamp = timestamp;
+			this.pose = pose;
+			this.stdDevs = stdDevs;
+		}
 
-    public double timestamp() {
-      return timestamp;
-    }
+		public double timestamp() {
+			return timestamp;
+		}
 
-    public Pose2d pose() {
-      return pose;
-    }
+		public Pose2d pose() {
+			return pose;
+		}
 
-    public Matrix<N3, N1> stdDevs() {
-      return stdDevs;
-    }
-  }
+		public Matrix<N3, N1> stdDevs() {
+			return stdDevs;
+		}
+	}
 }

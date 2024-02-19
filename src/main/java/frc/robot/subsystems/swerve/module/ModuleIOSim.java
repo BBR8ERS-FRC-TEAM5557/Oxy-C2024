@@ -42,15 +42,13 @@ public class ModuleIOSim implements ModuleIO {
                 + (driveSim.getAngularVelocityRPM() * kWheelCircumference / 60.0) * Robot.defaultPeriodSecs;
         inputs.driveVelocityMetersPerSec = driveSim.getAngularVelocityRPM() * kWheelCircumference / 60.0;
         inputs.driveAppliedVolts = driveAppliedVolts;
-        inputs.driveSupplyCurrentAmps = new double[] { Math.abs(driveSim.getCurrentDrawAmps()) };
-        inputs.driveTempCelsius = new double[] {};
+        inputs.driveSupplyCurrentAmps = Math.abs(driveSim.getCurrentDrawAmps());
 
         inputs.angleAbsolutePositionRad = turnAbsolutePositionRad;
         inputs.angleInternalPositionRad = turnRelativePositionRad;
         inputs.angleInternalVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
         inputs.angleAppliedVolts = turnAppliedVolts;
-        inputs.angleSupplyCurrentAmps = new double[] { Math.abs(turnSim.getCurrentDrawAmps()) };
-        inputs.angleTempCelsius = new double[] {};
+        inputs.angleSupplyCurrentAmps = Math.abs(turnSim.getCurrentDrawAmps());
     }
 
     public void setDriveVoltage(double volts) {

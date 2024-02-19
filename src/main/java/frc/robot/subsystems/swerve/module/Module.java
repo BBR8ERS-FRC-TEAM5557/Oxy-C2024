@@ -87,7 +87,7 @@ public class Module {
 				() -> Util.truncate(Units.radiansToDegrees(m_inputs.angleAbsolutePositionRad), 2));
 		container.addNumber(
 				"Integrated",
-				() -> Util.truncate(Units.radiansToDegrees(m_inputs.angleInternalPositionRad), 2));
+				() -> Util.truncate(Units.radiansToDegrees(m_inputs.angleInternalPositionRad) % 360.0, 2));
 		container.addNumber("Velocity", () -> Util.truncate(m_inputs.driveVelocityMetersPerSec, 2));
 		container.addNumber("Applied Volts", () -> Util.truncate(m_inputs.driveAppliedVolts, 2));
 	}
@@ -142,8 +142,7 @@ public class Module {
 		if (!forceAngle && Math.abs(state.speedMetersPerSecond) <= (kTheoreticalMaxSpeed * 0.01)) {
 			angle = lastAngle;
 		} else {
-			// put the sent angle in range [0,2pi]
-			angle = state.angle.getRadians(); // FIX ME: does .getRadians() return [0,2pi]?
+			angle = state.angle.getRadians();
 		}
 		m_io.setAnglePosition(angle);
 		lastAngle = angle;

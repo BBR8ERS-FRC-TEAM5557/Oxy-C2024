@@ -9,15 +9,15 @@ import frc.robot.Constants.RobotMap;
 
 public class IntakeConstants {
 
-    public static double kTopGearReduction = 1.0;
-    public static double kBottomGearReduction = 1.0;
+    public static double kTopGearReduction = 24.0 / 16.0;
+    public static double kBottomGearReduction = 24.0 / 16.0;
 
     public static Configuration kTopMotorConfiguration = new Configuration();
     static {
         kTopMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kIntakeTopMotor);
         kTopMotorConfiguration.label = "Intake Top Motor";
 
-        kTopMotorConfiguration.kSmartCurrentLimit = 30.0;
+        kTopMotorConfiguration.kSmartCurrentLimit = 40.0;
         kTopMotorConfiguration.kOpenLoopRampRate = 0.25;
         kTopMotorConfiguration.kShouldInvert = true;
         kTopMotorConfiguration.kVoltageCompensation = 12.0;
@@ -29,7 +29,7 @@ public class IntakeConstants {
         kBottomMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kIntakeBottomMotor);
         kBottomMotorConfiguration.label = "Intake Bottom Motor";
 
-        kBottomMotorConfiguration.kSmartCurrentLimit = 30.0;
+        kBottomMotorConfiguration.kSmartCurrentLimit = 40.0;
         kBottomMotorConfiguration.kOpenLoopRampRate = 0.25;
         kBottomMotorConfiguration.kShouldInvert = true;
         kBottomMotorConfiguration.kVoltageCompensation = 12.0;
