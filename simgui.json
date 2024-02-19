@@ -1,15 +1,41 @@
 {
+<<<<<<< HEAD
+=======
+  "HALProvider": {
+    "PowerDistributions": {
+      "window": {
+        "visible": true
+      }
+    }
+  },
+>>>>>>> 9436ca44c8bce657042d20ed99326fc439e50013
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Shuffleboard/Driver/Field": "Field2d",
       "/SmartDashboard/AutonomousChooser": "String Chooser",
       "/SmartDashboard/SystemsCheckChooser": "String Chooser"
+<<<<<<< HEAD
+=======
+    },
+    "windows": {
+      "/FMSInfo": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/SystemsCheckChooser": {
+        "window": {
+          "visible": true
+        }
+      }
+>>>>>>> 9436ca44c8bce657042d20ed99326fc439e50013
     }
   },
   "NetworkTables": {
     "Persistent Values": {
       "open": false
+<<<<<<< HEAD
     },
     "Retained Values": {
       "open": false
@@ -18,6 +44,8 @@
       "FMSInfo": {
         "open": true
       }
+=======
+>>>>>>> 9436ca44c8bce657042d20ed99326fc439e50013
     }
   },
   "NetworkTables Info": {
