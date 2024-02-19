@@ -1,131 +1,100 @@
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.intake.IntakeIO.IntakeIOInputs;
+import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.lib.team6328.TunableNumber;
-import frc.robot.util.Util;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.team6328.LoggedTunableNumber;
+import frc.robot.subsystems.intake.IntakeIO.IntakeIOInputs;
+import lombok.RequiredArgsConstructor;
 
-public class Intake extends SubsystemBase{
+public class Intake extends SubsystemBase {
 
-    private final IntakeIO m_io;
-    private final IntakeIOInputs m_inputs = new IntakeIOInputs();
-    
-    private State currentState = State.DO_NOTHING;
+    private final IntakeIO mIO;
+    private final IntakeIOInputs mInputs = new IntakeIOInputs();
 
-    private TunableNumber velocityThreshold = new TunableNumber("Intake/Velocity Threshold", 200.0);
-    private TunableNumber currentThreshold = new TunableNumber("Intake/Current Threshold", 25.0);
+    private State mState = State.STOP;
 
-    public Intake(IntakeIO io){
+    private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Intake/ShootingVoltage", 8.0);
+    private static final LoggedTunableNumber mIdleVoltage = new LoggedTunableNumber("Intake/IdleVoltage", 1.0);
+    private static final LoggedTunableNumber mEjectingVoltage = new LoggedTunableNumber("Intake/EjectingVoltage", -8.0);
 
+    private static final LoggedTunableNumber mVelocityThreshold = new LoggedTunableNumber("Intake/VelocityThreshold", 200.0);
+    private static final LoggedTunableNumber mCurrentThreshold = new LoggedTunableNumber("Intake/CurrentThreshold", 25.0);
+
+    public Intake(IntakeIO io) {
         System.out.println("[Init] Creating Intake");
-        this.m_io = io;
-
-        ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Intake");
-             shuffleboardTab.addNumber("Velocity", () -> Util.truncate(getMotorRPM(), 2))
-                .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addNumber("Current", () -> Util.truncate(getMotorCurrent(), 2))
-                .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addNumber("Demand", () -> Util.truncate(currentState.getMotorVoltage(), 2))
-                .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addNumber("Output", () -> Util.truncate(getMotorOutput(), 2))
-                .withWidget(BuiltInWidgets.kGraph);
-        shuffleboardTab.addBoolean("Is Stalled?", this::isStalled);
-
-        shuffleboardTab.addString("Control State", () -> currentState.name());
-        shuffleboardTab.addString("Command",
-                () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "NONE");
-
+        this.mIO = io;
     }
 
     @Override
-    public void periodic(){
-        m_io.updateInputs(m_inputs);
-        m_io.setIntakeVoltage(this.currentState.getMotorVoltage());
+    public void periodic() {
+        mIO.updateInputs(mInputs);
+        Logger.processInputs("Intake", mInputs);
 
-        Logger.processInputs("Intake", m_inputs);
-        Logger.recordOutput("CurrentState", currentState.toString());
+        if (DriverStation.isDisabled()) {
+            setState(State.STOP);
+        }
+
+        mIO.setIntakeVoltage(this.mState.getTopMotorVoltage());
+
+        Logger.recordOutput("state", mState);
         Logger.recordOutput("isStalled", isStalled());
-
     }
 
-    public void setIntakeState(State desState) {
-        this.currentState = desState;
+    private void setState(State state) {
+        this.mState = state;
     }
 
     public double getMotorCurrent() {
-        return m_inputs.IntakeCurrentAmps[0];
+        return mInputs.intakeTopCurrentAmps;
     }
 
     public double getMotorRPM() {
-        return m_inputs.IntakeVelocityRPM;
+        return mInputs.intakeTopVelocityRPM;
     }
 
     public double getMotorOutput() {
-        return m_inputs.IntakeAppliedVolts;
+        return mInputs.intakeTopAppliedVolts;
     }
 
     public boolean isStalled() {
-        return Math.abs(m_inputs.IntakeVelocityRPM) <= velocityThreshold.get()
-                && m_inputs.IntakeCurrentAmps[0] >= currentThreshold.get();
+        return Math.abs(mInputs.intakeTopVelocityRPM) <= mVelocityThreshold.get()
+                && mInputs.intakeTopCurrentAmps >= mCurrentThreshold.get();
     }
 
-
+    @RequiredArgsConstructor
     public enum State {
-        
+        INTAKE(mIntakeVoltage, mIntakeVoltage),
+        IDLE(mIdleVoltage, mIdleVoltage),
+        STOP(() -> 0.0, () -> 0.0),
+        EJECT(mEjectingVoltage, mEjectingVoltage);
 
-        DO_NOTHING(0.0), IDLE(1.0), 
+        private final DoubleSupplier topMotorVoltage;
+        private final DoubleSupplier bottomMotorVoltage;
 
-        INTAKING_NOTE(10.0), EJECT_NOTE(-7.0), 
-        
-        HOLD_NOTE(2.0);
-        
-
-        private double motorVoltage;
-
-        private State(double motorVoltage) {
-            this.motorVoltage = motorVoltage;
+        public double getTopMotorVoltage() {
+            return topMotorVoltage.getAsDouble();
         }
 
-        public double getMotorVoltage() {
-            return motorVoltage;
+        public double getBottomMotorVoltage() {
+            return bottomMotorVoltage.getAsDouble();
         }
     }
 
-    public Command intakeNoteCommand() {
-        return Commands
-                .sequence(
-                    setIntakeStateCommand(State.INTAKING_NOTE), 
-                    new WaitCommand(0.5),
-                    waitForNote())
-                .finallyDo(interrupted -> setIntakeState(State.HOLD_NOTE));
+    public Command intake() {
+        return startEnd(() -> setState(State.INTAKE), () -> setState(State.IDLE)).withName("IntakePickup");
     }
 
-    public Command idleCommand() {
-        return setIntakeStateCommand(State.IDLE);
+    public Command eject() {
+        return startEnd(() -> setState(State.EJECT), () -> setState(State.IDLE)).withName("IntakeEject");
     }
 
-    public Command scoreCone() {
-        return Commands.sequence(setIntakeStateCommand(State.EJECT_NOTE), new WaitCommand(0.5),
-                setIntakeStateCommand(State.IDLE));
-    }
-
-    public Command setIntakeStateCommand(State state) {
-        return new InstantCommand(() -> setIntakeState(state));
-    }
-
-    public Command waitForNote(){
-        return new WaitUntilCommand(this::isStalled);
-
+    public Command idle() {
+        return runOnce(() -> setState(State.IDLE));
     }
 
 }

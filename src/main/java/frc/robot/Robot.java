@@ -45,7 +45,7 @@ public class Robot extends LoggedRobot {
     
     if (Constants.kIsReal) {
       String folder = "";
-      Logger.addDataReceiver(new WPILOGWriter(folder));
+      //Logger.addDataReceiver(new WPILOGWriter(folder));
       Logger.addDataReceiver(new NT4Publisher());
       LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
     } else {

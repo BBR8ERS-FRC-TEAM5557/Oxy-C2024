@@ -1,4 +1,4 @@
-package frc.robot.util;
+package frc.robot.subsystems.swerve.util;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -23,23 +23,23 @@ public class DriveMotionPlanner extends VirtualSubsystem {
             kRotationkP, kRotationkI, kRotationkD, new Constraints(kSnapMaxOmega, kSnapMaxAlpha));
 
     private static final TunableNumber translationkP =
-            new TunableNumber("Swerve/TranslationKP", kTranslationkP);
+            new TunableNumber("Swerve/Motion/TranslationKP", kTranslationkP);
     private static final TunableNumber translationkI =
-            new TunableNumber("Swerve/TranslationKI", kTranslationkI);
+            new TunableNumber("Swerve/Motion/TranslationKI", kTranslationkI);
     private static final TunableNumber translationkD =
-            new TunableNumber("Swerve/TranslationKD", kTranslationkD);
+            new TunableNumber("Swerve/Motion/TranslationKD", kTranslationkD);
 
     private static final TunableNumber rotationkP =
-            new TunableNumber("Swerve/RotationKP", kRotationkP);
+            new TunableNumber("Swerve/Motion/RotationKP", kRotationkP);
     private static final TunableNumber rotationkI =
-            new TunableNumber("Swerve/RotationKI", kRotationkI);
+            new TunableNumber("Swerve/Motion/RotationKI", kRotationkI);
     private static final TunableNumber rotationkD =
-            new TunableNumber("Swerve/RotationKD", kRotationkD);
+            new TunableNumber("Swerve/Motion/RotationKD", kRotationkD);
 
     private static final TunableNumber snapMaxOmega =
-            new TunableNumber("Swerve/SnapMaxOmega", kSnapMaxOmega);
+            new TunableNumber("Swerve/Motion/SnapMaxOmega", kSnapMaxOmega);
     private static final TunableNumber snapMaxAlpha =
-            new TunableNumber("Swerve/SnapMaxAlpha", kSnapMaxAlpha);
+            new TunableNumber("Swerve/Motion/SnapMaxAlpha", kSnapMaxAlpha);
 
     public static void checkForUpdates() {
         if (translationkP.hasChanged(translationkP.hashCode())

@@ -12,7 +12,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto.AutoRoutineManager;
 import frc.robot.auto.SystemsCheckManager;
+import frc.robot.subsystems.flywheels.Flywheels;
+import frc.robot.subsystems.flywheels.FlywheelsIO;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.commands.TeleopDrive;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
@@ -20,7 +24,7 @@ import frc.robot.subsystems.swerve.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.swerve.module.ModuleIO;
 import frc.robot.subsystems.swerve.module.ModuleIOKrakenSparkMax;
 import frc.robot.subsystems.swerve.module.ModuleIOSim;
-import frc.robot.util.DriveMotionPlanner;
+import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.util.RobotStateEstimator;
 import static frc.robot.Constants.*;
 import static frc.robot.Constants.RobotMap.*;
@@ -29,8 +33,10 @@ public class RobotContainer {
 
     public static final XboxController m_driver = new XboxController(0);
     public static final XboxController m_operator = new XboxController(1);
+
     public static Swerve m_swerve;
     public static Intake m_intake;
+    public static Flywheels m_flywheels;
 
     public static RobotStateEstimator m_stateEstimator;
 
@@ -44,6 +50,8 @@ public class RobotContainer {
                     new ModuleIOKrakenSparkMax(1, kFRDriveMotor, kFRTurnMotor, kFROffset),
                     new ModuleIOKrakenSparkMax(2, kBLDriveMotor, kBLTurnMotor, kBLOffset),
                     new ModuleIOKrakenSparkMax(3, kBRDriveMotor, kBRTurnMotor, kBROffset));
+            m_intake = new Intake(new IntakeIOSparkMax());
+            m_flywheels = new Flywheels(new FlywheelsIO() {});
         } else {
             m_swerve = new Swerve(new GyroIO() {
             }, new ModuleIOSim(), new ModuleIOSim(),
@@ -59,6 +67,13 @@ public class RobotContainer {
                     new ModuleIO() {
                     }, new ModuleIO() {
                     });
+        }
+        if (m_intake == null) {
+            m_intake = new Intake(new IntakeIO() {});
+        }
+
+        if (m_flywheels == null) {
+            m_flywheels = new Flywheels(new FlywheelsIO() {});
         }
 
         m_autoManager = new AutoRoutineManager(m_swerve);
@@ -80,6 +95,9 @@ public class RobotContainer {
         // Reset swerve heading
         new Trigger(m_driver::getStartButton)
                 .onTrue(new InstantCommand(() -> m_stateEstimator.setPose(new Pose2d())));
+
+        new Trigger(m_operator::getRightBumper)
+                .whileTrue(m_intake.intake());
 
     }
 

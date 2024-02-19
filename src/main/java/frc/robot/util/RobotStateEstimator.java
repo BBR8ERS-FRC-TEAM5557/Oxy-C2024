@@ -1,25 +1,23 @@
 package frc.robot.util;
 
-import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.lib.team6328.VirtualSubsystem;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.swerve.SwerveConstants;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
@@ -30,6 +28,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
   private final Swerve m_swerve = RobotContainer.m_swerve;
   private final Field2d m_field2d = new Field2d();
   private final Pose2d[] modulePoses = new Pose2d[4];
+  public static boolean isRedAlliance = false;
 
   public static RobotStateEstimator getInstance() {
     if (m_instance == null) {
@@ -59,6 +58,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
   @Override
   public void periodic() {
+    isRedAlliance = DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red;
     clampPoseToField();
     updateFieldWidget();
 
@@ -122,20 +122,8 @@ public class RobotStateEstimator extends VirtualSubsystem {
   }
 
   private void updateFieldWidget() {
-    SwerveModuleState[] moduleStates = m_swerve.getSwerveSetpoint().moduleStates;
     Pose2d robotPose = getPose();
-
-    for (int i = 0; i < modulePoses.length; i++) {
-      Translation2d updatedPosition =
-          SwerveConstants.kSwerveModuleLocations[i]
-              .rotateBy(robotPose.getRotation())
-              .plus(robotPose.getTranslation());
-      Rotation2d updatedRotation = moduleStates[i].angle.plus(robotPose.getRotation());
-      modulePoses[i] = new Pose2d(updatedPosition, updatedRotation);
-    }
-
     m_field2d.setRobotPose(robotPose);
-    addFieldPose("Swerve Modules", modulePoses);
   }
 
   public void addFieldPose(String name, Pose2d pose) {

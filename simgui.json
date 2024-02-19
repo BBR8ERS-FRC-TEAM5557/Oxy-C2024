@@ -1,0 +1,26 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Driver/Field": "Field2d",
+      "/SmartDashboard/AutonomousChooser": "String Chooser",
+      "/SmartDashboard/SystemsCheckChooser": "String Chooser"
+    }
+  },
+  "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
+    "Retained Values": {
+      "open": false
+    },
+    "transitory": {
+      "FMSInfo": {
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}

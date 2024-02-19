@@ -17,7 +17,6 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 import frc.lib.team5557.factory.TalonFactory;
 import static frc.robot.subsystems.swerve.SwerveConstants.*;
@@ -49,7 +48,7 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     private double resetIteration;
 
     public ModuleIOKrakenSparkMax(int moduleNumber, int driveMotorID, int angleMotorID, Rotation2d angleOffset) {
-        System.out.println("[Init] Creating ModuleIOSparkMax" + moduleNumber);
+        System.out.println("[Init] Creating ModuleIOKrakenSparkMax" + moduleNumber);
 
         // ANGLE MOTOR
         m_angleMotor = SparkMaxFactory.createNEO(angleMotorID, kAngleMotorConfiguration);
@@ -57,6 +56,7 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
         m_angleMotorEncoder = m_angleMotor.getEncoder();
         m_absoluteEncoder = m_angleMotor.getAbsoluteEncoder();
 
+        SparkMaxFactory.configFramesLeaderOrFollower(m_angleMotor);
         m_absoluteEncoder.setInverted(kAbsoluteEncoderInverted);
         m_absoluteEncoder.setPositionConversionFactor(1.0);
         m_absoluteEncoder.setZeroOffset(angleOffset.getRotations());
@@ -64,9 +64,9 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
         m_angleMotorPID.setPositionPIDWrappingMinInput(0.0);
         m_angleMotorPID.setPositionPIDWrappingMaxInput(kAngleGearReduction);
         m_angleMotorPID.setPositionPIDWrappingEnabled(true);
-        BurnManager.burnFlash(m_angleMotor);
-        int resetIteration = 0;
-        while (resetIteration < 5)
+        //BurnManager.burnFlash(m_angleMotor);
+        int resetIteration = 4;
+        while (resetIteration < 0)
             resetToAbsolute();
 
         // DRIVE MOTOR
@@ -77,14 +77,14 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
         driveSupplyCurrent = m_driveMotor.getSupplyCurrent();
         driveTorqueCurrent = m_driveMotor.getTorqueCurrent();
         BaseStatusSignal.setUpdateFrequencyForAll(
-                100.0,
+                50.0,
                 driveVelocity,
                 driveAppliedVolts,
                 driveSupplyCurrent,
                 driveTorqueCurrent);
 
         drivePosition = m_driveMotor.getPosition();
-        BaseStatusSignal.setUpdateFrequencyForAll(250.0, drivePosition);
+        BaseStatusSignal.setUpdateFrequencyForAll(50.0, drivePosition);
     }
 
     /** Updates the set of loggable inputs. */

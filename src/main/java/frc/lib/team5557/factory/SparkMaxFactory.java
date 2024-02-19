@@ -12,8 +12,8 @@ import frc.lib.team5557.util.CANDeviceId;
 import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
 
 public class SparkMaxFactory {
-  public static final int configCANTimeout = 500;
-  public static final int configCount = 4;
+  public static final int configCANTimeout = 400;
+  public static final int configCount = 1;
 
   private static final CANDeviceFinder can = new CANDeviceFinder();
 
@@ -48,20 +48,12 @@ public class SparkMaxFactory {
     public double kLowerLimit = Double.NaN;
   }
 
-<<<<<<< Updated upstream
-  public static CANSparkMax createMotor(int id, SparkMaxConfiguration config) {
-=======
   public static CANSparkMax createNEO(int id, Configuration config) {
->>>>>>> Stashed changes
     config.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, id);
-    return createMotor(config);
+    return createNEO(config);
   }
 
-<<<<<<< Updated upstream
-  public static CANSparkMax createMotor(SparkMaxConfiguration config) {
-=======
   public static CANSparkMax createNEO(Configuration config) {
->>>>>>> Stashed changes
     can.isDevicePresent(config.canID.getDeviceType(), config.canID.getDeviceNumber(), config.label);
 
     CANSparkMax sparkMax = new CANSparkMax(config.canID.getDeviceNumber(), MotorType.kBrushless);
