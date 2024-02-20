@@ -52,6 +52,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class Swerve extends SubsystemBase {
+
 	private final Module[] mModules = new Module[4]; // FL, FR, BL, BR
 
 	private final GyroIO mGyroIO;
