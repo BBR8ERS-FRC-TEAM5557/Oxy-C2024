@@ -1,22 +1,43 @@
 package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.ControlType;
 
 import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 
-public class IntakeIOSparkMax implements IntakeIO{
+import static frc.robot.subsystems.intake.IntakeConstants.*;
 
-        private CANSparkMax motor;
+public class IntakeIOSparkMax implements IntakeIO {
 
-        public IntakeIOSparkMax(){
+    private CANSparkMax mTopMotor;
+    private CANSparkMax mBottomMotor;
 
-            System.out.println("[Init] Creating IntakeIOSparkMax");
-            //motor = SparkMaxFactory.createNEO(kIntakeMotorConfiguration);
-            //BurnManager.burnFlash(motor);
-            
-        } 
+    public IntakeIOSparkMax() {
+        System.out.println("[Init] Creating IntakeIOSparkMax");
+        mTopMotor = SparkMaxFactory.createNEO(kTopMotorConfiguration);
+        mBottomMotor = SparkMaxFactory.createNEO(kBottomMotorConfiguration);
+        BurnManager.burnFlash(mTopMotor);
+        BurnManager.burnFlash(mBottomMotor);
+    }
 
-        //public void updateInputs
+    public void updateInputs(IntakeIOInputs inputs) {
+        inputs.intakeTopPositionRotations = mTopMotor.getEncoder().getPosition() / kTopGearReduction;
+        inputs.intakeTopVelocityRPM = mTopMotor.getEncoder().getVelocity() / kTopGearReduction;
+        inputs.intakeTopAppliedVolts = mTopMotor.getAppliedOutput() * mTopMotor.getBusVoltage();
+        inputs.intakeTopCurrentAmps = mTopMotor.getOutputCurrent();
+        inputs.intakeTopTempCelcius = mTopMotor.getMotorTemperature();
 
+        inputs.intakeBottomPositionRotations = mBottomMotor.getEncoder().getPosition() / kBottomGearReduction;
+        inputs.intakeBottomVelocityRPM = mBottomMotor.getEncoder().getVelocity() / kBottomGearReduction;
+        inputs.intakeBottomAppliedVolts = mBottomMotor.getAppliedOutput() * mBottomMotor.getBusVoltage();
+        inputs.intakeBottomCurrentAmps = mBottomMotor.getOutputCurrent();
+        inputs.intakeBottomTempCelcius = mBottomMotor.getMotorTemperature();
+    }
+
+    @Override
+    public void setIntakeVoltage(double value) {
+        mTopMotor.setVoltage(value);
+        mBottomMotor.setVoltage(value);
+    }
 }

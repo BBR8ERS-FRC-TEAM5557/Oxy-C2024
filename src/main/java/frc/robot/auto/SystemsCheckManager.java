@@ -26,7 +26,7 @@ public class SystemsCheckManager {
 
     public SystemsCheckManager(Swerve swerve) {
         System.out.println("[Init] Creating System Check Manager");
-        m_chooser = new LoggedDashboardChooser<Command>("SystemsCheckChooser");
+        m_chooser = new LoggedDashboardChooser<Command>("Driver/SystemsCheckChooser");
 
         this.swerve = swerve;
 
