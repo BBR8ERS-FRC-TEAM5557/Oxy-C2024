@@ -14,15 +14,15 @@ public class FlywheelsConstants {
     public static final double kMaxRPM = kKrakenFreeSpeed / kGearReduction;
 
     /* PID & FF Values */
-    public static final double kFlywheelP = 0.0;
+    public static final double kFlywheelP = 0.00001;
     public static final double kFlywheelI = 0.0;
     public static final double kFlywheelD = 0.0;
 
-    public static final double kFlywheelS = 0.0;
-    public static final double kFlywheelV = 12.0 / kMaxRPM; //theoretical
+    public static final double kFlywheelS = 0.34524;
+    public static final double kFlywheelV = 0.00247/2;//12.0 / kMaxRPM; //theoretical
     public static final double kFlywheelA = 0.0;
 
-    public static final double kAllowableError = 200.0;
+    public static final double kPadding = 200.0;
 
     /* Left Motor Configuration */
     public static TalonFactory.PIDConfiguration kPIDConfiguration = new TalonFactory.PIDConfiguration();

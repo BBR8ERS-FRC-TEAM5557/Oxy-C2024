@@ -17,14 +17,18 @@ public class SwerveConstants {
 	public static final String kSubsystemName = "Swerve";
 
 	// Physical Constants
+	public static final double kChassisLength = Units.inchesToMeters(28.765);
+	public static final double kChassisWidth = Units.inchesToMeters(26.0);
+	public static final double kDrivetrainLength = Units.inchesToMeters(23.0);
+
+	public static final double kTrackWidth = kChassisWidth - Units.inchesToMeters(2 * 2.625);
+	public static final double kWheelBase = kDrivetrainLength - Units.inchesToMeters(2 * 2.625);
+	public static final double kChassisToBullBar = kChassisLength - kDrivetrainLength;
+	public static final double kTrueChassisCenterOffset = kChassisToBullBar / 2;
+
 	public static final double kAngleGearReduction = 150.0 / 7.0;
 	public static final double kDriveGearReduction = (50.0 / 16.0) * (16.0 / 28.0) * (45.0 / 15.0);
 	public static final double kWheelCircumference = Units.inchesToMeters(4.0) * Math.PI;
-
-	public static final double kTrackWidth = Units.inchesToMeters(26.0 - 2 * 2.625);
-	public static final double kWheelBase = Units.inchesToMeters(23.0 - 2 * 2.625);
-	public static final double kChassisToBullBar = Units.inchesToMeters(5.764957);
-	public static final double kTrueChassisCenterOffset = kChassisToBullBar / 2;
 
 	public static final double kKrakenFreeSpeed = 6000;
 	public static final double kKrakenFreeSpeedFOC = 5800;
@@ -43,7 +47,7 @@ public class SwerveConstants {
 	// Angle Encoder Constants
 	public static final boolean kAbsoluteEncoderInverted = true;
 	public static final int kAbsoluteResetIterations = 200;
-	public static final double kAbsoluteResetMaxOmega = 4.0; // must rotate at less than a degree per second
+	public static final double kAbsoluteResetMaxOmega = Units.degreesToRadians(1.0); // must rotate at less than a degree per second
 
 	/* ANGLE PID */
 	public static final double kAnglekP = 0.3; // error(rotations) * kP = volts -> kp = 0.6 = 12.0 volts / 20 rotations
@@ -79,7 +83,7 @@ public class SwerveConstants {
 	// KINEMATIC LIMITS
 	public static final KinematicLimits kUncappedLimits = new KinematicLimits(kTheoreticalMaxSpeed, Double.MAX_VALUE,
 			kTheoreticalMaxOmega, Double.MAX_VALUE);
-	public static final KinematicLimits kDrivingLimits = new KinematicLimits(kTheoreticalMaxSpeed, Double.MAX_VALUE,
+	public static final KinematicLimits kDrivingLimits = new KinematicLimits(kTheoreticalMaxSpeed, 3.0,
 			kTrueMaxOmega * 0.5, Double.MAX_VALUE);
 	public static final KinematicLimits kAutoLimits = new KinematicLimits(kTrueMaxSpeed, Double.MAX_VALUE,
 			kTrueMaxOmega,

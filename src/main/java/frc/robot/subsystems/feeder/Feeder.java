@@ -38,7 +38,7 @@ public class Feeder extends SubsystemBase {
     @Override
     public void periodic() {
         mIO.updateInputs(mInputs);
-        Logger.processInputs("Intake", mInputs);
+        Logger.processInputs("Feeder", mInputs);
 
         if (DriverStation.isDisabled()) {
             setState(State.IDLE);

@@ -23,7 +23,17 @@ public interface FlywheelsIO {
 
         @Override
         public void toLog(LogTable table) {
-            // TODO Auto-generated method stub
+            table.put("leftPositionRotations", leftPositionRotations);
+            table.put("leftVelocityRpm", leftVelocityRpm);
+            table.put("leftAppliedVolts", leftAppliedVolts);
+            table.put("leftSupplyCurrentAmps", leftSupplyCurrentAmps);
+            table.put("leftTorqueCurrentAmps", leftTorqueCurrentAmps);
+
+            table.put("rightPositionRotations", rightPositionRotations);
+            table.put("rightVelocityRpm", rightVelocityRpm);
+            table.put("rightAppliedVolts", rightAppliedVolts);
+            table.put("rightSupplyCurrentAmps", rightSupplyCurrentAmps);
+            table.put("rightTorqueCurrentAmps", rightTorqueCurrentAmps);
 
         }
 

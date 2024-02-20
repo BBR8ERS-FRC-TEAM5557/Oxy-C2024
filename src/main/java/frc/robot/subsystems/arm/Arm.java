@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Robot;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
+import frc.robot.util.RobotStateEstimator;
 import frc.robot.util.Util;
 import lombok.RequiredArgsConstructor;
 
@@ -54,7 +55,10 @@ public class Arm extends SubsystemBase {
             245.0);
     private static final LoggedTunableNumber fenderShotDegrees = new LoggedTunableNumber(
             "Superstructure/ArmFenderShotDegrees",
-            157.0);
+            160.0);
+    private static final LoggedTunableNumber customShotDegrees = new LoggedTunableNumber(
+            "Superstructure/ArmCustomShotDegrees",
+            160.0);
     private static final LoggedTunableNumber climbPrepDegrees = new LoggedTunableNumber(
             "Superstructure/ArmClimbPrepDegrees",
             270.0);
@@ -105,12 +109,12 @@ public class Arm extends SubsystemBase {
             double goal = MathUtil.clamp(mState.getDegrees(), kMinAngle, kMaxAngle);
             mSetpointState = mMotionProfile.calculate(
                     Robot.defaultPeriodSecs,
-                    mSetpointState,//new TrapezoidProfile.State(mInputs.armAbsolutePositionDeg, mInputs.armAbsoluteVelocityDegPerSec),
+                    mSetpointState, // new TrapezoidProfile.State(mInputs.armAbsolutePositionDeg,
+                                    // mInputs.armAbsoluteVelocityDegPerSec),
                     new TrapezoidProfile.State(goal, 0.0));
 
             double ff = mFeedforward.calculate(mSetpointState.position, mSetpointState.velocity);
             mIO.setPosition(mSetpointState.position, ff);
-            //mIO.setPosition(mState.getDegrees(), ff);
         }
 
         if (DriverStation.isDisabled()) {
@@ -128,10 +132,10 @@ public class Arm extends SubsystemBase {
         FLOOR_INTAKE(() -> intakeDegrees.get()),
         AMP(() -> ampDegrees.get()),
         FENDER_SHOT(() -> fenderShotDegrees.get()),
-        // AIM(() ->
-        // RobotStateEstimator.getInstance().getAimingParameters().armAngle().getRadians()),
+        AIM(() -> RobotStateEstimator.getInstance().getAimingParameters().armAngle().getDegrees()),
         CLIMB_PREP(() -> climbPrepDegrees.get()),
         CLIMB_RETRACT(() -> climbRetractDegrees.get()),
+        CUSTOM(() -> customShotDegrees.get()),
         CHARACTERIZING(() -> 0.0);
 
         private final DoubleSupplier armSetpointSupplier;
@@ -157,8 +161,12 @@ public class Arm extends SubsystemBase {
         return startEnd(() -> setState(State.FENDER_SHOT), () -> setState(State.STOW));
     }
 
+    public Command aimCustom() {
+        return startEnd(() -> setState(State.CUSTOM), () -> setState(State.STOW));
+    }
+
     // public Command aim() {
-    //     return startEnd(() -> setState(State.AIM), () -> setState(State.STOW));
+    // return startEnd(() -> setState(State.AIM), () -> setState(State.STOW));
     // }
 
     public Command prepClimb() {

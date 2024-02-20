@@ -1,18 +1,34 @@
 package frc.robot.subsystems.swerve;
 
-import static frc.robot.subsystems.swerve.SwerveConstants.*;
+import static frc.robot.subsystems.swerve.SwerveConstants.kAutoLimits;
+import static frc.robot.subsystems.swerve.SwerveConstants.kDrivingLimits;
+import static frc.robot.subsystems.swerve.SwerveConstants.kModuleLimits;
+import static frc.robot.subsystems.swerve.SwerveConstants.kSubsystemName;
+import static frc.robot.subsystems.swerve.SwerveConstants.kSwerveModuleLocations;
+import static frc.robot.subsystems.swerve.SwerveConstants.kXOutSwerveModuleStates;
+
+import java.util.Arrays;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -24,18 +40,16 @@ import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIO.GyroIOInputs;
 import frc.robot.subsystems.swerve.module.Module;
 import frc.robot.subsystems.swerve.module.ModuleIO;
+import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.subsystems.swerve.util.KinematicLimits;
 import frc.robot.subsystems.swerve.util.SwerveSetpoint;
 import frc.robot.subsystems.swerve.util.SwerveSetpointGenerator;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.GeometryUtil;
 import frc.robot.util.RobotStateEstimator;
 import frc.robot.util.Util;
-import org.littletonrobotics.junction.Logger;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
+import lombok.Getter;
+import lombok.Setter;
 
 public class Swerve extends SubsystemBase {
 	private final Module[] mModules = new Module[4]; // FL, FR, BL, BR
@@ -44,11 +58,13 @@ public class Swerve extends SubsystemBase {
 	private final GyroIOInputs mGyroInputs = new GyroIOInputs();
 
 	private ControlMode mControlMode = ControlMode.VELOCITY;
-	private KinematicLimits mKinematicLimits = kUncappedLimits;
+	@Setter
+	@Getter
+	private KinematicLimits kinematicLimits = kDrivingLimits;
 	private SwerveModuleSystemCheckRequest m_systemCheckState = SwerveModuleSystemCheckRequest.DO_NOTHING;
 
 	private ChassisSpeeds mDesiredSpeeds = new ChassisSpeeds();
-	private Twist2d mFieldVelocity = new Twist2d();
+	private ChassisSpeeds mRobotRelativeVelocity = new ChassisSpeeds();
 
 	public static final SwerveDriveKinematics mKinematics = new SwerveDriveKinematics(kSwerveModuleLocations);
 	private SwerveSetpointGenerator mSetpointGenerator = new SwerveSetpointGenerator(mKinematics,
@@ -86,69 +102,6 @@ public class Swerve extends SubsystemBase {
 		mModules[1] = new Module(frModuleIO, 1);
 		mModules[2] = new Module(blModuleIO, 2);
 		mModules[3] = new Module(brModuleIO, 3);
-    SmartDashboard.putData("Swerve Viewable", new Sendable() {
-      @Override
-      public void initSendable(SendableBuilder builder) {
-        builder.setSmartDashboardType("SwerveDrive");
-        builder.addDoubleProperty("Front Left Angle", () -> m_modules[0].getState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Left Velocity", () -> m_modules[0].getState().speedMetersPerSecond, null);
-        builder.addDoubleProperty("Front Right Angle", () -> m_modules[1].getState().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Right Velocity", () -> m_modules[1].getState().speedMetersPerSecond, null);
-        builder.addDoubleProperty("Back Left Angle", () -> m_modules[2].getState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Left Velocity", () -> m_modules[2].getState().speedMetersPerSecond, null);
-        builder.addDoubleProperty("Back Right Angle", () -> m_modules[3].getState().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Right Velocity", () -> m_modules[3].getState().speedMetersPerSecond, null);
-        builder.addDoubleProperty("Robot Angle",
-            () -> (RobotStateEstimator.isRedAlliance)
-                ? getGyroYaw().rotateBy(Rotation2d.fromDegrees(180.0)).getRadians()
-                : getGyroYaw().getRadians(),
-            null);
-      }
-    });
-
-/**
-    AutoBuilder.configureHolonomic(
-            RobotStateEstimator.getInstance().getPose(), 
-            this::resetPose(), 
-            this::getRobotRelativeSpeeds, 
-            this::drive, 
-            new HolonomicPathFollowerConfig( 
-                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
-                    4.5, // Max module speed, in m/s
-                    0.4, // Drive base radius in meters. Distance from robot center to furthest module.
-                    new ReplanningConfig() // Default path replanning config. See the API for the options here
-            ),
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored for the red alliance
-              // This will flip the path being followed to the red side of the field.
-
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Red;
-              }
-              return false;
-            },
-            this 
-    ); */
-  }
-
-		ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Swerve");
-		shuffleboardTab
-				.addNumber("Heading", () -> Util.truncate(getGyroYaw().getDegrees(), 2))
-				.withWidget(BuiltInWidgets.kGyro);
-		shuffleboardTab
-				.addNumber(
-						"Velocity",
-						() -> Util.truncate(Math.hypot(getFieldVelocity().dx, getFieldVelocity().dy), 2))
-				.withWidget(BuiltInWidgets.kGraph);
-
-		shuffleboardTab
-				.addNumber("Velocity Kinematic Limit", () -> getKinematicLimit().maxLinearVelocity())
-				.withWidget(BuiltInWidgets.kNumberBar);
-		shuffleboardTab.addString("Control Mode", () -> getControlMode().name());
-		shuffleboardTab.addString(
-				"Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "NONE");
 
 		SmartDashboard.putData("Swerve Viewable", new Sendable() {
 			@Override
@@ -167,12 +120,40 @@ public class Swerve extends SubsystemBase {
 				builder.addDoubleProperty("Back Right Velocity", () -> mModules[3].getState().speedMetersPerSecond,
 						null);
 				builder.addDoubleProperty("Robot Angle",
-						() -> (AllianceFlipUtil.shouldFlip())
+						() -> AllianceFlipUtil.shouldFlip()
 								? getGyroYaw().rotateBy(Rotation2d.fromDegrees(180.0)).getRadians()
 								: getGyroYaw().getRadians(),
 						null);
 			}
 		});
+
+		ShuffleboardTab shuffleboardTab = Shuffleboard
+				.getTab("Swerve");
+		shuffleboardTab.addNumber("Heading", () -> Util.truncate(getGyroYaw().getDegrees(), 2))
+				.withWidget(BuiltInWidgets.kGyro);
+		shuffleboardTab
+				.addNumber(
+						"Velocity",
+						() -> Util.truncate(Math.hypot(getSpeeds().vxMetersPerSecond, getSpeeds().vyMetersPerSecond),
+								2))
+				.withWidget(BuiltInWidgets.kGraph);
+
+		shuffleboardTab
+				.addNumber("Velocity Kinematic Limit", () -> getKinematicLimits().maxLinearVelocity())
+				.withWidget(BuiltInWidgets.kNumberBar);
+		shuffleboardTab.addString("Control Mode", () -> getControlMode().name());
+		shuffleboardTab.addString(
+				"Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "NONE");
+
+		AutoBuilder.configureHolonomic(
+				RobotStateEstimator.getInstance()::getPose, // Robot pose supplier
+				RobotStateEstimator.getInstance()::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
+				() -> mRobotRelativeVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+				this::drivePath, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+				DriveMotionPlanner.config,
+				AllianceFlipUtil::shouldFlip, // should mirror path
+				this // Reference to this subsystem to set requirements
+		);
 	}
 
 	@Override
@@ -241,7 +222,7 @@ public class Swerve extends SubsystemBase {
 					mDesiredSpeeds.omegaRadiansPerSecond);
 
 			mSwerveSetpoint = mSetpointGenerator.generateSetpoint(
-					kModuleLimits, mKinematicLimits, mSwerveSetpoint, mDesiredSpeeds, Robot.defaultPeriodSecs);
+					kModuleLimits, kinematicLimits, mSwerveSetpoint, mDesiredSpeeds, Robot.defaultPeriodSecs);
 
 			// m_swerveSetpoint.moduleStates =
 			// m_kinematics.toSwerveModuleStates(adjustedSpeeds);
@@ -265,42 +246,30 @@ public class Swerve extends SubsystemBase {
 		}
 
 		// Log measured states
-		SwerveModuleState[] measuredStates = new SwerveModuleState[4];
-		for (int i = 0; i < 4; i++) {
-			measuredStates[i] = mModules[i].getState();
-		}
+		SwerveModuleState[] measuredStates = getModuleStates();
 
 		Logger.recordOutput(kSubsystemName + "/ModuleStates/Measured", measuredStates);
 		// Get measured positions
-		SwerveModulePosition[] measuredPositions = new SwerveModulePosition[4];
+		SwerveModulePosition[] measured = new SwerveModulePosition[4];
 		for (int i = 0; i < 4; i++) {
-			measuredPositions[i] = mModules[i].getPosition();
+			measured[i] = mModules[i].getPosition();
 		}
+		SwerveDriveWheelPositions measuredPositions = new SwerveDriveWheelPositions(measured);
 
 		// Update Pose Estimator
-		if (mGyroInputs.connected) {
-			RobotStateEstimator.getInstance().addDriveData(getGyroYaw(), measuredPositions);
-		} else {
-			RobotStateEstimator.getInstance().addDriveData(measuredPositions);
-		}
+		RobotStateEstimator.getInstance().addOdometryObservation(new RobotStateEstimator.OdometryObservation(
+				measuredPositions, mGyroInputs.connected ? getGyroYaw() : null, Timer.getFPGATimestamp()));
 
-		// Update field velocity
-		ChassisSpeeds chassisSpeeds = mKinematics.toChassisSpeeds(measuredStates);
-		Translation2d linearFieldVelocity = new Translation2d(chassisSpeeds.vxMetersPerSecond,
-				chassisSpeeds.vyMetersPerSecond)
-				.rotateBy(getGyroYaw());
-		mFieldVelocity = new Twist2d(
-				linearFieldVelocity.getX(),
-				linearFieldVelocity.getY(),
-				mGyroInputs.connected
-						? mGyroInputs.yawVelocityRadPerSec
-						: chassisSpeeds.omegaRadiansPerSecond);
+		// Update current velocities use gyro when possible
+		mRobotRelativeVelocity = getSpeeds();
+		mRobotRelativeVelocity.omegaRadiansPerSecond = mGyroInputs.connected
+				? mGyroInputs.yawVelocityRadPerSec
+				: mRobotRelativeVelocity.omegaRadiansPerSecond;
+		RobotStateEstimator.getInstance().addVelocityData(GeometryUtil.toTwist2d(mRobotRelativeVelocity));
 
-		Logger.recordOutput(kSubsystemName + "/ChassisSpeeds/VX", mFieldVelocity.dx);
-		Logger.recordOutput(kSubsystemName + "/ChassisSpeeds/VY", mFieldVelocity.dy);
-		Logger.recordOutput(kSubsystemName + "/ChassisSpeeds/VTHETA", mFieldVelocity.dtheta);
+		Logger.recordOutput(kSubsystemName + "/ChassisSpeeds/RobotRelativeVelocity", mRobotRelativeVelocity);
 		Logger.recordOutput(kSubsystemName + "/ControlMode", mControlMode.toString());
-		Logger.recordOutput(kSubsystemName + "/KinematicLimits", mKinematicLimits.toString());
+		Logger.recordOutput(kSubsystemName + "/KinematicLimits", kinematicLimits.toString());
 	}
 
 	public void drive(ChassisSpeeds desSpeed, ControlMode desMode) {
@@ -323,6 +292,12 @@ public class Swerve extends SubsystemBase {
 		this.drive(desSpeed, ControlMode.PATH_FOLLOWING);
 	}
 
+	/** Runs forwards at the commanded voltage. */
+	public void runCharacterizationVolts(double volts) {
+		mControlMode = ControlMode.CHARACTERIZATION;
+		mCharacterizationVolts = volts;
+	}
+
 	public void runModuleCheck(int moduleNumber, SwerveModuleSystemCheckRequest state) {
 		if (mControlMode != ControlMode.SYSTEMS_CHECK) {
 			mControlMode = ControlMode.SYSTEMS_CHECK;
@@ -339,22 +314,41 @@ public class Swerve extends SubsystemBase {
 		this.drive(new ChassisSpeeds(), ControlMode.X_OUT);
 	}
 
+	public SwerveSetpoint getSwerveSetpoint() {
+		return mSwerveSetpoint;
+	}
+
+	@AutoLogOutput(key = "Swerve/GyroYaw")
 	public Rotation2d getGyroYaw() {
 		return mGyroInputs.connected
 				? mGyroInputs.yawPosition
 				: RobotStateEstimator.getInstance().getPose().getRotation();
 	}
 
-	public SwerveSetpoint getSwerveSetpoint() {
-		return mSwerveSetpoint;
+	/**
+	 * Returns the module states (turn angles and drive velocities) for all of the
+	 * modules.
+	 */
+	@AutoLogOutput(key = "Swerve/SwerveStates/Measured")
+	private SwerveModuleState[] getModuleStates() {
+		return Arrays.stream(mModules).map(Module::getState).toArray(SwerveModuleState[]::new);
 	}
 
-	public Twist2d getFieldVelocity() {
-		return mFieldVelocity;
+	/**
+	 * Returns the measured speeds of the robot in the robot's frame of reference.
+	 */
+	@AutoLogOutput(key = "Swerve/MeasuredSpeeds")
+	private ChassisSpeeds getSpeeds() {
+		return mKinematics.toChassisSpeeds(getModuleStates());
 	}
 
-	public KinematicLimits getKinematicLimit() {
-		return mKinematicLimits;
+	/** Returns the average drive velocity in meters/sec. */
+	public double getCharacterizationVelocity() {
+		double driveVelocityAverage = 0.0;
+		for (var module : mModules) {
+			driveVelocityAverage += module.getState().speedMetersPerSecond;
+		}
+		return driveVelocityAverage / 4.0;
 	}
 
 	public ControlMode getControlMode() {
@@ -362,10 +356,6 @@ public class Swerve extends SubsystemBase {
 	}
 
 	public boolean isUnderKinematicLimit(KinematicLimits limits) {
-		return Math.hypot(getFieldVelocity().dx, getFieldVelocity().dy) < limits.maxLinearVelocity();
-	}
-
-	public void setKinematicLimits(KinematicLimits limits) {
-		mKinematicLimits = limits;
+		return Math.hypot(getSpeeds().vxMetersPerSecond, getSpeeds().vyMetersPerSecond) < limits.maxLinearVelocity();
 	}
 }

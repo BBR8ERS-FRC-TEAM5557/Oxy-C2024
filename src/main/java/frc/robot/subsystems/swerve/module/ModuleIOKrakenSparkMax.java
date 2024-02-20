@@ -59,21 +59,19 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
         mAngleMotorEncoder = mAngleMotor.getEncoder();
         mAbsoluteEncoder = mAngleMotor.getAbsoluteEncoder();
 
-        SparkMaxFactory.configFramesDefault(mAngleMotor);
-        SparkMaxFactory.configFramesAbsoluteEncoderBoost(mAngleMotor);
-        mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted);
-        //mAbsoluteEncoder.setPositionConversionFactor(1.0);
+        System.out.println(mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted).toString());
+        System.out.println(mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted).toString());
+        System.out.println(mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted).toString());
+        System.out.println(mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted).toString());
+        mAbsoluteEncoder.setPositionConversionFactor(1.0);
         mAbsoluteEncoder.setZeroOffset(angleOffset.getRotations());
         mAbsoluteEncoder.setAverageDepth(2);
         mAngleMotorPID.setPositionPIDWrappingMinInput(0.0);
         mAngleMotorPID.setPositionPIDWrappingMaxInput(kAngleGearReduction);
         mAngleMotorPID.setPositionPIDWrappingEnabled(true);
         BurnManager.burnFlash(mAngleMotor);
-
-        boolean resetSuccesful = false;
-        int resetIteration = 0;
-        while (!resetSuccesful && resetIteration < 5)
-            resetSuccesful = resetToAbsolute();
+        SparkMaxFactory.configFramesDefault(mAngleMotor);
+        SparkMaxFactory.configFramesAbsoluteEncoderBoost(mAngleMotor);
 
         // DRIVE MOTOR
         mDriveMotor = TalonFactory.createTalon(driveMotorID, kDriveMotorConfiguration);
@@ -143,15 +141,6 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
 
     @Override
     public void setAngleVoltage(double voltage) {
-        if (mAngleMotorEncoder.getVelocity() < kAbsoluteResetMaxOmega) {
-            if (++resetIteration >= kAbsoluteResetIterations) {
-                resetIteration = 0;
-                resetToAbsolute();
-            }
-        } else {
-            resetIteration = 0;
-        }
-
         mAngleMotorPID.setReference(voltage, ControlType.kVoltage);
     }
 
@@ -159,16 +148,6 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     @Override
     public void setAnglePosition(double radians) {
         double desiredAngleRotations = radiansToRotations(radians, kAngleGearReduction);
-
-        if (mAngleMotorEncoder.getVelocity() < kAbsoluteResetMaxOmega) {
-            if (++resetIteration >= kAbsoluteResetIterations) {
-                resetIteration = 0;
-                resetToAbsolute();
-            }
-        } else {
-            resetIteration = 0;
-        }
-
         mAngleMotorPID.setReference(desiredAngleRotations, ControlType.kPosition);
     }
 
@@ -209,7 +188,8 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     @Override
     public boolean resetToAbsolute() {
         double absoluteAngle = getAbsoluteRotation().getRadians();
-        return mAngleMotorEncoder.setPosition(radiansToRotations(absoluteAngle, kAngleGearReduction)) == REVLibError.kOk;
+        return mAngleMotorEncoder
+                .setPosition(radiansToRotations(absoluteAngle, kAngleGearReduction)) == REVLibError.kOk;
     }
 
     private Rotation2d getAbsoluteRotation() {

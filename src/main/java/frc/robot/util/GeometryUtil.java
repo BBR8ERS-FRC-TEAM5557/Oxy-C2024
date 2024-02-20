@@ -34,6 +34,12 @@ public class GeometryUtil {
     return new Rotation2d(rot.getCos(), -rot.getSin());
   }
 
+  public static Pose2d inverse(Pose2d pose) {
+    Rotation2d rotationInverse = pose.getRotation().unaryMinus();
+    return new Pose2d(
+        pose.getTranslation().unaryMinus().rotateBy(rotationInverse), rotationInverse);
+  }
+
   public static Rotation2d flip(Rotation2d rot) {
     return new Rotation2d(-rot.getCos(), -rot.getSin());
   }
@@ -91,7 +97,8 @@ public class GeometryUtil {
   }
 
   /**
-   * Converts a Transform2d to a Pose2d to be used as a position or as the start of a kinematic
+   * Converts a Transform2d to a Pose2d to be used as a position or as the start
+   * of a kinematic
    * chain
    *
    * @param transform The transform that will represent the pose
@@ -124,7 +131,7 @@ public class GeometryUtil {
   /**
    * Multiplies a twist by a scaling factor
    *
-   * @param twist The twist to multiply
+   * @param twist  The twist to multiply
    * @param factor The scaling factor for the twist components
    * @return The new twist
    */
@@ -143,7 +150,8 @@ public class GeometryUtil {
   }
 
   /**
-   * Converts a Transform3d to a Pose3d to be used as a position or as the start of a kinematic
+   * Converts a Transform3d to a Pose3d to be used as a position or as the start
+   * of a kinematic
    * chain
    *
    * @param transform The transform that will represent the pose
@@ -154,7 +162,8 @@ public class GeometryUtil {
   }
 
   /**
-   * Converts a Translation3d to a Translation2d by extracting two dimensions (X and Y). chain
+   * Converts a Translation3d to a Translation2d by extracting two dimensions (X
+   * and Y). chain
    *
    * @param transform The original translation
    * @return The resulting translation
@@ -164,7 +173,8 @@ public class GeometryUtil {
   }
 
   /**
-   * Converts a Translation3d to a Translation2d by extracting two dimensions (X and Z). chain
+   * Converts a Translation3d to a Translation2d by extracting two dimensions (X
+   * and Z). chain
    *
    * @param transform The original translation
    * @return The resulting translation

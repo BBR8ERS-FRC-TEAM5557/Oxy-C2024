@@ -24,7 +24,7 @@ public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber kV = new LoggedTunableNumber("Flywheels/kV", kFlywheelV);
     private static final LoggedTunableNumber kA = new LoggedTunableNumber("Flywheels/kA", kFlywheelA);
 
-    private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 8000.0);
+    private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 7000.0);
     private static final LoggedTunableNumber mIdleRpm = new LoggedTunableNumber("Flywheels/IdleRpm", 1500.0);
     private static final LoggedTunableNumber mIntakingRpm = new LoggedTunableNumber("Flywheels/IntakingRpm", -2000.0);
     private static final LoggedTunableNumber mEjectingRpm = new LoggedTunableNumber("Flywheels/EjectingRpm", 1500.0);
@@ -108,8 +108,8 @@ public class Flywheels extends SubsystemBase {
 
     public boolean atGoal() {
         double goalRpm = mState.getRPM();
-        return Util.epsilonEquals(mInputs.leftVelocityRpm, goalRpm, kAllowableError)
-                || Util.epsilonEquals(mInputs.rightVelocityRpm, goalRpm, kAllowableError);
+        return Util.epsilonEquals(mInputs.leftVelocityRpm, goalRpm, kPadding)
+                || Util.epsilonEquals(mInputs.rightVelocityRpm, goalRpm, kPadding);
     }
 
     public Command shoot() {
@@ -124,5 +124,9 @@ public class Flywheels extends SubsystemBase {
     public Command intake() {
         return startEnd(() -> setState(State.INTAKE), () -> setState(State.IDLE))
                 .withName("FlywheelsIntake");
+    }
+
+    public Command stop() {
+        return runOnce(() -> setState(State.STOP));
     }
 }

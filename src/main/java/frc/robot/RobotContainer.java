@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.auto.AutoRoutineManager;
@@ -37,15 +38,25 @@ import frc.robot.subsystems.swerve.module.ModuleIOKrakenSparkMax;
 import frc.robot.subsystems.swerve.module.ModuleIOSim;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.FeedForwardCharacterization;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.RobotStateEstimator;
 import static frc.robot.Constants.*;
 import static frc.robot.Constants.RobotMap.*;
 
+import java.util.HashMap;
+
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 public class RobotContainer {
 
     public static final CommandXboxController mDriver = new CommandXboxController(0);
     public static final CommandXboxController mOperator = new CommandXboxController(1);
+
+    private final LoggedDashboardChooser<Command> mChooser;
 
     public static Swerve mSwerve;
     public static Intake mIntake;
@@ -54,8 +65,6 @@ public class RobotContainer {
     public static Arm mArm;
 
     public static RobotStateEstimator m_stateEstimator;
-
-    public static AutoRoutineManager m_autoManager;
     public static SystemsCheckManager m_systemCheckManager;
 
     public RobotContainer() {
@@ -102,12 +111,15 @@ public class RobotContainer {
             });
         }
 
-        m_autoManager = new AutoRoutineManager(mSwerve);
+        mChooser = new LoggedDashboardChooser<Command>("Driver/AutonomousChooser");
+
         m_systemCheckManager = new SystemsCheckManager(mSwerve);
         m_stateEstimator = RobotStateEstimator.getInstance();
         DriveMotionPlanner.configureControllers();
 
         configureBindings();
+        generateEventMap();
+        generateAutoChoices();
     }
 
     private void configureBindings() {
@@ -146,11 +158,23 @@ public class RobotContainer {
                                 .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
                                         .until(() -> mFeeder.hasGamepiece()))));
 
-        /* EJECTING */
         mOperator.leftBumper()
-            .whileTrue(mArm.forceCoast());
+                .whileTrue(mArm.intake()
+                        .alongWith(Commands.waitUntil(mArm::atGoal)
+                                .andThen(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor()))));
+
+        /* COASTING */
+        mOperator.leftBumper().whileTrue(mArm.forceCoast());
 
         /* SHOOTING */
+        mOperator.a().whileTrue(Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()));
+        Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
+        mOperator.rightTrigger().and(mOperator.a())
+                .onTrue(Commands.parallel(
+                        Commands.waitSeconds(0.5),
+                        Commands.waitUntil(mOperator.rightTrigger().negate()))
+                        .deadlineWith(mFeeder.shoot()));
+
         mOperator.b().whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shoot()));
         Trigger readyToShootFender = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.b());
         mOperator.rightTrigger().and(mOperator.b())
@@ -168,7 +192,7 @@ public class RobotContainer {
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
                         .deadlineWith(mFeeder.ejectAmp()));
 
-        readyToShootFender.or(readyToEjectAmp)
+        readyToShoot.or(readyToEjectAmp).or(readyToShootFender)
                 .whileTrue(
                         Commands.run(
                                 () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0)))
@@ -176,13 +200,47 @@ public class RobotContainer {
                         Commands.run(
                                 () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
         /* CLIMBING */
-        mOperator.pov(0).onTrue(mArm.prepClimb());
+        mOperator.pov(0).onTrue(mArm.prepClimb().alongWith(mFlywheels.stop()));
         mOperator.pov(180).onTrue(mArm.retractClimb());
 
     }
 
+    private void generateAutoChoices() {
+        System.out.println("[Init] Auto Routines");
+
+        mChooser.addDefaultOption("Do Nothing", null);
+        mChooser.addOption("fender-4Piece", AutoBuilder.buildAuto("fender-4Piece"));
+
+        // Set up feedforward characterization
+        mChooser.addOption(
+                "Drive FF Characterization",
+                new FeedForwardCharacterization(
+                        mSwerve, mSwerve::runCharacterizationVolts, mSwerve::getCharacterizationVelocity)
+                        .finallyDo(mSwerve::stop));
+
+        mChooser.addOption(
+                "Flywheels FF Characterization",
+                new FeedForwardCharacterization(
+                        mFlywheels, mFlywheels::runCharacterizationVolts, mFlywheels::getCharacterizationVelocity)
+                        .finallyDo(mFlywheels::stop));
+    }
+
+    private void generateEventMap() {
+        NamedCommands.registerCommand("intakeNote",
+                Commands.print("Intaking started").andThen(mArm.intake()
+                        .alongWith(Commands.waitUntil(mArm::atGoal)
+                                .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
+                                        .raceWith(Commands.waitUntil(mFeeder::hasGamepiece))))));
+
+        Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
+
+        NamedCommands.registerCommand("shootFenderNote",
+                Commands.print("shooting started").andThen(Commands.parallel(mArm.aimFender(), mFlywheels.shoot()).raceWith(Commands.waitUntil(readyToShoot)
+                        .andThen(mFeeder.shoot().alongWith(Commands.print("feeding started")).until(() -> !mFeeder.hasGamepiece())))));
+    }
+
     public Command getAutonomousCommand() {
-        return m_autoManager.getAutoCommand();
+        return mChooser.get();
     }
 
     public Command getSubsystemCheckCommand() {

@@ -24,6 +24,7 @@ public class Module {
 
 	private final int moduleNumber;
 	private final String moduleLabel;
+	private double resetIteration = 0;
 	private double lastAngle;
 	private SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(kDrivekS, kDrivekV);
 
@@ -54,6 +55,10 @@ public class Module {
 		this.moduleNumber = moduleNumber;
 
 		lastAngle = getState().angle.getDegrees();
+		boolean resetSuccesful = false;
+		int resetIteration = 0;
+		while (!resetSuccesful && resetIteration < 5)
+			resetSuccesful = resetToAbsolute();
 
 		switch (moduleNumber) {
 			case 0:
@@ -116,6 +121,16 @@ public class Module {
 		// Display alerts
 		driveMotorDisconnected.set(!m_inputs.driveMotorConnected);
 		turnMotorDisconnected.set(!m_inputs.angleMotorConnected);
+
+		if (Math.abs(m_inputs.angleInternalVelocityRadPerSec) < kAbsoluteResetMaxOmega) {
+			if (++resetIteration >= kAbsoluteResetIterations) {
+				resetIteration = 0;
+				resetToAbsolute();
+			}
+		} else {
+			resetIteration = 0;
+		}
+
 	}
 
 	public SwerveModuleState runSetpoint(
@@ -234,7 +249,7 @@ public class Module {
 		m_io.setAngleBrakeMode(enable);
 	}
 
-	public void resetToAbsolute() {
-		m_io.resetToAbsolute();
+	public boolean resetToAbsolute() {
+		return m_io.resetToAbsolute();
 	}
 }

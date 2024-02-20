@@ -5,50 +5,91 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.lib.team6328.LoggedTunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class RobotStateEstimator extends VirtualSubsystem {
 
-	private static RobotStateEstimator m_instance = null;
-
-	private final Field2d m_field2d = new Field2d();
-
-	public static RobotStateEstimator getInstance() {
-		if (m_instance == null) {
-			System.out.println("[Init] Creating RobotStateEstimator");
-			m_instance = new RobotStateEstimator();
-		}
-		return m_instance;
+	public record OdometryObservation(
+			SwerveDriveWheelPositions wheelPositions, Rotation2d gyroAngle, double timestamp) {
 	}
 
-	private SwerveDrivePoseEstimator m_poseEstimator;
-	private SwerveModulePosition[] m_lastModulePositions = new SwerveModulePosition[] {
-			new SwerveModulePosition(),
-			new SwerveModulePosition(),
-			new SwerveModulePosition(),
-			new SwerveModulePosition()
-	};
+	public record VisionObservation(Pose2d visionPose, double timestamp, Matrix<N3, N1> stdDevs) {
+	}
+
+	public record AimingParameters(
+			Rotation2d driveHeading, Rotation2d armAngle, double driveFeedVelocity) {
+	}
+
+	private static RobotStateEstimator mInstance = null;
+
+	public static RobotStateEstimator getInstance() {
+		if (mInstance == null) {
+			System.out.println("[Init] Creating RobotStateEstimator");
+			mInstance = new RobotStateEstimator();
+		}
+		return mInstance;
+	}
+
+	@Setter
+	@Getter
+	private double shotCompensationDegrees = 0.0;
+	private static final LoggedTunableNumber lookahead = new LoggedTunableNumber("RobotState/lookaheadS", 0.0);
+
+	/** Arm angle look up table key: meters, values: degrees */
+	private static final InterpolatingDoubleTreeMap armAngleMap = new InterpolatingDoubleTreeMap();
+	static {
+		armAngleMap.put(0.0, 157.0);
+		armAngleMap.put(1.0, 157.0); // from subwoofer
+
+		armAngleMap.put(Double.MAX_VALUE, 220.0); // max distance
+	}
+
+	private final SwerveDrivePoseEstimator mPoseEstimator;
+	private SwerveDriveWheelPositions mLastModulePositions = new SwerveDriveWheelPositions(
+			new SwerveModulePosition[] {
+					new SwerveModulePosition(),
+					new SwerveModulePosition(),
+					new SwerveModulePosition(),
+					new SwerveModulePosition()
+			});
+
+	/**
+	 * Cached latest aiming parameters. Calculated in {@code getAimingParameters()}
+	 */
+	private AimingParameters mLatestParameters = null;
+	private Pose2d mEstimatedPose = new Pose2d();
+	private Twist2d mRobotVelocity = new Twist2d();
+	private final Field2d mField2d = new Field2d();
 
 	private RobotStateEstimator() {
-		m_poseEstimator = new SwerveDrivePoseEstimator(
-				Swerve.mKinematics, new Rotation2d(), m_lastModulePositions, new Pose2d());
+		mPoseEstimator = new SwerveDrivePoseEstimator(
+				Swerve.mKinematics, new Rotation2d(), mLastModulePositions.positions, new Pose2d());
 
 		ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Driver");
-		shuffleboardTab.add(m_field2d);
+		shuffleboardTab.add(mField2d);
 	}
 
 	@Override
@@ -56,53 +97,123 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		clampPoseToField();
 		updateFieldWidget();
 
-		Logger.recordOutput("Odometry/Robot", getPose());
 	}
 
-	/** Records a new drive movement without gyro. */
-	public void addDriveData(SwerveModulePosition[] positions) {
-		SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
-		for (int i = 0; i < 4; i++) {
-			wheelDeltas[i] = new SwerveModulePosition(
-					(positions[i].distanceMeters - m_lastModulePositions[i].distanceMeters),
-					positions[i].angle);
-			m_lastModulePositions[i] = positions[i];
+	/** Add odometry observation */
+	public void addOdometryObservation(OdometryObservation observation) {
+		mLatestParameters = null;
+		var twist = Swerve.mKinematics.toTwist2d(mLastModulePositions, observation.wheelPositions());
+		var derivedGyroAngle = Rotation2d.fromRadians(getPose().getRotation().getRadians() + twist.dtheta);
+		mLastModulePositions = observation.wheelPositions;
+
+		// Check gyro connected
+		if (observation.gyroAngle != null) {
+			mPoseEstimator.update(observation.gyroAngle, observation.wheelPositions);
+		} else {
+			mPoseEstimator.update(derivedGyroAngle, observation.wheelPositions);
 		}
-		var twist = Swerve.mKinematics.toTwist2d(wheelDeltas);
-		var simulatedGyroAngle = Rotation2d.fromRadians(getPose().getRotation().getRadians() + twist.dtheta);
-
-		addDriveData(simulatedGyroAngle, positions);
 	}
 
-	/** Records a new drive movement with gyro. */
-	public void addDriveData(Rotation2d gyroAngle, SwerveModulePosition[] positions) {
-		for (int i = 0; i < 4; i++) {
-			m_lastModulePositions[i] = positions[i];
-		}
-		m_poseEstimator.update(gyroAngle, positions);
-	}
-
-	public void addVisionData(List<TimestampedVisionUpdate> visionData) {
+	public void addVisionObservation(List<VisionObservation> visionData) {
 		for (var update : visionData) {
-			m_poseEstimator.addVisionMeasurement(update.pose(), update.timestamp(), update.stdDevs());
+			mPoseEstimator.addVisionMeasurement(update.visionPose, update.timestamp, update.stdDevs);
 		}
+	}
+
+	public void addVelocityData(Twist2d robotVelocity) {
+		mLatestParameters = null;
+		this.mRobotVelocity = robotVelocity;
 	}
 
 	public Pose2d getPose() {
-		return m_poseEstimator.getEstimatedPosition();
+		return mPoseEstimator.getEstimatedPosition();
+	}
+
+	public AimingParameters getAimingParameters() {
+		if (mLatestParameters != null) {
+			// Cache previously calculated aiming parameters. Cache is invalidated whenever
+			// new
+			// observations are added.
+			return mLatestParameters;
+		}
+		Transform2d fieldToTarget = GeometryUtil
+				.translationToTransform(AllianceFlipUtil.apply(FieldConstants.Speaker.centerSpeakerOpening)
+						.toTranslation2d());
+		Pose2d fieldToPredictedVehicle = getPredictedPose(lookahead.get(), lookahead.get());
+		Pose2d fieldToPredictedVehicleFixed = new Pose2d(fieldToPredictedVehicle.getTranslation(), new Rotation2d());
+
+		Translation2d predictedVehicleToTargetTranslation = GeometryUtil.inverse(fieldToPredictedVehicle)
+				.transformBy(fieldToTarget)
+				.getTranslation();
+		Translation2d predictedVehicleFixedToTargetTranslation = GeometryUtil.inverse(fieldToPredictedVehicleFixed)
+				.transformBy(fieldToTarget).getTranslation();
+
+		Rotation2d vehicleToGoalDirection = predictedVehicleToTargetTranslation.getAngle();
+
+		Rotation2d targetVehicleDirection = predictedVehicleFixedToTargetTranslation.getAngle();
+		double targetDistance = predictedVehicleToTargetTranslation.getNorm();
+
+		double feedVelocity = mRobotVelocity.dx * vehicleToGoalDirection.getSin() / targetDistance
+				- mRobotVelocity.dy * vehicleToGoalDirection.getCos() / targetDistance;
+
+		mLatestParameters = new AimingParameters(
+				targetVehicleDirection,
+				Rotation2d.fromDegrees(
+						armAngleMap.get(targetDistance) + shotCompensationDegrees),
+				feedVelocity);
+
+		Logger.recordOutput("RobotState/AimingParameters/Direction", mLatestParameters.driveHeading());
+		Logger.recordOutput("RobotState/AimingParameters/ArmAngle", mLatestParameters.armAngle());
+		Logger.recordOutput(
+				"RobotState/AimingParameters/DriveFeedVelocityRadPerS",
+				mLatestParameters.driveFeedVelocity());
+
+		return mLatestParameters;
+	}
+
+	@AutoLogOutput(key = "RobotState/FieldVelocity")
+	public Twist2d fieldVelocity() {
+		Translation2d linearFieldVelocity = new Translation2d(mRobotVelocity.dx, mRobotVelocity.dy)
+				.rotateBy(mEstimatedPose.getRotation());
+		return new Twist2d(
+				linearFieldVelocity.getX(), linearFieldVelocity.getY(), mRobotVelocity.dtheta);
+	}
+
+	@AutoLogOutput(key = "RobotState/EstimatedPose")
+	public Pose2d getmEstimatedPose() {
+		return mEstimatedPose;
+	}
+
+	/**
+	 * Predicts what our pose will be in the future. Allows separate translation and
+	 * rotation
+	 * lookaheads to account for varying latencies in the different measurements.
+	 *
+	 * @param translationLookaheadS The lookahead time for the translation of the
+	 *                              robot
+	 * @param rotationLookaheadS    The lookahead time for the rotation of the robot
+	 * @return The predicted pose.
+	 */
+	public Pose2d getPredictedPose(double translationLookaheadS, double rotationLookaheadS) {
+		return getmEstimatedPose()
+				.exp(
+						new Twist2d(
+								mRobotVelocity.dx * translationLookaheadS,
+								mRobotVelocity.dy * translationLookaheadS,
+								mRobotVelocity.dtheta * rotationLookaheadS));
 	}
 
 	public void setPose(Pose2d pose) {
-		m_poseEstimator.resetPosition(
+		mPoseEstimator.resetPosition(
 				RobotContainer.mSwerve.getGyroYaw(),
-				m_lastModulePositions,
+				mLastModulePositions,
 				pose);
 	}
 
 	private void clampPoseToField() {
 		// if out of bounds, clamp to field
-		double estimatedXPos = m_poseEstimator.getEstimatedPosition().getX();
-		double estimatedYPos = m_poseEstimator.getEstimatedPosition().getY();
+		double estimatedXPos = mPoseEstimator.getEstimatedPosition().getX();
+		double estimatedYPos = mPoseEstimator.getEstimatedPosition().getY();
 		if (estimatedYPos < 0.0
 				|| estimatedYPos > 8.35
 				|| estimatedXPos < 0.0
@@ -115,52 +226,24 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
 	private void updateFieldWidget() {
 		Pose2d robotPose = getPose();
-		m_field2d.setRobotPose(robotPose);
+		mField2d.setRobotPose(robotPose);
 	}
 
 	public void addFieldPose(String name, Pose2d pose) {
 		if (pose != null) {
-			m_field2d.getObject(name).setPose(pose);
+			mField2d.getObject(name).setPose(pose);
 		}
 	}
 
 	private void addFieldPose(String name, Pose2d... pose) {
 		if (pose != null) {
-			m_field2d.getObject(name).setPoses(pose);
+			mField2d.getObject(name).setPoses(pose);
 		}
 	}
 
 	public void addFieldTrajectory(String name, Trajectory traj) {
 		if (traj != null) {
-			m_field2d.getObject(name).setTrajectory(traj);
-		}
-	}
-
-	/**
-	 * Represents a single vision pose with a timestamp and associated standard
-	 * deviations.
-	 */
-	public static class TimestampedVisionUpdate {
-		private final double timestamp;
-		private final Pose2d pose;
-		private final Matrix<N3, N1> stdDevs;
-
-		public TimestampedVisionUpdate(double timestamp, Pose2d pose, Matrix<N3, N1> stdDevs) {
-			this.timestamp = timestamp;
-			this.pose = pose;
-			this.stdDevs = stdDevs;
-		}
-
-		public double timestamp() {
-			return timestamp;
-		}
-
-		public Pose2d pose() {
-			return pose;
-		}
-
-		public Matrix<N3, N1> stdDevs() {
-			return stdDevs;
+			mField2d.getObject(name).setTrajectory(traj);
 		}
 	}
 }

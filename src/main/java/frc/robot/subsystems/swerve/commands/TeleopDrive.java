@@ -48,7 +48,7 @@ public class TeleopDrive extends Command {
 
     @Override
     public void execute() {
-        var limit = swerve.getKinematicLimit();
+        var limit = swerve.getKinematicLimits();
         Rotation2d driveRotation = RobotStateEstimator.getInstance().getPose().getRotation();
 
         double rotationalVelocity = mRotationSupplier.getAsDouble() * limit.maxLinearVelocity();

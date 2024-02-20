@@ -24,154 +24,160 @@ import frc.lib.team6328.Alert.AlertType;
 import frc.lib.team6328.VirtualSubsystem;
 
 public class Robot extends LoggedRobot {
-  private Command m_autonomousCommand;
-  private Command m_subsystemCheckCommand;
-  private RobotContainer m_robotContainer;
+	private Command m_autonomousCommand;
+	private Command m_subsystemCheckCommand;
+	private RobotContainer m_robotContainer;
 
-  private final Timer canErrorTimer = new Timer();
-  private final Timer disabledTimer = new Timer();
+	private final Timer canErrorTimer = new Timer();
+	private final Timer disabledTimer = new Timer();
 
-  private final Alert logReceiverQueueAlert =
-      new Alert("Logging queue exceeded capacity, data will NOT be logged.", AlertType.ERROR);
-  private final Alert canErrorAlert =
-      new Alert("CAN errors detected, robot may not be controllable.", AlertType.ERROR);
-  private final Alert lowBatteryAlert =
-      new Alert(
-          "Battery voltage is very low, consider turning off the robot or replacing the battery.",
-          AlertType.WARNING);
+	private final Alert logReceiverQueueAlert = new Alert("Logging queue exceeded capacity, data will NOT be logged.",
+			AlertType.ERROR);
+	private final Alert canErrorAlert = new Alert("CAN errors detected, robot may not be controllable.",
+			AlertType.ERROR);
+	private final Alert lowBatteryAlert = new Alert(
+			"Battery voltage is very low, consider turning off the robot or replacing the battery.",
+			AlertType.WARNING);
 
-  @Override
-  public void robotInit() {
-    
-    if (Constants.kIsReal) {
-      String folder = "";
-      //Logger.addDataReceiver(new WPILOGWriter(folder));
-      Logger.addDataReceiver(new NT4Publisher());
-      LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
-    } else {
-      Logger.addDataReceiver(new NT4Publisher());
-    }
-    Logger.start();
+	@Override
+	public void robotInit() {
 
-    // Log active commands
-    Map<String, Integer> commandCounts = new HashMap<>();
-    BiConsumer<Command, Boolean> logCommandFunction =
-        (Command command, Boolean active) -> {
-          String name = command.getName();
-          int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
-          commandCounts.put(name, count);
-          /**fix this */ // - was "active" before only for the first line
-          Logger.recordOutput("CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), count>0);
-          Logger.recordOutput("CommandsAll/" + name, count > 0);
-        };
-    CommandScheduler.getInstance()
-        .onCommandInitialize(
-            (Command command) -> {
-              logCommandFunction.accept(command, true);
-            });
-    CommandScheduler.getInstance()
-        .onCommandFinish(
-            (Command command) -> {
-              logCommandFunction.accept(command, false);
-            });
-    CommandScheduler.getInstance()
-        .onCommandInterrupt(
-            (Command command) -> {
-              logCommandFunction.accept(command, false);
-            });
+		if (Constants.kIsReal) {
+			String folder = "";
+			// Logger.addDataReceiver(new WPILOGWriter(folder));
+			Logger.addDataReceiver(new NT4Publisher());
+			LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
+		} else {
+			Logger.addDataReceiver(new NT4Publisher());
+		}
+		Logger.start();
 
-    // Start timers
-    canErrorTimer.reset();
-    canErrorTimer.start();
-    disabledTimer.reset();
-    disabledTimer.start();
+		// Log active commands
+		Map<String, Integer> commandCounts = new HashMap<>();
+		BiConsumer<Command, Boolean> logCommandFunction = (Command command, Boolean active) -> {
+			String name = command.getName();
+			int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+			commandCounts.put(name, count);
+			/** fix this */ // - was "active" before only for the first line
+			Logger.recordOutput("CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), count > 0);
+			Logger.recordOutput("CommandsAll/" + name, count > 0);
+		};
+		CommandScheduler.getInstance()
+				.onCommandInitialize(
+						(Command command) -> {
+							logCommandFunction.accept(command, true);
+						});
+		CommandScheduler.getInstance()
+				.onCommandFinish(
+						(Command command) -> {
+							logCommandFunction.accept(command, false);
+						});
+		CommandScheduler.getInstance()
+				.onCommandInterrupt(
+						(Command command) -> {
+							logCommandFunction.accept(command, false);
+						});
 
-    // Instantiate RobotContainer
-    System.out.println("[Init] Instantiating RobotContainer");
-    m_robotContainer = new RobotContainer();
-  }
+		// Start timers
+		canErrorTimer.reset();
+		canErrorTimer.start();
+		disabledTimer.reset();
+		disabledTimer.start();
 
-  @Override
-  public void robotPeriodic() {
-    Threads.setCurrentThreadPriority(true, 99);
-    CommandScheduler.getInstance().run();
-    VirtualSubsystem.periodicAll();
+		// Instantiate RobotContainer
+		System.out.println("[Init] Instantiating RobotContainer");
+		m_robotContainer = new RobotContainer();
+	}
 
-    // Check logging fault
-    logReceiverQueueAlert.set(Logger.getReceiverQueueFault());
+	@Override
+	public void robotPeriodic() {
+		Threads.setCurrentThreadPriority(true, 99);
+		CommandScheduler.getInstance().run();
+		VirtualSubsystem.periodicAll();
 
-    // Update CAN error alert
-    var canStatus = RobotController.getCANStatus();
-    if (canStatus.receiveErrorCount > 0 || canStatus.transmitErrorCount > 0) {
-      canErrorTimer.reset();
-    }
-    canErrorAlert.set(!canErrorTimer.hasElapsed(0.5));
+		// Check logging fault
+		logReceiverQueueAlert.set(Logger.getReceiverQueueFault());
 
-    // Update low battery alert
-    if (DriverStation.isEnabled()) {
-      disabledTimer.reset();
-    }
-    if (RobotController.getBatteryVoltage() < 10.0 && disabledTimer.hasElapsed(2.0)) {
-      //LEDs.getInstance().lowBatteryAlert = true;
-      lowBatteryAlert.set(true);
-    }
-  }
+		// Update CAN error alert
+		var canStatus = RobotController.getCANStatus();
+		if (canStatus.receiveErrorCount > 0 || canStatus.transmitErrorCount > 0) {
+			canErrorTimer.reset();
+		}
+		canErrorAlert.set(!canErrorTimer.hasElapsed(0.5));
 
-  @Override
-  public void disabledInit() {}
+		// Update low battery alert
+		if (DriverStation.isEnabled()) {
+			disabledTimer.reset();
+		}
+		if (RobotController.getBatteryVoltage() < 10.0 && disabledTimer.hasElapsed(2.0)) {
+			// LEDs.getInstance().lowBatteryAlert = true;
+			lowBatteryAlert.set(true);
+		}
+	}
 
-  @Override
-  public void disabledPeriodic() {}
+	@Override
+	public void disabledInit() {
+	}
 
-  @Override
-  public void disabledExit() {}
+	@Override
+	public void disabledPeriodic() {
+	}
 
-  @Override
-  public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    m_subsystemCheckCommand = m_robotContainer.getSubsystemCheckCommand();
+	@Override
+	public void disabledExit() {
+	}
 
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    } else if (!DriverStation.isFMSAttached() && m_subsystemCheckCommand != null) {
-      System.out.println("SystemCheck Started");
-      m_subsystemCheckCommand.schedule();
-    } else {
-      System.out.println("No Auto Rountine Selected!!!");
-    }
-  }
+	@Override
+	public void autonomousInit() {
+		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+		m_subsystemCheckCommand = m_robotContainer.getSubsystemCheckCommand();
 
-  @Override
-  public void autonomousPeriodic() {}
+		if (m_autonomousCommand != null) {
+			m_autonomousCommand.schedule();
+		} else if (!DriverStation.isFMSAttached() && m_subsystemCheckCommand != null) {
+			System.out.println("SystemCheck Started");
+			m_subsystemCheckCommand.schedule();
+		} else {
+			System.out.println("No Auto Rountine Selected!!!");
+		}
+	}
 
-  @Override
-  public void autonomousExit() {
-    if (m_subsystemCheckCommand != null) {
-      m_subsystemCheckCommand.cancel();
-    }
-  }
+	@Override
+	public void autonomousPeriodic() {
+	}
 
-  @Override
-  public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
-  }
+	@Override
+	public void autonomousExit() {
+		if (m_subsystemCheckCommand != null) {
+			m_subsystemCheckCommand.cancel();
+		}
+	}
 
-  @Override
-  public void teleopPeriodic() {}
+	@Override
+	public void teleopInit() {
+		if (m_autonomousCommand != null) {
+			m_autonomousCommand.cancel();
+		}
+	}
 
-  @Override
-  public void teleopExit() {}
+	@Override
+	public void teleopPeriodic() {
+	}
 
-  @Override
-  public void testInit() {
-    CommandScheduler.getInstance().cancelAll();
-  }
+	@Override
+	public void teleopExit() {
+	}
 
-  @Override
-  public void testPeriodic() {}
+	@Override
+	public void testInit() {
+		CommandScheduler.getInstance().cancelAll();
+	}
 
-  @Override
-  public void testExit() {}
+	@Override
+	public void testPeriodic() {
+	}
+
+	@Override
+	public void testExit() {
+	}
 }
