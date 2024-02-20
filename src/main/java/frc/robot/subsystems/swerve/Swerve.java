@@ -32,6 +32,11 @@ import frc.robot.util.RobotStateEstimator;
 import frc.robot.util.Util;
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 public class Swerve extends SubsystemBase {
 	private final Module[] mModules = new Module[4]; // FL, FR, BL, BR
 
@@ -81,6 +86,52 @@ public class Swerve extends SubsystemBase {
 		mModules[1] = new Module(frModuleIO, 1);
 		mModules[2] = new Module(blModuleIO, 2);
 		mModules[3] = new Module(brModuleIO, 3);
+    SmartDashboard.putData("Swerve Viewable", new Sendable() {
+      @Override
+      public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("SwerveDrive");
+        builder.addDoubleProperty("Front Left Angle", () -> m_modules[0].getState().angle.getRadians(), null);
+        builder.addDoubleProperty("Front Left Velocity", () -> m_modules[0].getState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Front Right Angle", () -> m_modules[1].getState().angle.getRadians(), null);
+        builder.addDoubleProperty("Front Right Velocity", () -> m_modules[1].getState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Back Left Angle", () -> m_modules[2].getState().angle.getRadians(), null);
+        builder.addDoubleProperty("Back Left Velocity", () -> m_modules[2].getState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Back Right Angle", () -> m_modules[3].getState().angle.getRadians(), null);
+        builder.addDoubleProperty("Back Right Velocity", () -> m_modules[3].getState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Robot Angle",
+            () -> (RobotStateEstimator.isRedAlliance)
+                ? getGyroYaw().rotateBy(Rotation2d.fromDegrees(180.0)).getRadians()
+                : getGyroYaw().getRadians(),
+            null);
+      }
+    });
+
+/**
+    AutoBuilder.configureHolonomic(
+            RobotStateEstimator.getInstance().getPose(), 
+            this::resetPose(), 
+            this::getRobotRelativeSpeeds, 
+            this::drive, 
+            new HolonomicPathFollowerConfig( 
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+                    4.5, // Max module speed, in m/s
+                    0.4, // Drive base radius in meters. Distance from robot center to furthest module.
+                    new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this 
+    ); */
+  }
 
 		ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Swerve");
 		shuffleboardTab
