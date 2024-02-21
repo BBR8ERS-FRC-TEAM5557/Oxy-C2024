@@ -96,5 +96,4 @@ public class Intake extends SubsystemBase {
     public Command idle() {
         return runOnce(() -> setState(State.IDLE));
     }
-
 }

@@ -8,7 +8,6 @@ import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
 import frc.robot.Constants.RobotMap;
 
 public class IntakeConstants {
-
     public static double kTopGearReduction = 24.0 / 16.0;
     public static double kBottomGearReduction = 24.0 / 16.0;
 

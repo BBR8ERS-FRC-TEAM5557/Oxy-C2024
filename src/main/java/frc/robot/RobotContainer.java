@@ -183,6 +183,14 @@ public class RobotContainer {
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
                         .deadlineWith(mFeeder.shoot()));
 
+        mOperator.y().whileTrue(Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()));
+        Trigger readyToShootCustom = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.y());
+        mOperator.rightTrigger().and(mOperator.y())
+                .onTrue(Commands.parallel(
+                        Commands.waitSeconds(0.5),
+                        Commands.waitUntil(mOperator.rightTrigger().negate()))
+                        .deadlineWith(mFeeder.shoot()));
+
         /* AMPING */
         mOperator.x().whileTrue(Commands.parallel(mArm.amp(), mFlywheels.eject()));
         Trigger readyToEjectAmp = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.x());
@@ -192,7 +200,7 @@ public class RobotContainer {
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
                         .deadlineWith(mFeeder.ejectAmp()));
 
-        readyToShoot.or(readyToEjectAmp).or(readyToShootFender)
+        readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootCustom)
                 .whileTrue(
                         Commands.run(
                                 () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0)))
@@ -235,8 +243,11 @@ public class RobotContainer {
         Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 
         NamedCommands.registerCommand("shootFenderNote",
-                Commands.print("shooting started").andThen(Commands.parallel(mArm.aimFender(), mFlywheels.shoot()).raceWith(Commands.waitUntil(readyToShoot)
-                        .andThen(mFeeder.shoot().alongWith(Commands.print("feeding started")).until(() -> !mFeeder.hasGamepiece())))));
+                Commands.print("shooting started")
+                        .andThen(Commands.parallel(mArm.aimFender(), mFlywheels.shoot())
+                                .raceWith(Commands.waitUntil(readyToShoot)
+                                        .andThen(mFeeder.shoot().alongWith(Commands.print("feeding started"))
+                                                .until(() -> !mFeeder.hasGamepiece())))));
     }
 
     public Command getAutonomousCommand() {
