@@ -22,6 +22,7 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
+import frc.robot.subsystems.swerve.SwerveConstants;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -57,14 +58,45 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	@Getter
 	private double shotCompensationDegrees = 0.0;
 	private static final LoggedTunableNumber lookahead = new LoggedTunableNumber("RobotState/lookaheadS", 0.0);
+	private static final double kMeasurementOffset = (SwerveConstants.kChassisLength / 2.0)
+			+ Units.inchesToMeters(24.0);
 
-	/** Arm angle look up table key: meters, values: degrees */
-	private static final InterpolatingDoubleTreeMap armAngleMap = new InterpolatingDoubleTreeMap();
+	/**
+	 * Arm angle (single side flywheels) look up table key: meters, values: degrees
+	 */
+	//STILL NEEDS TO BE FILLED IN
+	private static final InterpolatingDoubleTreeMap armAngleMapSingle = new InterpolatingDoubleTreeMap();
 	static {
-		armAngleMap.put(0.0, 157.0);
-		armAngleMap.put(1.0, 157.0); // from subwoofer
+		armAngleMapSingle.put(Units.inchesToMeters(0.0), 157.0); // lower limit
 
-		armAngleMap.put(Double.MAX_VALUE, 220.0); // max distance
+		armAngleMapSingle.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 160.0); // from subwoofer
+		armAngleMapSingle.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 166.0); // 165.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 172.0); // 172.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 177.0); // 178.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 179.5); // 182.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 181.5); // 182.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 184.0); // 182.5 true
+
+
+		armAngleMapSingle.put(Double.MAX_VALUE, 220.0); // upper limit
+	}
+
+	/**
+	 * Arm angle (single side flywheels) look up table key: meters, values: degrees
+	 */
+	//THIS ONE WAS DONE PROPERLY
+	private static final InterpolatingDoubleTreeMap armAngleMapDouble = new InterpolatingDoubleTreeMap();
+	static {
+		armAngleMapDouble.put(Units.inchesToMeters(0.0), 157.0); // lower limit
+
+		armAngleMapDouble.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 160.0); // from subwoofer
+		armAngleMapDouble.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 166.0); // 165.5 true
+		armAngleMapDouble.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 172.0); // 172.5 true
+		armAngleMapDouble.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 179.0); // 178.5 true
+		armAngleMapDouble.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 183.0); // 182.5 true
+		armAngleMapDouble.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 185.5); // 182.5 true
+
+		armAngleMapDouble.put(Double.MAX_VALUE, 220.0); // upper limit
 	}
 
 	private final SwerveDrivePoseEstimator mPoseEstimator;
@@ -159,7 +191,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		mLatestParameters = new AimingParameters(
 				targetVehicleDirection,
 				Rotation2d.fromDegrees(
-						armAngleMap.get(targetDistance) + shotCompensationDegrees),
+						armAngleMapSingle.get(targetDistance) + shotCompensationDegrees),
 				feedVelocity);
 
 		Logger.recordOutput("RobotState/AimingParameters/Direction", mLatestParameters.driveHeading());

@@ -13,19 +13,19 @@ public class Constants {
 
     public static final int kFLDriveMotor = 12;
     public static final int kFLTurnMotor = 21;
-    public static final Rotation2d kFLOffset = Rotation2d.fromDegrees(164.79);
+    public static final Rotation2d kFLOffset = Rotation2d.fromDegrees(0.0);
 
     public static final int kFRDriveMotor = 14;
     public static final int kFRTurnMotor = 22;
-    public static final Rotation2d kFROffset = Rotation2d.fromDegrees(53.73);
+    public static final Rotation2d kFROffset = Rotation2d.fromDegrees(0.0);
 
     public static final int kBLDriveMotor = 13;
     public static final int kBLTurnMotor = 23;
-    public static final Rotation2d kBLOffset = Rotation2d.fromDegrees(165.61);
+    public static final Rotation2d kBLOffset = Rotation2d.fromDegrees(0.0);
 
     public static final int kBRDriveMotor = 15;
     public static final int kBRTurnMotor = 24;
-    public static final Rotation2d kBROffset = Rotation2d.fromDegrees(326.1);
+    public static final Rotation2d kBROffset = Rotation2d.fromDegrees(0.0);
 
     public static final int kIntakeBottomMotor = 27;
     public static final int kIntakeTopMotor = 28;

@@ -42,7 +42,7 @@ public class SwerveConstants {
 	public static final double kTrueMaxSpeed = kTheoreticalMaxSpeed * 0.8; // Max out at 85% to make sure speeds are
 																			// attainable (4.6 mps)
 	public static final double kTrueMaxAcceleration = kTheoreticalMaxAcceleration * 0.8;
-	public static final double kTrueMaxOmega = kTheoreticalMaxOmega * 0.5;
+	public static final double kTrueMaxOmega = kTheoreticalMaxOmega * 0.85;
 
 	// Angle Encoder Constants
 	public static final boolean kAbsoluteEncoderInverted = true;
@@ -73,8 +73,8 @@ public class SwerveConstants {
 	public static final double kRotationkI = 0.0;
 	public static final double kRotationkD = 0.0;
 
-	public static final double kSnapMaxOmega = kTrueMaxOmega * 0.5;
-	public static final double kSnapMaxAlpha = kSnapMaxOmega / 0.75;
+	public static final double kSnapMaxOmega = kTrueMaxOmega * 0.65;
+	public static final double kSnapMaxAlpha = kSnapMaxOmega / 0.15;
 
 	// MODULE LIMITS
 	public static final ModuleLimits kModuleLimits = new ModuleLimits(kTrueMaxSpeed, kTrueMaxSpeed * 5,
@@ -83,8 +83,10 @@ public class SwerveConstants {
 	// KINEMATIC LIMITS
 	public static final KinematicLimits kUncappedLimits = new KinematicLimits(kTheoreticalMaxSpeed, Double.MAX_VALUE,
 			kTheoreticalMaxOmega, Double.MAX_VALUE);
-	public static final KinematicLimits kDrivingLimits = new KinematicLimits(kTheoreticalMaxSpeed, 3.0,
-			kTrueMaxOmega * 0.5, Double.MAX_VALUE);
+	public static final KinematicLimits kDrivingLimits = new KinematicLimits(kTheoreticalMaxSpeed, kTheoreticalMaxSpeed * 5.0,
+			kTrueMaxOmega * 0.65, Double.MAX_VALUE);
+	public static final KinematicLimits kBrownOutLimits = new KinematicLimits(kTheoreticalMaxSpeed * 0.5, kTheoreticalMaxSpeed * 0.5,
+			kTrueMaxOmega * 0.65, Double.MAX_VALUE);
 	public static final KinematicLimits kAutoLimits = new KinematicLimits(kTrueMaxSpeed, Double.MAX_VALUE,
 			kTrueMaxOmega,
 			Double.MAX_VALUE);
@@ -105,7 +107,7 @@ public class SwerveConstants {
 		kDriveMotorConfiguration.setInverted = true;
 		kDriveMotorConfiguration.pid = kDrivePIDConfiguration;
 		kDriveMotorConfiguration.neutralMode = NeutralModeValue.Brake;
-		kDriveMotorConfiguration.supplyCurrentLimit = 40.0;
+		kDriveMotorConfiguration.supplyCurrentLimit = 30.0;
 	}
 
 	// ANGLE MOTOR CONFIGURATION

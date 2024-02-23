@@ -64,7 +64,10 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
         System.out.println(mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted).toString());
         System.out.println(mAbsoluteEncoder.setInverted(kAbsoluteEncoderInverted).toString());
         mAbsoluteEncoder.setPositionConversionFactor(1.0);
-        mAbsoluteEncoder.setZeroOffset(angleOffset.getRotations());
+        System.out.println(mAbsoluteEncoder.setZeroOffset(angleOffset.getRotations()));
+        System.out.println(mAbsoluteEncoder.setZeroOffset(angleOffset.getRotations()));
+        System.out.println(mAbsoluteEncoder.setZeroOffset(angleOffset.getRotations()));
+        System.out.println(mAbsoluteEncoder.setZeroOffset(angleOffset.getRotations()));
         mAbsoluteEncoder.setAverageDepth(2);
         mAngleMotorPID.setPositionPIDWrappingMinInput(0.0);
         mAngleMotorPID.setPositionPIDWrappingMaxInput(kAngleGearReduction);

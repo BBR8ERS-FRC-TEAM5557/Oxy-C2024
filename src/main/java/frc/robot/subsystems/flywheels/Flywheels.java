@@ -25,6 +25,7 @@ public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber kA = new LoggedTunableNumber("Flywheels/kA", kFlywheelA);
 
     private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 7000.0);
+    private static final LoggedTunableNumber mShootingFenderRpm = new LoggedTunableNumber("Flywheels/ShootingFenderRpm", 5500.0);
     private static final LoggedTunableNumber mIdleRpm = new LoggedTunableNumber("Flywheels/IdleRpm", 1500.0);
     private static final LoggedTunableNumber mIntakingRpm = new LoggedTunableNumber("Flywheels/IntakingRpm", -2000.0);
     private static final LoggedTunableNumber mEjectingRpm = new LoggedTunableNumber("Flywheels/EjectingRpm", 1500.0);
@@ -44,6 +45,7 @@ public class Flywheels extends SubsystemBase {
         STOP(() -> 0),
         IDLE(mIdleRpm),
         SHOOT(mShootingRpm),
+        SHOOT_FENDER(mShootingFenderRpm),
         INTAKE(mIntakingRpm),
         EJECT(mEjectingRpm),
         CHARACTERIZING(() -> 0.0);
@@ -114,6 +116,10 @@ public class Flywheels extends SubsystemBase {
 
     public Command shoot() {
         return startEnd(() -> setState(State.SHOOT), () -> setState(State.IDLE)).withName("FlywheelsShoot");
+    }
+
+    public Command shootFender() {
+        return startEnd(() -> setState(State.SHOOT_FENDER), () -> setState(State.IDLE)).withName("FlywheelsShootFender");
     }
 
     public Command eject() {

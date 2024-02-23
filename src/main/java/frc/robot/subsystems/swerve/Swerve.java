@@ -1,11 +1,6 @@
 package frc.robot.subsystems.swerve;
 
-import static frc.robot.subsystems.swerve.SwerveConstants.kAutoLimits;
-import static frc.robot.subsystems.swerve.SwerveConstants.kDrivingLimits;
-import static frc.robot.subsystems.swerve.SwerveConstants.kModuleLimits;
-import static frc.robot.subsystems.swerve.SwerveConstants.kSubsystemName;
-import static frc.robot.subsystems.swerve.SwerveConstants.kSwerveModuleLocations;
-import static frc.robot.subsystems.swerve.SwerveConstants.kXOutSwerveModuleStates;
+import static frc.robot.subsystems.swerve.SwerveConstants.*;
 
 import java.util.Arrays;
 
@@ -279,10 +274,16 @@ public class Swerve extends SubsystemBase {
 	}
 
 	public void driveOpenLoop(ChassisSpeeds desSpeed) {
+		if (mControlMode != ControlMode.OPEN_LOOP) {
+			setKinematicLimits(kDrivingLimits);
+		}
 		this.drive(desSpeed, ControlMode.OPEN_LOOP);
 	}
 
 	public void driveVelocity(ChassisSpeeds desSpeed) {
+		if (mControlMode != ControlMode.OPEN_LOOP) {
+			setKinematicLimits(kDrivingLimits);
+		}
 		this.drive(desSpeed, ControlMode.VELOCITY);
 	}
 

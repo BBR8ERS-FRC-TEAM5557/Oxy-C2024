@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -152,13 +153,27 @@ public class RobotContainer {
         mDriver.x().onTrue(Commands.runOnce(() -> mSwerve.stopWithX()));
 
         /* INTAKING */
+        Command buzzControllers = Commands.sequence(Commands.run(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.75);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.75);
+        }).withTimeout(0.25), Commands.run(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+        }).withTimeout(0.25), Commands.run(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.75);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.75);
+        }).withTimeout(0.25), Commands.run(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+        }));
+
         mOperator.rightBumper()
                 .whileTrue(mArm.intake()
                         .alongWith(Commands.waitUntil(mArm::atGoal)
                                 .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
                                         .until(() -> mFeeder.hasGamepiece()))));
 
-        mOperator.leftBumper()
+        mOperator.leftTrigger()
                 .whileTrue(mArm.intake()
                         .alongWith(Commands.waitUntil(mArm::atGoal)
                                 .andThen(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor()))));
@@ -175,7 +190,7 @@ public class RobotContainer {
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
                         .deadlineWith(mFeeder.shoot()));
 
-        mOperator.b().whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shoot()));
+        mOperator.b().whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender()));
         Trigger readyToShootFender = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.b());
         mOperator.rightTrigger().and(mOperator.b())
                 .onTrue(Commands.parallel(
