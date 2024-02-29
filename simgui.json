@@ -3,6 +3,7 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Shuffleboard/Driver/Field": "Field2d",
+      "/SmartDashboard/CommandScheduler": "Scheduler",
       "/SmartDashboard/Driver/AutonomousChooser": "String Chooser",
       "/SmartDashboard/Driver/SystemsCheckChooser": "String Chooser"
     }
