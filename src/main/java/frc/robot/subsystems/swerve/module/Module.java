@@ -57,8 +57,11 @@ public class Module {
 		lastAngle = getState().angle.getDegrees();
 		boolean resetSuccesful = false;
 		int resetIteration = 0;
-		while (!resetSuccesful && resetIteration < 5)
+		while (!resetSuccesful && resetIteration < 5) {
 			resetSuccesful = resetToAbsolute();
+			resetIteration++;
+		}
+
 
 		switch (moduleNumber) {
 			case 0:

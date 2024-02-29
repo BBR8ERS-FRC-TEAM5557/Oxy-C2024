@@ -4,7 +4,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.lib.team5557.factory.TalonFactory;
 import frc.lib.team5557.util.CANDeviceId;
-import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
+import frc.lib.team5557.util.CANDeviceType;
 import frc.robot.Constants.RobotMap;
 
 public class FlywheelsConstants {
@@ -34,7 +34,7 @@ public class FlywheelsConstants {
 
     public static TalonFactory.Configuration kLeftMotorConfiguration = new TalonFactory.Configuration();
     static {
-        kLeftMotorConfiguration.canID = new CANDeviceId(CANDeviceType.TALON, RobotMap.kFlywheelsLeftMotor);
+        kLeftMotorConfiguration.canID = new CANDeviceId(CANDeviceType.TALON_PHOENIX6, RobotMap.kFlywheelsLeftMotor);
         kLeftMotorConfiguration.label = "Left Motor";
 
         kLeftMotorConfiguration.setInverted = false;
@@ -45,7 +45,7 @@ public class FlywheelsConstants {
 
     public static TalonFactory.Configuration kRightMotorConfiguration = new TalonFactory.Configuration();
     static {
-        kRightMotorConfiguration.canID = new CANDeviceId(CANDeviceType.TALON, RobotMap.kFlywheelRightMotor);
+        kRightMotorConfiguration.canID = new CANDeviceId(CANDeviceType.TALON_PHOENIX6, RobotMap.kFlywheelRightMotor);
         kRightMotorConfiguration.label = "Right Motor";
 
         kRightMotorConfiguration.setInverted = true;

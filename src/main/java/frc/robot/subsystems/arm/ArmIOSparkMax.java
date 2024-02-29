@@ -9,11 +9,9 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.util.Units;
 import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
-import frc.lib.team6328.TunableNumber;
 
 public class ArmIOSparkMax implements ArmIO {
 

@@ -5,7 +5,6 @@ import static frc.robot.subsystems.flywheels.FlywheelsConstants.*;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.flywheels.FlywheelsIO.FlywheelsIOInputs;
 import frc.robot.util.Util;
@@ -15,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
-
-import com.revrobotics.CANSparkBase.IdleMode;
 
 public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber kP = new LoggedTunableNumber("Flywheels/kP", kFlywheelP);

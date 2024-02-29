@@ -13,10 +13,10 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.RobotContainer;
+import frc.robot.RobotStateEstimator;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.RobotStateEstimator;
 import frc.robot.util.Util;
 
 public class TeleopDrive extends Command {
@@ -51,7 +51,7 @@ public class TeleopDrive extends Command {
     @Override
     public void execute() {
         var limit = swerve.getKinematicLimits();
-        Rotation2d driveRotation = RobotStateEstimator.getInstance().getPose().getRotation();
+        Rotation2d driveRotation = RobotStateEstimator.getInstance().getEstimatedPose().getRotation();
 
         double rotationalVelocity = mRotationSupplier.getAsDouble() * limit.maxLinearVelocity();
         double xVelocity = mTranslationXSupplier.getAsDouble() * limit.maxLinearVelocity();
@@ -73,7 +73,6 @@ public class TeleopDrive extends Command {
 
         if (AllianceFlipUtil.shouldFlip()) {
             theta = theta.rotateBy(Rotation2d.fromDegrees(180.0));
-            //theta = AllianceFlipUtil.apply(theta);
             xVelocity = -xVelocity;
             yVelocity = -yVelocity;
         }
@@ -96,7 +95,7 @@ public class TeleopDrive extends Command {
         swerve.driveOpenLoop(velocity);
 
         Logger.recordOutput("RobotState/Aiming/HeadingGoal", theta);
-        Logger.recordOutput("RobotState/Aiming/atHeadingGoal", theta);
+
     }
 
     @Override

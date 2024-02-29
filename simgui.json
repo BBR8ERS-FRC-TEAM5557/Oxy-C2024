@@ -1,7 +1,15 @@
 {
   "NTProvider": {
     "types": {
-      "/FMSInfo": "FMSInfo"
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Driver/Field": "Field2d",
+      "/SmartDashboard/Driver/AutonomousChooser": "String Chooser",
+      "/SmartDashboard/Driver/SystemsCheckChooser": "String Chooser"
+    }
+  },
+  "NetworkTables": {
+    "Persistent Values": {
+      "open": false
     }
   },
   "NetworkTables Info": {

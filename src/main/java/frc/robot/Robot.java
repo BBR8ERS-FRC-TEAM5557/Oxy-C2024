@@ -13,11 +13,13 @@ import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team6328.Alert;
@@ -26,9 +28,10 @@ import frc.robot.subsystems.flywheels.Flywheels.IdleMode;
 import frc.lib.team6328.VirtualSubsystem;
 
 public class Robot extends LoggedRobot {
+	private RobotContainer m_robotContainer;
+
 	private Command m_autonomousCommand;
 	private Command m_subsystemCheckCommand;
-	private RobotContainer m_robotContainer;
 
 	private final Timer canErrorTimer = new Timer();
 	private final Timer disabledTimer = new Timer();
@@ -45,8 +48,7 @@ public class Robot extends LoggedRobot {
 	public void robotInit() {
 
 		if (Constants.kIsReal) {
-			String folder = "";
-			// Logger.addDataReceiver(new WPILOGWriter(folder));
+			Logger.addDataReceiver(new WPILOGWriter());
 			Logger.addDataReceiver(new NT4Publisher());
 			LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
 		} else {
@@ -60,8 +62,8 @@ public class Robot extends LoggedRobot {
 			String name = command.getName();
 			int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
 			commandCounts.put(name, count);
-			/** fix this */ // - was "active" before only for the first line
-			Logger.recordOutput("CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), count > 0);
+			Logger.recordOutput(
+					"CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()), active);
 			Logger.recordOutput("CommandsAll/" + name, count > 0);
 		};
 		CommandScheduler.getInstance()
@@ -79,6 +81,11 @@ public class Robot extends LoggedRobot {
 						(Command command) -> {
 							logCommandFunction.accept(command, false);
 						});
+
+		// Default to blue alliance in sim
+		if (!Constants.kIsReal) {
+			DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+		}
 
 		// Start timers
 		canErrorTimer.reset();
@@ -115,6 +122,12 @@ public class Robot extends LoggedRobot {
 			// LEDs.getInstance().lowBatteryAlert = true;
 			lowBatteryAlert.set(true);
 		}
+
+		// Robot container periodic methods
+		m_robotContainer.checkControllers();
+		RobotStateEstimator.getInstance().getAimingParameters();
+
+		Threads.setCurrentThreadPriority(true, 10);
 	}
 
 	@Override

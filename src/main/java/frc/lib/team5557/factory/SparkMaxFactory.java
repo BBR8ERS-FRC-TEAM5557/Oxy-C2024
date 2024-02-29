@@ -4,12 +4,13 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import frc.lib.team5557.util.CANDeviceType;
 import frc.lib.team5557.util.CANDeviceFinder;
 import frc.lib.team5557.util.CANDeviceId;
-import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
 
 public class SparkMaxFactory {
 	public static final int configCANTimeout = 400;

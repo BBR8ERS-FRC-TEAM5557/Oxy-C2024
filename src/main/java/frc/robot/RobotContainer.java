@@ -6,7 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -14,6 +13,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.team6328.Alert;
+import frc.lib.team6328.Alert.AlertType;
 import frc.robot.auto.SystemsCheckManager;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
@@ -37,8 +38,7 @@ import frc.robot.subsystems.swerve.module.ModuleIOSim;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.FeedForwardCharacterization;
-import frc.robot.util.FieldConstants;
-import frc.robot.util.RobotStateEstimator;
+
 import static frc.robot.Constants.*;
 import static frc.robot.Constants.RobotMap.*;
 
@@ -48,20 +48,21 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 public class RobotContainer {
-
-    public static final CommandXboxController mDriver = new CommandXboxController(0);
-    public static final CommandXboxController mOperator = new CommandXboxController(1);
-
-    private final LoggedDashboardChooser<Command> mChooser;
-
     public static Swerve mSwerve;
     public static Intake mIntake;
     public static Feeder mFeeder;
     public static Flywheels mFlywheels;
     public static Arm mArm;
 
+    public static final CommandXboxController mDriver = new CommandXboxController(0);
+    public static final CommandXboxController mOperator = new CommandXboxController(1);
+    private final Alert driverDisconnected = new Alert("Driver controller disconnected (port 0).", AlertType.WARNING);
+    private final Alert operatorDisconnected = new Alert("Operator controller disconnected (port 0).",
+            AlertType.WARNING);
+
     public static RobotStateEstimator m_stateEstimator;
     public static SystemsCheckManager m_systemCheckManager;
+    private final LoggedDashboardChooser<Command> mChooser;
 
     public RobotContainer() {
         if (kIsReal) {
@@ -125,100 +126,85 @@ public class RobotContainer {
 
         /* SWERVING */
         TeleopDrive teleop = new TeleopDrive(this::getForwardInput, this::getStrafeInput,
-                this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput, this::getAutoAimInput, this::getWantsSnap);
-        mSwerve.setDefaultCommand(teleop);
+                this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput, this::getWantsAutoAimInput,
+                this::getWantsSnapInput);
+        mSwerve.setDefaultCommand(teleop.withName("Teleop Drive"));
 
         mDriver.start()
                 .onTrue(Commands.runOnce(
                         () -> m_stateEstimator.setPose(
                                 new Pose2d(
-                                        m_stateEstimator.getPose().getTranslation(),
+                                        m_stateEstimator.getEstimatedPose().getTranslation(),
                                         AllianceFlipUtil.apply(new Rotation2d()))))
-                        .ignoringDisable(true));
+                        .ignoringDisable(true).withName("ResetHeading"));
         mDriver.back()
                 .onTrue(Commands.runOnce(
-                        () -> m_stateEstimator.setPose(
-                                AllianceFlipUtil.apply(
-                                        new Pose2d(
-                                                Units.inchesToMeters(36.0),
-                                                FieldConstants.Speaker.centerSpeakerOpening.getY(),
-                                                new Rotation2d()))))
-                        .ignoringDisable(true));
+                        () -> mSwerve.resetModuleEncoders())
+                        .ignoringDisable(true).withName("ResetSwerveEncoders"));
 
-        mDriver.x().onTrue(Commands.run(() -> mSwerve.stopWithX()));
+        // POTENTIALLY ADD IDK
+        // mDriver.x().whileTrue(Commands.run(() -> mSwerve.stopWithX(), mSwerve));
 
         /* INTAKING */
-        Command buzzControllers = Commands.sequence(Commands.runOnce(() -> {
-            mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
-            mOperator.getHID().setRumble(RumbleType.kBothRumble, 1.0);
-        }).andThen(Commands.waitSeconds(0.125)), Commands.runOnce(() -> {
-            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
-            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
-        }).andThen(Commands.waitSeconds(0.125)), Commands.runOnce(() -> {
-            mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
-            mOperator.getHID().setRumble(RumbleType.kBothRumble, 1.0);
-        }).andThen(Commands.waitSeconds(0.125)), Commands.runOnce(() -> {
-            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
-            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
-        }));
-
         mOperator.rightBumper().whileTrue(
                 mArm.intake().alongWith(Commands.waitUntil(mArm::atGoal)
                         .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
-                                .until(mFeeder::hasGamepiece))));
-
-        Trigger pieceStaged = new Trigger(mFeeder::hasGamepiece);
-        pieceStaged.onTrue(buzzControllers);
+                                .until(mFeeder::hasGamepiece)))
+                        .withName("Teleop Intaking"));
 
         mOperator.leftBumper().whileTrue(
                 mArm.intake().alongWith(Commands.waitUntil(mArm::atGoal)
-                        .andThen(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor()))));
+                        .andThen(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor())))
+                        .withName("Teleop Ejecting"));
 
         /* COASTING */
-        mOperator.leftTrigger().whileTrue(mArm.forceCoast());
+        mOperator.leftTrigger().whileTrue(Commands.parallel(mArm.forceCoast(), mSwerve.forceCoast())
+                .ignoringDisable(true).withName("ForceCoast"));
 
         /* SHOOTING */
-        mOperator.a().whileTrue(Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()));
+        mOperator.a().whileTrue(Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepCustomShot"));
         Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
         mOperator.rightTrigger().and(mOperator.a())
                 .onTrue(Commands.parallel(
                         Commands.waitSeconds(0.5),
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
-                        .deadlineWith(mFeeder.shoot()));
+                        .deadlineWith(mFeeder.shoot()).withName("ScoreCustom"));
 
-        mOperator.b().whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender()));
+        mOperator.b()
+                .whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender()).withName("PrepFenderShot"));
         Trigger readyToShootFender = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.b());
         mOperator.rightTrigger().and(mOperator.b())
                 .onTrue(Commands.parallel(
                         Commands.waitSeconds(0.5),
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
-                        .deadlineWith(mFeeder.shoot()));
+                        .deadlineWith(mFeeder.shoot()).withName("ScoreFender"));
 
-        // mOperator.y().whileTrue(
-        // Commands.parallel(mArm.trap(),
-        // mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-        // .until(() -> !mFeeder.hasGamepiece()).andThen(mFeeder.shootTrap())));
-        // Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal() &&
-        // !mFeeder.hasGamepiece()).and(mOperator.y());
+        /* TRAPPING */
         mOperator.y().whileTrue(
                 Commands.parallel(mArm.trap(), mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-                        .raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap())));
+                        .raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap())).withName("PrepTrap"));
         Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(mOperator.y());
         mOperator.rightTrigger().and(mOperator.y())
                 .onTrue(Commands.parallel(
                         Commands.waitSeconds(0.5),
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
-                        .deadlineWith(Commands.parallel(mFlywheels.shootTrap(), mFeeder.shootTrap())));
+                        .deadlineWith(Commands.parallel(mFlywheels.shootTrap(), mFeeder.shootTrap()))
+                        .withName("ScoreTrap"));
+
+        /* CLIMBING */
+        mOperator.pov(0).onTrue(mArm.prepClimb().alongWith(mFlywheels.stop()));
+        mOperator.pov(180).onTrue(mArm.retractClimb().alongWith(mFlywheels.stop()));
 
         /* AMPING */
-        mOperator.x().whileTrue(Commands.parallel(mArm.amp(), mFlywheels.eject()));
+        mOperator.x().whileTrue(Commands.parallel(mArm.amp(), mFlywheels.eject()).withName("PrepAmp"));
         Trigger readyToEjectAmp = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.x());
         mOperator.rightTrigger().and(mOperator.x())
                 .onTrue(Commands.parallel(
                         Commands.waitSeconds(0.5),
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
-                        .deadlineWith(mFeeder.ejectAmp()));
+                        .deadlineWith(mFeeder.ejectAmp()).withName("ScoreAmp"));
 
+        /* SIGNALING */
         readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootTrap)
                 .whileTrue(
                         Commands.run(
@@ -226,10 +212,34 @@ public class RobotContainer {
                 .whileFalse(
                         Commands.run(
                                 () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
-        /* CLIMBING */
-        mOperator.pov(0).onTrue(mArm.prepClimb().alongWith(mFlywheels.stop()));
-        mOperator.pov(180).onTrue(mArm.retractClimb().alongWith(mFlywheels.stop()));
 
+        Command pulseControllers = Commands.sequence(Commands.runOnce(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+        }).andThen(Commands.waitSeconds(0.25)), Commands.runOnce(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+        }).andThen(Commands.waitSeconds(0.25)), Commands.runOnce(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+        }).andThen(Commands.waitSeconds(0.25)), Commands.runOnce(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
+        })).withName("PulseControllers");
+
+        Trigger pieceStaged = new Trigger(mFeeder::hasGamepiece);
+        pieceStaged.onTrue(pulseControllers);
+
+    }
+
+    /** Updates the alerts for disconnected controllers. */
+    public void checkControllers() {
+        driverDisconnected.set(
+                !DriverStation.isJoystickConnected(mDriver.getHID().getPort())
+                        || !DriverStation.getJoystickIsXbox(mDriver.getHID().getPort()));
+        operatorDisconnected.set(
+                !DriverStation.isJoystickConnected(mOperator.getHID().getPort())
+                        || !DriverStation.getJoystickIsXbox(mOperator.getHID().getPort()));
     }
 
     private void generateAutoChoices() {
@@ -263,13 +273,6 @@ public class RobotContainer {
                                 .alongWith(Commands.waitUntil(mArm::atGoal)
                                         .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
                                                 .until(mFeeder::hasGamepiece)))));
-
-        // NamedCommands.registerCommand("intakeNote",
-        // Commands.print("intaking started")
-        // .alongWith(mArm.intake()
-        // .alongWith(Commands.waitUntil(mArm::atGoal)
-        // .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
-        // .raceWith(Commands.waitUntil(mFeeder::hasGamepiece))))));
 
         Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 
@@ -319,11 +322,11 @@ public class RobotContainer {
         return -(mDriver.getRightY());
     }
 
-    public boolean getAutoAimInput() {
-        return mOperator.a().getAsBoolean();
+    public boolean getWantsAutoAimInput() {
+        return mDriver.a().getAsBoolean();
     }
 
-    public boolean getWantsSnap() {
+    public boolean getWantsSnapInput() {
         return mDriver.rightBumper().getAsBoolean();
     }
 

@@ -1,7 +1,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.lib.team5557.util.CANDeviceId;
 
 public class Constants {
 

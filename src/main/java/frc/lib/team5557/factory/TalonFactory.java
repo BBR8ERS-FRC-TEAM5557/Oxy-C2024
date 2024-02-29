@@ -9,7 +9,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.lib.team5557.util.CANDeviceFinder;
 import frc.lib.team5557.util.CANDeviceId;
-import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
+import frc.lib.team5557.util.CANDeviceType;
 
 public class TalonFactory {
     public static final int configCANTimeout = 500;
@@ -53,7 +53,7 @@ public class TalonFactory {
     }
 
     public static TalonFX createTalon(int id, Configuration config) {
-        config.canID = new CANDeviceId(CANDeviceType.TALON, id);
+        config.canID = new CANDeviceId(CANDeviceType.TALON_PHOENIX6, id);
         return createTalon(config);
     }
 

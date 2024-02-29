@@ -1,7 +1,6 @@
 package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkBase.ControlType;
 
 import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;

@@ -126,7 +126,7 @@ public class SwerveConstants {
 		kAngleMotorConfiguration.kShouldInvert = true;
 		kAngleMotorConfiguration.kVoltageCompensation = 12.0;
 		kAngleMotorConfiguration.kSmartCurrentLimit = 20.0;
-		kAngleMotorConfiguration.kIdleMode = IdleMode.kCoast;
+		kAngleMotorConfiguration.kIdleMode = IdleMode.kBrake;
 	}
 
 	public static final Translation2d[] kSwerveModuleLocations = {

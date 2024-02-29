@@ -4,7 +4,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 
 import frc.lib.team5557.factory.SparkMaxFactory.Configuration;
 import frc.lib.team5557.util.CANDeviceId;
-import frc.lib.team5557.util.CANDeviceId.CANDeviceType;
+import frc.lib.team5557.util.CANDeviceType;
 import frc.robot.Constants.RobotMap;
 
 public class FeederConstants {

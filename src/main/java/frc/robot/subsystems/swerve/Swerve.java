@@ -8,13 +8,9 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
@@ -28,8 +24,10 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.RobotStateEstimator;
 import frc.robot.auto.SystemsCheckManager.SwerveModuleSystemCheckRequest;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIO.GyroIOInputs;
@@ -41,7 +39,6 @@ import frc.robot.subsystems.swerve.util.SwerveSetpoint;
 import frc.robot.subsystems.swerve.util.SwerveSetpointGenerator;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.GeometryUtil;
-import frc.robot.util.RobotStateEstimator;
 import frc.robot.util.Util;
 import lombok.Getter;
 import lombok.Setter;
@@ -142,14 +139,16 @@ public class Swerve extends SubsystemBase {
 				"Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "NONE");
 
 		AutoBuilder.configureHolonomic(
-				RobotStateEstimator.getInstance()::getPose, // Robot pose supplier
-				RobotStateEstimator.getInstance()::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
+				RobotStateEstimator.getInstance()::getEstimatedPose, // Robot pose supplier
+				RobotStateEstimator.getInstance()::setPose, // Method to reset odometry (will be called if your auto has
+															// a starting pose)
 				() -> mRobotRelativeVelocity, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
 				this::drivePath, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
 				DriveMotionPlanner.config,
 				AllianceFlipUtil::shouldFlip, // should mirror path
 				this // Reference to this subsystem to set requirements
 		);
+
 	}
 
 	@Override
@@ -219,9 +218,6 @@ public class Swerve extends SubsystemBase {
 
 			mSwerveSetpoint = mSetpointGenerator.generateSetpoint(
 					kModuleLimits, kinematicLimits, mSwerveSetpoint, mDesiredSpeeds, Robot.defaultPeriodSecs);
-
-			// m_swerveSetpoint.moduleStates =
-			// m_kinematics.toSwerveModuleStates(adjustedSpeeds);
 
 			// Send setpoints to modules
 			SwerveModuleState[] optimizedStates = new SwerveModuleState[4];
@@ -316,6 +312,28 @@ public class Swerve extends SubsystemBase {
 		this.drive(new ChassisSpeeds(), ControlMode.X_OUT);
 	}
 
+	public void resetModuleEncoders() {
+		for (Module module : mModules) {
+			module.resetToAbsolute();
+		}
+	}
+
+	public Command forceCoast() {
+		return startEnd(
+				() -> {
+					for (Module module : mModules) {
+						module.setAngleBrakeMode(false);
+						module.setDriveBrakeMode(false);
+					}
+				}, () -> {
+					for (Module module : mModules) {
+						module.setAngleBrakeMode(true);
+						module.setDriveBrakeMode(true);
+					}
+				})
+				.ignoringDisable(true);
+	}
+
 	public SwerveSetpoint getSwerveSetpoint() {
 		return mSwerveSetpoint;
 	}
@@ -324,7 +342,7 @@ public class Swerve extends SubsystemBase {
 	public Rotation2d getGyroYaw() {
 		return mGyroInputs.connected
 				? mGyroInputs.yawPosition
-				: RobotStateEstimator.getInstance().getPose().getRotation();
+				: RobotStateEstimator.getInstance().getEstimatedPose().getRotation();
 	}
 
 	/**

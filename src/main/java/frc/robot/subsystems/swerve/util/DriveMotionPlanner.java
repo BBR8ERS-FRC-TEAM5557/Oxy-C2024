@@ -6,9 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import frc.lib.team6328.TunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
-import frc.robot.RobotContainer;
-import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.util.RobotStateEstimator;
+import frc.robot.RobotStateEstimator;
 
 import static frc.robot.subsystems.swerve.SwerveConstants.*;
 
@@ -42,7 +40,6 @@ public class DriveMotionPlanner extends VirtualSubsystem {
 	private static final ProfiledPIDController snapController = new ProfiledPIDController(
 			kRotationkP, kRotationkI, kRotationkD, new Constraints(kSnapMaxOmega, kSnapMaxAlpha));
 
-	private static final Swerve swerve = RobotContainer.mSwerve;
 	public static final HolonomicPathFollowerConfig config = new HolonomicPathFollowerConfig(
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
@@ -79,7 +76,7 @@ public class DriveMotionPlanner extends VirtualSubsystem {
 	}
 
 	public static double calculateSnap(Rotation2d goalAngle) {
-		return snapController.calculate(RobotStateEstimator.getInstance().getPose().getRotation().getRadians(),
+		return snapController.calculate(RobotStateEstimator.getInstance().getEstimatedPose().getRotation().getRadians(),
 				goalAngle.getRadians());
 	}
 

@@ -1,4 +1,10 @@
-package frc.robot.util;
+package frc.robot;
+
+import java.util.List;
+import java.util.Map;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
@@ -22,14 +28,11 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
-import java.util.List;
-import java.util.Map;
-
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
+import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.FieldConstants;
+import frc.robot.util.GeometryUtil;
 
 public class RobotStateEstimator extends VirtualSubsystem {
 
@@ -94,7 +97,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		armAngleMapDouble.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 183.0); // 182.5 true
 		armAngleMapDouble.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 185.5); // 182.5 true
 
-		armAngleMapDouble.put(Double.MAX_VALUE, 220.0); // upper limit
+		armAngleMapDouble.put(Double.MAX_VALUE, 190.0); // upper limit
 	}
 
 	private final SwerveDrivePoseEstimator mPoseEstimator;
@@ -110,7 +113,6 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	 * Cached latest aiming parameters. Calculated in {@code getAimingParameters()}
 	 */
 	private AimingParameters mLatestParameters = null;
-	private Pose2d mEstimatedPose = new Pose2d();
 	private Twist2d mRobotVelocity = new Twist2d();
 	private final Field2d mField2d = new Field2d();
 
@@ -130,14 +132,13 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	public void periodic() {
 		clampPoseToField();
 		updateFieldWidget();
-
 	}
 
 	/** Add odometry observation */
 	public void addOdometryObservation(OdometryObservation observation) {
 		mLatestParameters = null;
 		var twist = Swerve.mKinematics.toTwist2d(mLastModulePositions, observation.wheelPositions());
-		var derivedGyroAngle = Rotation2d.fromRadians(getPose().getRotation().getRadians() + twist.dtheta);
+		var derivedGyroAngle = Rotation2d.fromRadians(getEstimatedPose().getRotation().getRadians() + twist.dtheta);
 		mLastModulePositions = observation.wheelPositions;
 
 		// Check gyro connected
@@ -157,10 +158,6 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	public void addVelocityData(Twist2d robotVelocity) {
 		mLatestParameters = null;
 		this.mRobotVelocity = robotVelocity;
-	}
-
-	public Pose2d getPose() {
-		return mPoseEstimator.getEstimatedPosition();
 	}
 
 	public AimingParameters getAimingParameters() {
@@ -192,30 +189,34 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
 		mLatestParameters = new AimingParameters(
 				targetVehicleDirection,
-				Rotation2d.fromDegrees(
-						178.0),//armAngleMapSingle.get(targetDistance) + mShotCompensationDegrees.getDouble(0.0)),
+				//Rotation2d.fromDegrees(178.0 + mShotCompensationDegrees.getDouble(0.0)),
+				Rotation2d.fromDegrees(armAngleMapSingle.get(targetDistance) + mShotCompensationDegrees.getDouble(0.0)),
 				feedVelocity);
 
-		Logger.recordOutput("RobotState/AimingParameters/Direction", mLatestParameters.driveHeading());
+		Logger.recordOutput("RobotState/AimingParameters/TargetDirection", mLatestParameters.driveHeading());
+		Logger.recordOutput("RobotState/AimingParameters/TargetDistance", targetDistance);
 		Logger.recordOutput("RobotState/AimingParameters/ArmAngle", mLatestParameters.armAngle());
 		Logger.recordOutput(
 				"RobotState/AimingParameters/DriveFeedVelocityRadPerS",
 				mLatestParameters.driveFeedVelocity());
+		Logger.recordOutput(
+				"RobotState/AimingParameters/ShotCompensation",
+				mShotCompensationDegrees.getDouble(0.0));
 
 		return mLatestParameters;
 	}
 
 	@AutoLogOutput(key = "RobotState/FieldVelocity")
-	public Twist2d fieldVelocity() {
+	public Twist2d getFieldVelocity() {
 		Translation2d linearFieldVelocity = new Translation2d(mRobotVelocity.dx, mRobotVelocity.dy)
-				.rotateBy(mEstimatedPose.getRotation());
+				.rotateBy(getEstimatedPose().getRotation());
 		return new Twist2d(
 				linearFieldVelocity.getX(), linearFieldVelocity.getY(), mRobotVelocity.dtheta);
 	}
 
 	@AutoLogOutput(key = "RobotState/EstimatedPose")
-	public Pose2d getmEstimatedPose() {
-		return mEstimatedPose;
+	public Pose2d getEstimatedPose() {
+		return mPoseEstimator.getEstimatedPosition();
 	}
 
 	/**
@@ -229,7 +230,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	 * @return The predicted pose.
 	 */
 	public Pose2d getPredictedPose(double translationLookaheadS, double rotationLookaheadS) {
-		return getmEstimatedPose()
+		return getEstimatedPose()
 				.exp(
 						new Twist2d(
 								mRobotVelocity.dx * translationLookaheadS,
@@ -254,24 +255,18 @@ public class RobotStateEstimator extends VirtualSubsystem {
 				|| estimatedXPos > Units.feetToMeters(52)) {
 			double clampedYPosition = MathUtil.clamp(estimatedYPos, 0.0, 8.35);
 			double clampedXPosition = MathUtil.clamp(estimatedXPos, 0.0, Units.feetToMeters(52.0));
-			this.setPose(new Pose2d(clampedXPosition, clampedYPosition, getPose().getRotation()));
+			this.setPose(new Pose2d(clampedXPosition, clampedYPosition, getEstimatedPose().getRotation()));
 		}
 	}
 
 	private void updateFieldWidget() {
-		Pose2d robotPose = getPose();
+		Pose2d robotPose = getEstimatedPose();
 		mField2d.setRobotPose(robotPose);
 	}
 
 	public void addFieldPose(String name, Pose2d pose) {
 		if (pose != null) {
 			mField2d.getObject(name).setPose(pose);
-		}
-	}
-
-	private void addFieldPose(String name, Pose2d... pose) {
-		if (pose != null) {
-			mField2d.getObject(name).setPoses(pose);
 		}
 	}
 

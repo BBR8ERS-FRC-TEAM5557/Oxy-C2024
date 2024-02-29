@@ -47,8 +47,6 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     private final TorqueCurrentFOC driveCurrent = new TorqueCurrentFOC(0).withUpdateFreqHz(0);
     private final NeutralOut driveNeutral = new NeutralOut().withUpdateFreqHz(0);
 
-    // Misc.
-    private double resetIteration;
 
     public ModuleIOKrakenSparkMax(int moduleNumber, int driveMotorID, int angleMotorID, Rotation2d angleOffset) {
         System.out.println("[Init] Creating ModuleIOKrakenSparkMax" + moduleNumber);
@@ -104,6 +102,7 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
                 driveSupplyCurrent,
                 driveTorqueCurrent)
                 .isOK();
+        inputs.angleMotorConnected = mAngleMotor.getLastError() != REVLibError.kCANDisconnected;
 
         inputs.driveDistanceMeters = rotationsToMeters(
                 drivePosition.getValueAsDouble(),
