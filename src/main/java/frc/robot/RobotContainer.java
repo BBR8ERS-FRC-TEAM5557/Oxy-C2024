@@ -12,11 +12,8 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.auto.AutoRoutineManager;
 import frc.robot.auto.SystemsCheckManager;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
@@ -44,8 +41,6 @@ import frc.robot.util.FieldConstants;
 import frc.robot.util.RobotStateEstimator;
 import static frc.robot.Constants.*;
 import static frc.robot.Constants.RobotMap.*;
-
-import java.util.HashMap;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -130,7 +125,7 @@ public class RobotContainer {
 
         /* SWERVING */
         TeleopDrive teleop = new TeleopDrive(this::getForwardInput, this::getStrafeInput,
-                this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput, this::getAutoAimInput);
+                this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput, this::getAutoAimInput, this::getWantsSnap);
         mSwerve.setDefaultCommand(teleop);
 
         mDriver.start()
@@ -150,36 +145,37 @@ public class RobotContainer {
                                                 new Rotation2d()))))
                         .ignoringDisable(true));
 
-        mDriver.x().onTrue(Commands.runOnce(() -> mSwerve.stopWithX()));
+        mDriver.x().onTrue(Commands.run(() -> mSwerve.stopWithX()));
 
         /* INTAKING */
-        Command buzzControllers = Commands.sequence(Commands.run(() -> {
-            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.75);
-            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.75);
-        }).withTimeout(0.25), Commands.run(() -> {
+        Command buzzControllers = Commands.sequence(Commands.runOnce(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+        }).andThen(Commands.waitSeconds(0.125)), Commands.runOnce(() -> {
             mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
             mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
-        }).withTimeout(0.25), Commands.run(() -> {
-            mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.75);
-            mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.75);
-        }).withTimeout(0.25), Commands.run(() -> {
+        }).andThen(Commands.waitSeconds(0.125)), Commands.runOnce(() -> {
+            mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+            mOperator.getHID().setRumble(RumbleType.kBothRumble, 1.0);
+        }).andThen(Commands.waitSeconds(0.125)), Commands.runOnce(() -> {
             mDriver.getHID().setRumble(RumbleType.kBothRumble, 0.0);
             mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
         }));
 
-        mOperator.rightBumper()
-                .whileTrue(mArm.intake()
-                        .alongWith(Commands.waitUntil(mArm::atGoal)
-                                .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
-                                        .until(() -> mFeeder.hasGamepiece()))));
+        mOperator.rightBumper().whileTrue(
+                mArm.intake().alongWith(Commands.waitUntil(mArm::atGoal)
+                        .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
+                                .until(mFeeder::hasGamepiece))));
 
-        mOperator.leftTrigger()
-                .whileTrue(mArm.intake()
-                        .alongWith(Commands.waitUntil(mArm::atGoal)
-                                .andThen(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor()))));
+        Trigger pieceStaged = new Trigger(mFeeder::hasGamepiece);
+        pieceStaged.onTrue(buzzControllers);
+
+        mOperator.leftBumper().whileTrue(
+                mArm.intake().alongWith(Commands.waitUntil(mArm::atGoal)
+                        .andThen(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor()))));
 
         /* COASTING */
-        mOperator.leftBumper().whileTrue(mArm.forceCoast());
+        mOperator.leftTrigger().whileTrue(mArm.forceCoast());
 
         /* SHOOTING */
         mOperator.a().whileTrue(Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()));
@@ -198,13 +194,21 @@ public class RobotContainer {
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
                         .deadlineWith(mFeeder.shoot()));
 
-        mOperator.y().whileTrue(Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()));
-        Trigger readyToShootCustom = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.y());
+        // mOperator.y().whileTrue(
+        // Commands.parallel(mArm.trap(),
+        // mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
+        // .until(() -> !mFeeder.hasGamepiece()).andThen(mFeeder.shootTrap())));
+        // Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal() &&
+        // !mFeeder.hasGamepiece()).and(mOperator.y());
+        mOperator.y().whileTrue(
+                Commands.parallel(mArm.trap(), mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
+                        .raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap())));
+        Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(mOperator.y());
         mOperator.rightTrigger().and(mOperator.y())
                 .onTrue(Commands.parallel(
                         Commands.waitSeconds(0.5),
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
-                        .deadlineWith(mFeeder.shoot()));
+                        .deadlineWith(Commands.parallel(mFlywheels.shootTrap(), mFeeder.shootTrap())));
 
         /* AMPING */
         mOperator.x().whileTrue(Commands.parallel(mArm.amp(), mFlywheels.eject()));
@@ -215,7 +219,7 @@ public class RobotContainer {
                         Commands.waitUntil(mOperator.rightTrigger().negate()))
                         .deadlineWith(mFeeder.ejectAmp()));
 
-        readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootCustom)
+        readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootTrap)
                 .whileTrue(
                         Commands.run(
                                 () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0)))
@@ -224,7 +228,7 @@ public class RobotContainer {
                                 () -> mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0)));
         /* CLIMBING */
         mOperator.pov(0).onTrue(mArm.prepClimb().alongWith(mFlywheels.stop()));
-        mOperator.pov(180).onTrue(mArm.retractClimb());
+        mOperator.pov(180).onTrue(mArm.retractClimb().alongWith(mFlywheels.stop()));
 
     }
 
@@ -232,7 +236,11 @@ public class RobotContainer {
         System.out.println("[Init] Auto Routines");
 
         mChooser.addDefaultOption("Do Nothing", null);
-        mChooser.addOption("fender-4Piece", AutoBuilder.buildAuto("fender-4Piece"));
+        mChooser.addDefaultOption("N3_S_C01", AutoBuilder.buildAuto("N3_S_C01"));
+        mChooser.addOption("N4_S012_fender", AutoBuilder.buildAuto("N4_S012_fender"));
+        mChooser.addOption("N4_S012", AutoBuilder.buildAuto("N4_S012"));
+        mChooser.addDefaultOption("N5_S012_C4", AutoBuilder.buildAuto("N5_S012_C4"));
+        mChooser.addDefaultOption("N6_S012_C34", AutoBuilder.buildAuto("N6_S012_C34"));
 
         // Set up feedforward characterization
         mChooser.addOption(
@@ -250,16 +258,31 @@ public class RobotContainer {
 
     private void generateEventMap() {
         NamedCommands.registerCommand("intakeNote",
-                Commands.print("Intaking started").andThen(mArm.intake()
-                        .alongWith(Commands.waitUntil(mArm::atGoal)
-                                .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
-                                        .raceWith(Commands.waitUntil(mFeeder::hasGamepiece))))));
+                Commands.print("intaking started")
+                        .alongWith(mArm.intake()
+                                .alongWith(Commands.waitUntil(mArm::atGoal)
+                                        .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
+                                                .until(mFeeder::hasGamepiece)))));
+
+        // NamedCommands.registerCommand("intakeNote",
+        // Commands.print("intaking started")
+        // .alongWith(mArm.intake()
+        // .alongWith(Commands.waitUntil(mArm::atGoal)
+        // .andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
+        // .raceWith(Commands.waitUntil(mFeeder::hasGamepiece))))));
 
         Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 
-        NamedCommands.registerCommand("shootFenderNote",
-                Commands.print("shooting started")
-                        .andThen(Commands.parallel(mArm.aimFender(), mFlywheels.shoot())
+        NamedCommands.registerCommand("shootFender",
+                Commands.print("shooting fender started")
+                        .alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shoot())
+                                .raceWith(Commands.waitUntil(readyToShoot)
+                                        .andThen(mFeeder.shoot().alongWith(Commands.print("feeding started"))
+                                                .until(() -> !mFeeder.hasGamepiece())))));
+
+        NamedCommands.registerCommand("shootDistance",
+                Commands.print("shooting distance started")
+                        .alongWith(Commands.parallel(mArm.aim(), mFlywheels.shoot())
                                 .raceWith(Commands.waitUntil(readyToShoot)
                                         .andThen(mFeeder.shoot().alongWith(Commands.print("feeding started"))
                                                 .until(() -> !mFeeder.hasGamepiece())))));
@@ -286,7 +309,6 @@ public class RobotContainer {
         double rightTrigger = square(deadband(mDriver.getRightTriggerAxis(), 0.05));
 
         return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
-        // return -square(deadband(m_driver.getRightX(), 0.15));
     }
 
     public double getAimBotXInput() {
@@ -299,6 +321,10 @@ public class RobotContainer {
 
     public boolean getAutoAimInput() {
         return mOperator.a().getAsBoolean();
+    }
+
+    public boolean getWantsSnap() {
+        return mDriver.rightBumper().getAsBoolean();
     }
 
     public double getArmJogger() {

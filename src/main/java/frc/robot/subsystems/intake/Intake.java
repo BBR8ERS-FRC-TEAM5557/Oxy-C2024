@@ -18,7 +18,7 @@ public class Intake extends SubsystemBase {
 
     private State mState = State.STOP;
 
-    private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Intake/ShootingVoltage", 8.0);
+    private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Intake/IntakeVoltage", 9.0);
     private static final LoggedTunableNumber mIdleVoltage = new LoggedTunableNumber("Intake/IdleVoltage", 0.0);
     private static final LoggedTunableNumber mEjectingVoltage = new LoggedTunableNumber("Intake/EjectingVoltage", -8.0);
 
@@ -39,7 +39,7 @@ public class Intake extends SubsystemBase {
             setState(State.STOP);
         }
         
-        mIO.setIntakeVoltage(this.mState.getTopMotorVoltage());
+        mIO.setIntakeVoltage(this.mState.getTopMotorVoltage(), this.mState.getBottomMotorVoltage());
 
         Logger.recordOutput("state", mState);
         Logger.recordOutput("isStalled", isStalled());
@@ -68,7 +68,7 @@ public class Intake extends SubsystemBase {
 
     @RequiredArgsConstructor
     public enum State {
-        INTAKE(mIntakeVoltage, mIntakeVoltage),
+        INTAKE(mIntakeVoltage,() -> mIntakeVoltage.get() - 4.0),
         IDLE(mIdleVoltage, mIdleVoltage),
         STOP(() -> 0.0, () -> 0.0),
         EJECT(mEjectingVoltage, mEjectingVoltage);

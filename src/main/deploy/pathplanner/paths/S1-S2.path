@@ -3,48 +3,54 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 2.9575002002967805,
+        "y": 5.545591769370023
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9829055036547951,
-        "y": 5.540566351254224
+        "x": 2.43689942767794,
+        "y": 5.611682246567075
       },
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "S1-Shot"
     },
     {
       "anchor": {
-        "x": 2.620870342001101,
-        "y": 5.5620726051926646
+        "x": 2.03931337199584,
+        "y": 6.406884867658889
       },
       "prevControl": {
-        "x": 1.9519410658845096,
-        "y": 5.5620726051926646
+        "x": 2.0325644167316996,
+        "y": 6.003256184853525
       },
       "nextControl": {
-        "x": 3.289799618117692,
-        "y": 5.5620726051926646
+        "x": 2.043197222960022,
+        "y": 6.63916284069787
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 2.739685492102466,
+        "y": 6.903872369485191
       },
       "prevControl": {
-        "x": 1.8633031932038577,
-        "y": 5.556088701225435
+        "x": 2.148070788855083,
+        "y": 6.627997902683839
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "S2-Shot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.95,
+      "rotationDegrees": 25.0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -55,14 +61,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 25.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "fenderShooting",
-  "previewStartingState": {
-    "rotation": 0,
-    "velocity": 0
-  },
+  "folder": "FreeSpirit",
+  "previewStartingState": null,
   "useDefaultConstraints": true
 }

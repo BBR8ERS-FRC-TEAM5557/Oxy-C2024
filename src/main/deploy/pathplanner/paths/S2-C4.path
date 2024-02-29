@@ -3,48 +3,59 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 2.739685492102466,
+        "y": 6.903872369485191
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6791505476817143,
-        "y": 4.690002662710258
+        "x": 3.956713110872692,
+        "y": 7.6264642649728
       },
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "S2-Shot"
     },
     {
       "anchor": {
-        "x": 2.619152370502368,
-        "y": 4.104203754342116
+        "x": 8.174614331077894,
+        "y": 7.315807693371048
       },
       "prevControl": {
-        "x": 2.1434533380652336,
-        "y": 4.209399843046398
+        "x": 8.145481610668588,
+        "y": 7.837325743530891
       },
       "nextControl": {
-        "x": 3.1546510656489906,
-        "y": 3.9857835676390536
+        "x": 8.195044422252638,
+        "y": 6.950079358895395
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 2.9575002002967805,
+        "y": 6.2675036391697825
       },
       "prevControl": {
-        "x": 1.7979448834214913,
-        "y": 5.30869913283466
+        "x": 4.454527017234758,
+        "y": 6.49099210646755
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "C34-Shot"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.55,
+      "rotationDegrees": 0.0,
+      "rotateFast": false
+    },
+    {
+      "waypointRelativePos": 0.45,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -55,11 +66,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 15.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "fenderShooting",
+  "folder": "FreeSpirit",
   "previewStartingState": null,
   "useDefaultConstraints": true
 }

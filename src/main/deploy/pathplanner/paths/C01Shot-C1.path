@@ -3,61 +3,61 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 2.782091505299909,
+        "y": 2.3882606032717852
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.934203262304343,
-        "y": 6.196234666630213
+        "x": 5.146441545487258,
+        "y": 1.5957398911325604
       },
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "C01-Shot"
     },
     {
       "anchor": {
-        "x": 2.9982033193956434,
-        "y": 7.132719349025215
+        "x": 8.008802898031142,
+        "y": 2.3477474671239853
       },
       "prevControl": {
-        "x": 2.347932872612274,
-        "y": 6.597530717986437
+        "x": 7.25550927910305,
+        "y": 2.123409060909557
       },
       "nextControl": {
-        "x": 3.140828525104787,
-        "y": 7.25010341433632
+        "x": 8.696013486704175,
+        "y": 2.5524056831539603
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 2.782091505299909,
+        "y": 2.3882606032717852
       },
       "prevControl": {
-        "x": 1.905550211844475,
-        "y": 6.133278293081988
+        "x": 5.127663091697712,
+        "y": 1.5799891127415355
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "C01-Shot"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": 40.0,
+      "waypointRelativePos": 0.45,
+      "rotationDegrees": 20.0,
       "rotateFast": false
     },
     {
-      "waypointRelativePos": 1.0,
-      "rotationDegrees": 40.0,
+      "waypointRelativePos": 1.15,
+      "rotationDegrees": 20.0,
       "rotateFast": false
     },
     {
-      "waypointRelativePos": 1.75,
-      "rotationDegrees": 0,
+      "waypointRelativePos": 1.6,
+      "rotationDegrees": 0.0,
       "rotateFast": false
     }
   ],
@@ -65,17 +65,17 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -45.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "fenderShooting",
+  "folder": null,
   "previewStartingState": null,
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

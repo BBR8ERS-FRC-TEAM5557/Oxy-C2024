@@ -5,6 +5,7 @@ import static frc.robot.subsystems.flywheels.FlywheelsConstants.*;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.flywheels.FlywheelsIO.FlywheelsIOInputs;
 import frc.robot.util.Util;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
+import com.revrobotics.CANSparkBase.IdleMode;
+
 public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber kP = new LoggedTunableNumber("Flywheels/kP", kFlywheelP);
     private static final LoggedTunableNumber kI = new LoggedTunableNumber("Flywheels/kI", kFlywheelI);
@@ -24,16 +27,22 @@ public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber kV = new LoggedTunableNumber("Flywheels/kV", kFlywheelV);
     private static final LoggedTunableNumber kA = new LoggedTunableNumber("Flywheels/kA", kFlywheelA);
 
-    private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 7000.0);
-    private static final LoggedTunableNumber mShootingFenderRpm = new LoggedTunableNumber("Flywheels/ShootingFenderRpm", 5500.0);
+    private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 7250.0);
+    private static final LoggedTunableNumber mShootingFenderRpm = new LoggedTunableNumber("Flywheels/ShootingFenderRpm",
+            7000.0);
     private static final LoggedTunableNumber mIdleRpm = new LoggedTunableNumber("Flywheels/IdleRpm", 1500.0);
     private static final LoggedTunableNumber mIntakingRpm = new LoggedTunableNumber("Flywheels/IntakingRpm", -2000.0);
     private static final LoggedTunableNumber mEjectingRpm = new LoggedTunableNumber("Flywheels/EjectingRpm", 1500.0);
+
+    private static final LoggedTunableNumber mPrepTrapRpm = new LoggedTunableNumber("Flywheels/PrepTrapRpm", 600.0);
+    private static final LoggedTunableNumber mShootTrapRpm = new LoggedTunableNumber("Flywheels/ShootingTrapRpm",
+            -4000.0);
 
     private final FlywheelsIO mIO;
     private final FlywheelsIOInputs mInputs = new FlywheelsIOInputs();
 
     private State mState = State.IDLE;
+    private IdleMode mIdleMode = IdleMode.TELEOP;
 
     private SimpleMotorFeedforward mFeedforward = new SimpleMotorFeedforward(kFlywheelS, kFlywheelV, kFlywheelA);
 
@@ -42,12 +51,17 @@ public class Flywheels extends SubsystemBase {
 
     @RequiredArgsConstructor
     public enum State {
-        STOP(() -> 0),
+        STOP(() -> 0.0),
         IDLE(mIdleRpm),
-        SHOOT(mShootingRpm),
-        SHOOT_FENDER(mShootingFenderRpm),
         INTAKE(mIntakingRpm),
         EJECT(mEjectingRpm),
+
+        PREP_TRAP(mPrepTrapRpm),
+        SHOOT_TRAP(mShootTrapRpm),
+
+        SHOOT(mShootingRpm),
+        SHOOT_FENDER(mShootingFenderRpm),
+
         CHARACTERIZING(() -> 0.0);
 
         private final DoubleSupplier rpm;
@@ -55,6 +69,11 @@ public class Flywheels extends SubsystemBase {
         private double getRPM() {
             return rpm.getAsDouble();
         }
+    }
+
+    public enum IdleMode {
+        TELEOP,
+        AUTO
     }
 
     public Flywheels(FlywheelsIO io) {
@@ -83,8 +102,11 @@ public class Flywheels extends SubsystemBase {
             setState(State.STOP);
         }
 
-        if(mState != State.CHARACTERIZING)
+        if (mState != State.CHARACTERIZING || mState != State.STOP) {
             mIO.runVelocity(mState.getRPM(), mFeedforward.calculate(mState.getRPM()));
+        } else if (mState == State.STOP) {
+            mIO.stop();
+        }
 
         // Display alerts
         leftMotorDisconnected.set(!mInputs.leftMotorConnected);
@@ -97,6 +119,30 @@ public class Flywheels extends SubsystemBase {
 
     private void setState(State state) {
         this.mState = state;
+    }
+
+    /**
+     * Set
+     * {@link org.littletonrobotics.frc2024.subsystems.flywheels.Flywheels.IdleMode}
+     * behavior of
+     * flywheels and then idle flywheels
+     */
+    public void setIdleMode(IdleMode idleMode) {
+        if (this.mIdleMode != idleMode) {
+            // Idle after switching IdleMode
+            this.mIdleMode = idleMode;
+            idle();
+        }
+    }
+
+    private void idle() {
+        // Change based on current idle mode
+        if (mIdleMode == IdleMode.TELEOP) {
+            setState(State.IDLE);
+        } else if (mIdleMode == IdleMode.AUTO) {
+            setState(State.SHOOT);
+        }
+
     }
 
     public void runCharacterizationVolts(double volts) {
@@ -119,12 +165,21 @@ public class Flywheels extends SubsystemBase {
     }
 
     public Command shootFender() {
-        return startEnd(() -> setState(State.SHOOT_FENDER), () -> setState(State.IDLE)).withName("FlywheelsShootFender");
+        return startEnd(() -> setState(State.SHOOT_FENDER), () -> setState(State.IDLE))
+                .withName("FlywheelsShootFender");
     }
 
     public Command eject() {
         return startEnd(() -> setState(State.EJECT), () -> setState(State.IDLE))
                 .withName("FlywheelsEject");
+    }
+
+    public Command prepareTrap() {
+        return startEnd(() -> setState(State.PREP_TRAP), () -> setState(State.STOP));
+    }
+
+    public Command shootTrap() {
+        return startEnd(() -> setState(State.SHOOT_TRAP), () -> setState(State.IDLE));
     }
 
     public Command intake() {

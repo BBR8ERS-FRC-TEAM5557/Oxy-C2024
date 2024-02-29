@@ -28,13 +28,14 @@ public class TeleopDrive extends Command {
     private final DoubleSupplier mAimbotXSupplier;
     private final DoubleSupplier mAimbotYSupplier;
     private final BooleanSupplier mAutoaimSupplier;
+    private final BooleanSupplier mWantsSnapSupplier;
 
     private LoggedTunableNumber headingPadding = new LoggedTunableNumber("Aiming/HeadingPaddingDeg", 1.0);
     private boolean atHeadingGoal = false;
 
     public TeleopDrive(DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
             DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier,
-            BooleanSupplier autoAimSupplier) {
+            BooleanSupplier autoAimSupplier, BooleanSupplier wantsSnapSupplier) {
         this.swerve = RobotContainer.mSwerve;
         this.mTranslationXSupplier = translationXSupplier;
         this.mTranslationYSupplier = translationYSupplier;
@@ -42,6 +43,7 @@ public class TeleopDrive extends Command {
         this.mAimbotXSupplier = aimbotXSupplier;
         this.mAimbotYSupplier = aimbotYSupplier;
         this.mAutoaimSupplier = autoAimSupplier;
+        this.mWantsSnapSupplier = wantsSnapSupplier;
 
         addRequirements(swerve);
     }
@@ -60,18 +62,23 @@ public class TeleopDrive extends Command {
         double r = Util.scaledDeadband(rightJoyPolarCoordinate[0], 1.0, 0.15);
         Rotation2d theta = Rotation2d.fromRadians(rightJoyPolarCoordinate[1]);
 
-        if (r > 0.8) {
+        // if (r > 0.8) {
+        //     var mod = theta.getDegrees() / 45;
+        //     theta = Rotation2d.fromDegrees(Math.round(mod) * 45);
+        // }
+        if (mWantsSnapSupplier.getAsBoolean()) {
             var mod = theta.getDegrees() / 45;
             theta = Rotation2d.fromDegrees(Math.round(mod) * 45);
         }
 
         if (AllianceFlipUtil.shouldFlip()) {
-            theta.rotateBy(Rotation2d.fromDegrees(180.0));
+            theta = theta.rotateBy(Rotation2d.fromDegrees(180.0));
+            //theta = AllianceFlipUtil.apply(theta);
             xVelocity = -xVelocity;
             yVelocity = -yVelocity;
         }
 
-        boolean wantsAutoAim = mAutoaimSupplier.getAsBoolean();
+        boolean wantsAutoAim = false;//mAutoaimSupplier.getAsBoolean();
         if (r > 0.05 || wantsAutoAim) {
             theta = wantsAutoAim ? theta : theta; // fix for vehicle stuff from 6328
             rotationalVelocity = DriveMotionPlanner.calculateSnap(theta);

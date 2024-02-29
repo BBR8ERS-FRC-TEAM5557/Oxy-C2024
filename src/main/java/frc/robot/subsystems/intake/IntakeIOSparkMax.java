@@ -36,8 +36,8 @@ public class IntakeIOSparkMax implements IntakeIO {
     }
 
     @Override
-    public void setIntakeVoltage(double value) {
-        mTopMotor.setVoltage(value);
-        mBottomMotor.setVoltage(value);
+    public void setIntakeVoltage(double topvalue, double bottomvalue) {
+        mTopMotor.setVoltage(topvalue);
+        mBottomMotor.setVoltage(bottomvalue);
     }
 }

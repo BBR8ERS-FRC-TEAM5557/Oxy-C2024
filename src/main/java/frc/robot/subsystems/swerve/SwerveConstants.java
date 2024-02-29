@@ -107,7 +107,8 @@ public class SwerveConstants {
 		kDriveMotorConfiguration.setInverted = true;
 		kDriveMotorConfiguration.pid = kDrivePIDConfiguration;
 		kDriveMotorConfiguration.neutralMode = NeutralModeValue.Brake;
-		kDriveMotorConfiguration.supplyCurrentLimit = 30.0;
+		kDriveMotorConfiguration.supplyCurrentLimit = 25.0;//5.0;
+		kDriveMotorConfiguration.statorCurrentLimit = 50.0;
 	}
 
 	// ANGLE MOTOR CONFIGURATION

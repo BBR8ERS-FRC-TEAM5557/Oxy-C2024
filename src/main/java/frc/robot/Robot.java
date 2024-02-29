@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotController;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team6328.Alert;
 import frc.lib.team6328.Alert.AlertType;
+import frc.robot.subsystems.flywheels.Flywheels.IdleMode;
 import frc.lib.team6328.VirtualSubsystem;
 
 public class Robot extends LoggedRobot {
@@ -134,6 +136,8 @@ public class Robot extends LoggedRobot {
 
 		if (m_autonomousCommand != null) {
 			m_autonomousCommand.schedule();
+			RobotContainer.mFlywheels.setIdleMode(IdleMode.AUTO);
+
 		} else if (!DriverStation.isFMSAttached() && m_subsystemCheckCommand != null) {
 			System.out.println("SystemCheck Started");
 			m_subsystemCheckCommand.schedule();
@@ -158,6 +162,7 @@ public class Robot extends LoggedRobot {
 		if (m_autonomousCommand != null) {
 			m_autonomousCommand.cancel();
 		}
+		RobotContainer.mFlywheels.setIdleMode(IdleMode.TELEOP);
 	}
 
 	@Override

@@ -25,10 +25,11 @@ public class Feeder extends SubsystemBase {
     private static final LoggedTunableNumber mEjectingFloorVoltage = new LoggedTunableNumber(
             "Feeder/EjectingFloorVoltage", -8.0);
 
-    private static final LoggedTunableNumber mVelocityThreshold = new LoggedTunableNumber("Feeder/VelocityThreshold",
-            200.0);
-    private static final LoggedTunableNumber mCurrentThreshold = new LoggedTunableNumber("Feeder/CurrentThreshold",
-            25.0);
+    private static final LoggedTunableNumber mPreppingTrapVoltage = new LoggedTunableNumber(
+            "Feeder/PreppingTrapVoltage", 1.0);
+    private static final LoggedTunableNumber mShootTrapVoltage = new LoggedTunableNumber(
+            "Feeder/ShootTrapVoltage", -12.0);
+
 
     public Feeder(FeederIO io) {
         System.out.println("[Init] Creating Intake");
@@ -47,7 +48,6 @@ public class Feeder extends SubsystemBase {
         mIO.setFeederVoltage(this.mState.getMotorVoltage());
 
         Logger.recordOutput("state", mState);
-        Logger.recordOutput("isStalled", isStalled());
     }
 
     private void setState(State state) {
@@ -66,22 +66,23 @@ public class Feeder extends SubsystemBase {
         return mInputs.feederAppliedVolts;
     }
 
-    public boolean isStalled() {
-        return Math.abs(mInputs.feederVelocityRPM) <= mVelocityThreshold.get();
-    }
-
     public boolean hasGamepiece() {
         return mInputs.hasGamepiece;
     }
 
     @RequiredArgsConstructor
     public enum State {
-        INTAKE(mIntakeVoltage),
-        SHOOT(mShootVoltage),
+        STOP(() -> 0.0),
         IDLE(mIdleVoltage),
-        EJECT_AMP(mEjectingAmpVoltage),
+
+        INTAKE(mIntakeVoltage),
         EJECT_FLOOR(mEjectingFloorVoltage),
-        STOP(() -> 0.0);
+
+        SHOOT(mShootVoltage),
+        EJECT_AMP(mEjectingAmpVoltage),
+        
+        PREP_TRAP(mPreppingTrapVoltage),
+        SHOOT_TRAP(mShootTrapVoltage);
 
         private final DoubleSupplier motorVoltage;
 
@@ -91,7 +92,7 @@ public class Feeder extends SubsystemBase {
     }
 
     public Command intake() {
-        return startEnd(() -> setState(State.INTAKE), () -> setState(State.IDLE)).withName("FeederPickup");
+        return startEnd(() -> setState(State.INTAKE), () -> setState(State.IDLE)).withName("FeederIntake");
     }
 
     public Command shoot() {
@@ -102,12 +103,20 @@ public class Feeder extends SubsystemBase {
         return startEnd(() -> setState(State.EJECT_AMP), () -> setState(State.IDLE)).withName("FeederEjectAmp");
     }
 
+    public Command prepareTrap() {
+        return startEnd(() -> setState(State.PREP_TRAP), () -> setState(State.STOP)).withName("FeederPrepTrap");
+    }
+
+    public Command shootTrap() {
+        return startEnd(() -> setState(State.SHOOT_TRAP), () -> setState(State.IDLE)).withName("FeederShootTrap");
+    }
+
     public Command ejectFloor() {
         return startEnd(() -> setState(State.EJECT_FLOOR), () -> setState(State.IDLE)).withName("FeederEjectFloor");
     }
 
     public Command idle() {
-        return runOnce(() -> setState(State.IDLE));
+        return runOnce(() -> setState(State.IDLE)).withName("FeederIdle");
     }
 
 }

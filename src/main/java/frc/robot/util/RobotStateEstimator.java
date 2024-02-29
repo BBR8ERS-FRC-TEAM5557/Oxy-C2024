@@ -15,6 +15,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -23,10 +25,8 @@ import frc.lib.team6328.VirtualSubsystem;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.SwerveConstants;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.List;
+import java.util.Map;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -54,9 +54,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		return mInstance;
 	}
 
-	@Setter
-	@Getter
-	private double shotCompensationDegrees = 0.0;
+	private static GenericEntry mShotCompensationDegrees;
 	private static final LoggedTunableNumber lookahead = new LoggedTunableNumber("RobotState/lookaheadS", 0.0);
 	private static final double kMeasurementOffset = (SwerveConstants.kChassisLength / 2.0)
 			+ Units.inchesToMeters(24.0);
@@ -64,27 +62,27 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	/**
 	 * Arm angle (single side flywheels) look up table key: meters, values: degrees
 	 */
-	//STILL NEEDS TO BE FILLED IN
+	// STILL NEEDS TO BE FILLED IN
 	private static final InterpolatingDoubleTreeMap armAngleMapSingle = new InterpolatingDoubleTreeMap();
 	static {
 		armAngleMapSingle.put(Units.inchesToMeters(0.0), 157.0); // lower limit
 
-		armAngleMapSingle.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 160.0); // from subwoofer
-		armAngleMapSingle.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 166.0); // 165.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 157.0); // from subwoofer
+		armAngleMapSingle.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 164.0); // 165.5 true
 		armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 172.0); // 172.5 true
 		armAngleMapSingle.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 177.0); // 178.5 true
 		armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 179.5); // 182.5 true
 		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 181.5); // 182.5 true
-		armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 184.0); // 182.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 183.0); // 182.5 true
+		armAngleMapSingle.put(Units.inchesToMeters(168.0) + kMeasurementOffset, 184.0); // 182.5 true
 
-
-		armAngleMapSingle.put(Double.MAX_VALUE, 220.0); // upper limit
+		armAngleMapSingle.put(Double.MAX_VALUE, 190.0); // upper limit
 	}
 
 	/**
-	 * Arm angle (single side flywheels) look up table key: meters, values: degrees
+	 * Arm angle (double side flywheels) look up table key: meters, values: degrees
 	 */
-	//THIS ONE WAS DONE PROPERLY
+	// THIS ONE WAS DONE PROPERLY
 	private static final InterpolatingDoubleTreeMap armAngleMapDouble = new InterpolatingDoubleTreeMap();
 	static {
 		armAngleMapDouble.put(Units.inchesToMeters(0.0), 157.0); // lower limit
@@ -122,6 +120,10 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
 		ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Driver");
 		shuffleboardTab.add(mField2d);
+		mShotCompensationDegrees = shuffleboardTab
+				.add("shotCompensationDegrees", 0.0).withWidget(BuiltInWidgets.kNumberSlider)
+				.withProperties(Map.of("min", -3.0, "max", 3.0, "Block increment", 0.25))
+				.getEntry();
 	}
 
 	@Override
@@ -191,7 +193,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		mLatestParameters = new AimingParameters(
 				targetVehicleDirection,
 				Rotation2d.fromDegrees(
-						armAngleMapSingle.get(targetDistance) + shotCompensationDegrees),
+						178.0),//armAngleMapSingle.get(targetDistance) + mShotCompensationDegrees.getDouble(0.0)),
 				feedVelocity);
 
 		Logger.recordOutput("RobotState/AimingParameters/Direction", mLatestParameters.driveHeading());

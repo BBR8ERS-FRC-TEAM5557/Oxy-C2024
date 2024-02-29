@@ -16,7 +16,7 @@ public class IntakeConstants {
         kTopMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kIntakeTopMotor);
         kTopMotorConfiguration.label = "Intake Top Motor";
 
-        kTopMotorConfiguration.kSmartCurrentLimit = 40.0;
+        kTopMotorConfiguration.kSmartCurrentLimit = 60.0;
         kTopMotorConfiguration.kOpenLoopRampRate = 0.25;
         kTopMotorConfiguration.kShouldInvert = true;
         kTopMotorConfiguration.kVoltageCompensation = 12.0;
@@ -28,7 +28,7 @@ public class IntakeConstants {
         kBottomMotorConfiguration.canID = new CANDeviceId(CANDeviceType.SPARK_MAX, RobotMap.kIntakeBottomMotor);
         kBottomMotorConfiguration.label = "Intake Bottom Motor";
 
-        kBottomMotorConfiguration.kSmartCurrentLimit = 40.0;
+        kBottomMotorConfiguration.kSmartCurrentLimit = 60.0;
         kBottomMotorConfiguration.kOpenLoopRampRate = 0.25;
         kBottomMotorConfiguration.kShouldInvert = true;
         kBottomMotorConfiguration.kVoltageCompensation = 12.0;

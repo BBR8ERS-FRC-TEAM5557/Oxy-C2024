@@ -3,61 +3,56 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 0.849886660342123,
+        "y": 4.46515130796211
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.934203262304343,
-        "y": 6.196234666630213
+        "x": 1.3762647108627555,
+        "y": 3.15946325157986
       },
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "sourceFender"
     },
     {
       "anchor": {
-        "x": 2.9982033193956434,
-        "y": 7.132719349025215
+        "x": 7.9315800095720554,
+        "y": 0.8965760606579091
       },
       "prevControl": {
-        "x": 2.347932872612274,
-        "y": 6.597530717986437
+        "x": 6.6053403441442295,
+        "y": 1.2211358114845865
       },
       "nextControl": {
-        "x": 3.140828525104787,
-        "y": 7.25010341433632
+        "x": 9.262351758934482,
+        "y": 0.5709072101180475
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 2.782091505299909,
+        "y": 2.3882606032717852
       },
       "prevControl": {
-        "x": 1.905550211844475,
-        "y": 6.133278293081988
+        "x": 4.20227632888715,
+        "y": 1.7023673255245817
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": "C01-Shot"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
-      "rotationDegrees": 40.0,
+      "waypointRelativePos": 0.65,
+      "rotationDegrees": -25.0,
       "rotateFast": false
     },
     {
-      "waypointRelativePos": 1.0,
-      "rotationDegrees": 40.0,
-      "rotateFast": false
-    },
-    {
-      "waypointRelativePos": 1.75,
-      "rotationDegrees": 0,
+      "waypointRelativePos": 1.15,
+      "rotationDegrees": -25.0,
       "rotateFast": false
     }
   ],
@@ -71,11 +66,14 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -45.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "fenderShooting",
-  "previewStartingState": null,
+  "folder": null,
+  "previewStartingState": {
+    "rotation": -60.0,
+    "velocity": 0
+  },
   "useDefaultConstraints": true
 }

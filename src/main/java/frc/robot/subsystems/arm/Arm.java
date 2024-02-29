@@ -53,12 +53,14 @@ public class Arm extends SubsystemBase {
 
     private static final LoggedTunableNumber ampDegrees = new LoggedTunableNumber("Superstructure/ArmAmpDegrees",
             245.0);
+    private static final LoggedTunableNumber trapDegrees = new LoggedTunableNumber("Superstructure/ArmTrapDegrees",
+            270.0);
     private static final LoggedTunableNumber fenderShotDegrees = new LoggedTunableNumber(
             "Superstructure/ArmFenderShotDegrees",
-            160.0);
+            157.0);
     private static final LoggedTunableNumber customShotDegrees = new LoggedTunableNumber(
             "Superstructure/ArmCustomShotDegrees",
-            184.0);
+            176.0);
     private static final LoggedTunableNumber climbPrepDegrees = new LoggedTunableNumber(
             "Superstructure/ArmClimbPrepDegrees",
             270.0);
@@ -119,10 +121,12 @@ public class Arm extends SubsystemBase {
 
         if (DriverStation.isDisabled()) {
             mIO.stop();
+            mSetpointState = new TrapezoidProfile.State(mInputs.armAbsolutePositionDeg, 0);
         }
 
         Logger.recordOutput("Arm/SetpointAngle", mSetpointState.position);
         Logger.recordOutput("Arm/SetpointVelocity", mSetpointState.velocity);
+        Logger.recordOutput("Arm/StateAngle", mState.getDegrees());
         Logger.recordOutput("Arm/State", mState);
     }
 
@@ -133,6 +137,7 @@ public class Arm extends SubsystemBase {
         AMP(() -> ampDegrees.get()),
         FENDER_SHOT(() -> fenderShotDegrees.get()),
         AIM(() -> RobotStateEstimator.getInstance().getAimingParameters().armAngle().getDegrees()),
+        TRAP(() -> trapDegrees.get()),
         CLIMB_PREP(() -> climbPrepDegrees.get()),
         CLIMB_RETRACT(() -> climbRetractDegrees.get()),
         CUSTOM(() -> customShotDegrees.get()),
@@ -157,6 +162,10 @@ public class Arm extends SubsystemBase {
         return startEnd(() -> setState(State.AMP), () -> setState(State.STOW));
     }
 
+    public Command trap() {
+        return runOnce(() -> setState(State.TRAP));
+    }
+
     public Command aimFender() {
         return startEnd(() -> setState(State.FENDER_SHOT), () -> setState(State.STOW));
     }
@@ -165,9 +174,9 @@ public class Arm extends SubsystemBase {
         return startEnd(() -> setState(State.CUSTOM), () -> setState(State.STOW));
     }
 
-    // public Command aim() {
-    // return startEnd(() -> setState(State.AIM), () -> setState(State.STOW));
-    // }
+    public Command aim() {
+        return startEnd(() -> setState(State.AIM), () -> setState(State.STOW));
+    }
 
     public Command prepClimb() {
         return runOnce(() -> setState(State.CLIMB_PREP));
