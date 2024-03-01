@@ -3,7 +3,8 @@
   "robotLength": 0.730631,
   "holonomicMode": true,
   "pathFolders": [
-    "FreeSpirit",
+    "FenderSide",
+    "SourceSide",
     "Teleop",
     "fenderShooting"
   ],

@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6177503562327729,
-        "y": 4.837900064580511
+        "x": 1.862497783617915,
+        "y": 6.079674511324774
       },
       "isLocked": false,
       "linkedName": "fender"
     },
     {
       "anchor": {
-        "x": 2.7344462125628537,
-        "y": 4.108903471134489
+        "x": 2.739685492102466,
+        "y": 6.903872369485191
       },
       "prevControl": {
-        "x": 2.0916441880626824,
-        "y": 4.474772479926905
+        "x": 2.04784151464578,
+        "y": 6.446178503456505
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "S0-Shot"
+      "linkedName": "S2-Shot"
     }
   ],
   "rotationTargets": [],
@@ -38,12 +38,12 @@
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -30.0,
-    "rotateFast": false
+    "velocity": 0.0,
+    "rotation": 30.0,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "FenderSide",
   "previewStartingState": null,
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

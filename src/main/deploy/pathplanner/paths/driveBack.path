@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.3633031932038577,
-        "y": 5.556088701225435
+        "x": 0.5576344515232046,
+        "y": 2.2292258588161844
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.6177503562327729,
-        "y": 4.837900064580511
+        "x": 1.0576344515232046,
+        "y": 2.2292258588161844
       },
       "isLocked": false,
-      "linkedName": "fender"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.7344462125628537,
-        "y": 4.108903471134489
+        "x": 2.731313552837067,
+        "y": 2.2292258588161844
       },
       "prevControl": {
-        "x": 2.0916441880626824,
-        "y": 4.474772479926905
+        "x": 2.231313552837067,
+        "y": 2.2292258588161844
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "S0-Shot"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -39,11 +39,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -30.0,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "FenderSide",
+  "folder": null,
   "previewStartingState": null,
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

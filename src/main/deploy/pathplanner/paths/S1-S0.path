@@ -8,46 +8,30 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.43689942767794,
-        "y": 5.611682246567075
+        "x": 1.9210270579056727,
+        "y": 5.108230075715988
       },
       "isLocked": false,
       "linkedName": "S1-Shot"
     },
     {
       "anchor": {
-        "x": 2.03931337199584,
-        "y": 6.406884867658889
+        "x": 2.7344462125628537,
+        "y": 4.108903471134489
       },
       "prevControl": {
-        "x": 2.0325644167316996,
-        "y": 6.003256184853525
-      },
-      "nextControl": {
-        "x": 2.043197222960022,
-        "y": 6.63916284069787
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.739685492102466,
-        "y": 6.903872369485191
-      },
-      "prevControl": {
-        "x": 2.148070788855083,
-        "y": 6.627997902683839
+        "x": 2.3836587600230925,
+        "y": 4.717919235832078
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "S2-Shot"
+      "linkedName": "S0-Shot"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.95,
-      "rotationDegrees": 25.0,
+      "waypointRelativePos": 0.7,
+      "rotationDegrees": -35.0,
       "rotateFast": false
     }
   ],
@@ -61,11 +45,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 25.0,
+    "rotation": -35.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "FenderSide",
   "previewStartingState": null,
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

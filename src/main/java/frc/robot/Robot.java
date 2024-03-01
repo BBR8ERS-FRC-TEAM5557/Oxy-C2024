@@ -48,7 +48,7 @@ public class Robot extends LoggedRobot {
 	public void robotInit() {
 
 		if (Constants.kIsReal) {
-			Logger.addDataReceiver(new WPILOGWriter());
+			//Logger.addDataReceiver(new WPILOGWriter("/media/sda2/"));
 			Logger.addDataReceiver(new NT4Publisher());
 			LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
 		} else {

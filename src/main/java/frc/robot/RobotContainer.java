@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -68,7 +69,7 @@ public class RobotContainer {
 	public static SystemsCheckManager m_systemCheckManager;
 	private final LoggedDashboardChooser<Command> mChooser;
 
-	private PowerDistribution mPowerDistribution = new PowerDistribution();
+	//private PowerDistribution mPowerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
 	public RobotContainer() {
 		if (kIsReal) {
@@ -117,7 +118,7 @@ public class RobotContainer {
 		mChooser = new LoggedDashboardChooser<Command>("Driver/AutonomousChooser");
 
 		SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
-		SmartDashboard.putData("PDP", mPowerDistribution);
+		//SmartDashboard.putData("PDP", mPowerDistribution);
 
 		m_systemCheckManager = new SystemsCheckManager(mSwerve);
 		m_stateEstimator = RobotStateEstimator.getInstance();
@@ -266,10 +267,16 @@ public class RobotContainer {
 		System.out.println("[Init] Auto Routines");
 
 		mChooser.addDefaultOption("Do Nothing", null);
+		mChooser.addDefaultOption("Drive Back", AutoBuilder.buildAuto("DriveBack"));
+
 		mChooser.addDefaultOption("N3_S_C01", AutoBuilder.buildAuto("N3_S_C01"));
+
 		mChooser.addOption("N4_S012_fender", AutoBuilder.buildAuto("N4_S012_fender"));
 		mChooser.addOption("N4_S012", AutoBuilder.buildAuto("N4_S012"));
+		mChooser.addOption("N4_S210", AutoBuilder.buildAuto("N4_S210"));
+
 		mChooser.addDefaultOption("N5_S012_C4", AutoBuilder.buildAuto("N5_S012_C4"));
+
 		mChooser.addDefaultOption("N6_S012_C34", AutoBuilder.buildAuto("N6_S012_C34"));
 
 		// Set up feedforward characterization

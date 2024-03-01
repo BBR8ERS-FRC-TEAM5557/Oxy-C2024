@@ -189,8 +189,8 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
 		mLatestParameters = new AimingParameters(
 				targetVehicleDirection,
-				//Rotation2d.fromDegrees(178.0 + mShotCompensationDegrees.getDouble(0.0)),
-				Rotation2d.fromDegrees(armAngleMapSingle.get(targetDistance) + mShotCompensationDegrees.getDouble(0.0)),
+				Rotation2d.fromDegrees(177.0 + mShotCompensationDegrees.getDouble(0.0)),
+				//Rotation2d.fromDegrees(armAngleMapSingle.get(targetDistance) + mShotCompensationDegrees.getDouble(0.0)),
 				feedVelocity);
 
 		Logger.recordOutput("RobotState/AimingParameters/TargetDirection", mLatestParameters.driveHeading());

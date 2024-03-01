@@ -22,7 +22,7 @@ public class ArmConstants {
     public static final double kTimeToCruise = 0.5; // sec
 
     public static final double kMinAngle = 155.0; // degrees
-    public static final double kMaxAngle = 270.0; // degrees
+    public static final double kMaxAngle = 280.0; // degrees
 
     public static final double kArmP = 15.0;
     public static final double kArmI = 0.0;

@@ -3,32 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.7344462125628537,
-        "y": 4.108903471134489
+        "x": 2.739685492102466,
+        "y": 6.903872369485191
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.472367178349809,
-        "y": 4.358889433490673
+        "x": 2.008433748759675,
+        "y": 6.452188227325092
       },
       "isLocked": false,
-      "linkedName": "S0-Shot"
-    },
-    {
-      "anchor": {
-        "x": 2.004833725761817,
-        "y": 5.240612082649232
-      },
-      "prevControl": {
-        "x": 2.004833725761817,
-        "y": 4.89013348497905
-      },
-      "nextControl": {
-        "x": 2.004833725761817,
-        "y": 5.526372470755889
-      },
-      "isLocked": false,
-      "linkedName": null
+      "linkedName": "S2-Shot"
     },
     {
       "anchor": {
@@ -36,8 +20,8 @@
         "y": 5.545591769370023
       },
       "prevControl": {
-        "x": 2.4368089942518965,
-        "y": 5.545591769370023
+        "x": 1.5930059892324646,
+        "y": 5.474081657923577
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,7 +30,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.05,
+      "waypointRelativePos": 0.6,
       "rotationDegrees": 0,
       "rotateFast": false
     }
@@ -67,5 +51,5 @@
   "reversed": false,
   "folder": "FenderSide",
   "previewStartingState": null,
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }
