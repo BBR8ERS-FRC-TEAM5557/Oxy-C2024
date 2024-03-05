@@ -11,7 +11,7 @@ import frc.lib.team5557.util.CANDeviceType;
 import frc.robot.Constants;
 
 public class ArmConstants {
-    public static final double kAbsoluteEncoderOffset = Units.degreesToRotations(180.0);
+    public static final double kAbsoluteEncoderOffset = Units.degreesToRotations(313.2 - 180.0); //312.7?
     public static final boolean kAbsoluteEncoderInverted = false;
 
     public static final double kPlanetaryReduction = 4.0 * 5.0;
