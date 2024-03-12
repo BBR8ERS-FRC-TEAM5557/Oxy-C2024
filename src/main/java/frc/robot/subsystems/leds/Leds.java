@@ -159,21 +159,20 @@ public class Leds extends VirtualSubsystem {
 		} else { // Enabled
 			if (requestAmp) {
 				strobe(Color.kWhite, strobeFastDuration);
-			} else if (trapping || climbing || autoDrive || autoShoot) {
-				rainbow(rainbowCycleLength, rainbowDuration);
-			} else if (intaking) {
-				strobe(Color.kOrangeRed, strobeSlowDuration);
-			} else if (hasNote) {
-				strobe(Color.kGreen, strobeSlowDuration);
 			} else if (readyForAction) {
 				solid(Color.kGreen);
+			} else if (hasNote) {
+				strobe(Color.kGreen, strobeSlowDuration);
+			} else if (intaking) {
+				strobe(Color.kOrangeRed, strobeSlowDuration);
+			} else if (trapping || climbing || autoDrive || autoShoot) {
+				rainbow(rainbowCycleLength, rainbowDuration);
 			}
 
 			if (endgameAlert) {
 				strobe(Color.kRed, strobeFastDuration);
 			}
 		}
-
 
 		// Update LEDs
 		leds.setData(buffer);

@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.RobotContainer;
 import frc.robot.RobotStateEstimator;
+import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.util.AllianceFlipUtil;
@@ -28,6 +29,7 @@ public class TeleopDrive extends Command {
     private final DoubleSupplier mAimbotXSupplier;
     private final DoubleSupplier mAimbotYSupplier;
     private final BooleanSupplier mAutoaimSupplier;
+    private final BooleanSupplier mWantsAmpSnapSupplier;
     private final BooleanSupplier mWantsSnapSupplier;
 
     private LoggedTunableNumber headingPadding = new LoggedTunableNumber("Aiming/HeadingPaddingDeg", 1.0);
@@ -35,7 +37,7 @@ public class TeleopDrive extends Command {
 
     public TeleopDrive(DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
             DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier,
-            BooleanSupplier autoAimSupplier, BooleanSupplier wantsSnapSupplier) {
+            BooleanSupplier autoAimSupplier, BooleanSupplier wantsAmpSnapSupplier, BooleanSupplier wantsSnapSupplier) {
         this.swerve = RobotContainer.mSwerve;
         this.mTranslationXSupplier = translationXSupplier;
         this.mTranslationYSupplier = translationYSupplier;
@@ -43,6 +45,7 @@ public class TeleopDrive extends Command {
         this.mAimbotXSupplier = aimbotXSupplier;
         this.mAimbotYSupplier = aimbotYSupplier;
         this.mAutoaimSupplier = autoAimSupplier;
+        this.mWantsAmpSnapSupplier = wantsAmpSnapSupplier;
         this.mWantsSnapSupplier = wantsSnapSupplier;
 
         addRequirements(swerve);
@@ -62,10 +65,6 @@ public class TeleopDrive extends Command {
         double r = Util.scaledDeadband(rightJoyPolarCoordinate[0], 1.0, 0.15);
         Rotation2d theta = Rotation2d.fromRadians(rightJoyPolarCoordinate[1]);
 
-        // if (r > 0.8) {
-        //     var mod = theta.getDegrees() / 45;
-        //     theta = Rotation2d.fromDegrees(Math.round(mod) * 45);
-        // }
         if (mWantsSnapSupplier.getAsBoolean()) {
             var mod = theta.getDegrees() / 45;
             theta = Rotation2d.fromDegrees(Math.round(mod) * 45);
@@ -77,13 +76,23 @@ public class TeleopDrive extends Command {
             yVelocity = -yVelocity;
         }
 
-        boolean wantsAutoAim = false;//mAutoaimSupplier.getAsBoolean();
-        if (r > 0.05 || wantsAutoAim) {
-            theta = wantsAutoAim ? theta : theta; // fix for vehicle stuff from 6328
+        boolean wantsAutoAim = false;// mAutoaimSupplier.getAsBoolean();
+        boolean wantsAmpSnap = mWantsSnapSupplier.getAsBoolean();
+        if (r > 0.05 || wantsAutoAim || wantsAmpSnap) {
+            if (wantsAutoAim) {
+                Leds.getInstance().autoDrive = true;
+                theta = RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
+            } else if (wantsAmpSnap) {
+                Leds.getInstance().autoDrive = true;
+                theta = Rotation2d.fromDegrees(270.0);
+            }
+
             rotationalVelocity = DriveMotionPlanner.calculateSnap(theta);
-            atHeadingGoal = Util.epsilonEquals(theta.getDegrees(), driveRotation.getDegrees(), headingPadding.getAsDouble());
+            atHeadingGoal = Util.epsilonEquals(theta.getDegrees(), driveRotation.getDegrees(),
+                    headingPadding.getAsDouble());
         } else {
             theta = Rotation2d.fromDegrees(0.0);
+            Leds.getInstance().autoDrive = false;
         }
 
         ChassisSpeeds velocity = ChassisSpeeds.fromFieldRelativeSpeeds(

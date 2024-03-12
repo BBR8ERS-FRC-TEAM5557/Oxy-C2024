@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.team5557.factory.BurnManager;
+import frc.lib.team5557.factory.SparkMaxFactory;
 import frc.lib.team6328.Alert;
 import frc.lib.team6328.Alert.AlertType;
 import frc.robot.auto.SystemsCheckManager;
@@ -126,6 +128,14 @@ public class RobotContainer {
 		SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
 		// SmartDashboard.putData("PDP", mPowerDistribution);
 
+		// Alerts for constants
+		if (Constants.kTuningMode) {
+			new Alert("Tuning mode enabled, expect slower network", AlertType.INFO).set(true);
+		}
+		if (BurnManager.shouldBurn()) {
+			new Alert("Burning flash enabled, consider disabling before competeing", AlertType.INFO).set(true);
+		}
+
 		m_systemCheckManager = new SystemsCheckManager(mSwerve);
 		m_stateEstimator = RobotStateEstimator.getInstance();
 		DriveMotionPlanner.configureControllers();
@@ -144,6 +154,7 @@ public class RobotContainer {
 		TeleopDrive teleop = new TeleopDrive(this::getForwardInput, this::getStrafeInput,
 				this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput,
 				this::getWantsAutoAimInput,
+				this::getWantsAmpSnapInput,
 				this::getWantsSnapInput);
 		mSwerve.setDefaultCommand(teleop.withName("Teleop Drive"));
 
@@ -160,9 +171,6 @@ public class RobotContainer {
 				.onTrue(Commands.runOnce(
 						() -> mSwerve.resetModuleEncoders())
 						.ignoringDisable(true).withName("ResetSwerveEncoders"));
-
-		// POTENTIALLY ADD IDK
-		// mDriver.x().whileTrue(Commands.run(() -> mSwerve.stopWithX(), mSwerve));
 
 		/* INTAKING */
 		mOperator.rightBumper().whileTrue(
@@ -382,6 +390,10 @@ public class RobotContainer {
 
 	public boolean getWantsAutoAimInput() {
 		return mDriver.a().getAsBoolean();
+	}
+
+	public boolean getWantsAmpSnapInput() {
+		return mDriver.x().getAsBoolean();
 	}
 
 	public boolean getWantsSnapInput() {
