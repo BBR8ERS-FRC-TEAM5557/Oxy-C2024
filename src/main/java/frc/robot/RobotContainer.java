@@ -279,7 +279,7 @@ public class RobotContainer {
 			mOperator.getHID().setRumble(RumbleType.kBothRumble, 0.0);
 		})).withName("PulseControllers").ignoringDisable(true);
 
-		Trigger pieceStaged = new Trigger(mFeeder::hasGamepiece);
+		Trigger pieceStaged = new Trigger(mFeeder::hasGamepiece).debounce(0.25);
 		pieceStaged.onTrue(pulseControllers);
 
 	}
