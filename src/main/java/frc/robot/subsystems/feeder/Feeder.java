@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.subsystems.feeder.FeederIO.FeederIOInputs;
+import frc.robot.subsystems.leds.Leds;
 import lombok.RequiredArgsConstructor;
 
 public class Feeder extends SubsystemBase {
@@ -46,6 +47,9 @@ public class Feeder extends SubsystemBase {
         }
 
         mIO.setFeederVoltage(this.mState.getMotorVoltage());
+
+        Leds.getInstance().hasNote = hasGamepiece();
+        Leds.getInstance().intaking = mState == State.INTAKE;
 
         Logger.recordOutput("state", mState);
     }

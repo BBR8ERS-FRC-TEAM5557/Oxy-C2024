@@ -25,12 +25,16 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team6328.Alert;
 import frc.lib.team6328.Alert.AlertType;
 import frc.robot.subsystems.flywheels.Flywheels.IdleMode;
+import frc.robot.subsystems.leds.Leds;
 import frc.lib.team6328.VirtualSubsystem;
 
 public class Robot extends LoggedRobot {
 	private RobotContainer m_robotContainer;
 
-	private Command m_autonomousCommand;
+	private Command mAutoCommand;
+	private double autoStart;
+	private boolean autoMessagePrinted;
+
 	private Command m_subsystemCheckCommand;
 
 	private final Timer canErrorTimer = new Timer();
@@ -48,7 +52,7 @@ public class Robot extends LoggedRobot {
 	public void robotInit() {
 
 		if (Constants.kIsReal) {
-			//Logger.addDataReceiver(new WPILOGWriter("/media/sda2/"));
+			// Logger.addDataReceiver(new WPILOGWriter("/media/sda2/"));
 			Logger.addDataReceiver(new NT4Publisher());
 			LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
 		} else {
@@ -104,6 +108,22 @@ public class Robot extends LoggedRobot {
 		CommandScheduler.getInstance().run();
 		VirtualSubsystem.periodicAll();
 
+		// Print auto duration
+		if (mAutoCommand != null) {
+			if (!mAutoCommand.isScheduled() && !autoMessagePrinted) {
+				if (DriverStation.isAutonomousEnabled()) {
+					System.out.printf(
+							"*** Auto finished in %.2f secs ***%n", Timer.getFPGATimestamp() - autoStart);
+				} else {
+					System.out.printf(
+							"*** Auto cancelled in %.2f secs ***%n", Timer.getFPGATimestamp() - autoStart);
+				}
+				autoMessagePrinted = true;
+				Leds.getInstance().autoFinished = true;
+				Leds.getInstance().autoFinishedTime = Timer.getFPGATimestamp();
+			}
+		}
+
 		// Check logging fault
 		logReceiverQueueAlert.set(Logger.getReceiverQueueFault());
 
@@ -118,8 +138,8 @@ public class Robot extends LoggedRobot {
 		if (DriverStation.isEnabled()) {
 			disabledTimer.reset();
 		}
-		if (RobotController.getBatteryVoltage() < 10.0 && disabledTimer.hasElapsed(2.0)) {
-			// LEDs.getInstance().lowBatteryAlert = true;
+		if (RobotController.getBatteryVoltage() < 11.5 && disabledTimer.hasElapsed(2.0)) {
+			Leds.getInstance().lowBatteryAlert = true;
 			lowBatteryAlert.set(true);
 		}
 
@@ -144,11 +164,14 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void autonomousInit() {
-		m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+		autoStart = Timer.getFPGATimestamp();
+		autoMessagePrinted = false;
+		mAutoCommand = m_robotContainer.getAutonomousCommand();
+		
 		m_subsystemCheckCommand = m_robotContainer.getSubsystemCheckCommand();
 
-		if (m_autonomousCommand != null) {
-			m_autonomousCommand.schedule();
+		if (mAutoCommand != null) {
+			mAutoCommand.schedule();
 			RobotContainer.mFlywheels.setIdleMode(IdleMode.AUTO);
 
 		} else if (!DriverStation.isFMSAttached() && m_subsystemCheckCommand != null) {
@@ -172,8 +195,8 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void teleopInit() {
-		if (m_autonomousCommand != null) {
-			m_autonomousCommand.cancel();
+		if (mAutoCommand != null) {
+			mAutoCommand.cancel();
 		}
 		RobotContainer.mFlywheels.setIdleMode(IdleMode.TELEOP);
 	}

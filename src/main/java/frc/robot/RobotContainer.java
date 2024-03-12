@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team6328.Alert;
@@ -32,6 +33,7 @@ import frc.robot.subsystems.flywheels.FlywheelsIOKraken;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.commands.TeleopDrive;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
@@ -57,6 +59,7 @@ public class RobotContainer {
 	public static Feeder mFeeder;
 	public static Flywheels mFlywheels;
 	public static Arm mArm;
+	public static Leds mLeds;
 
 	public static final CommandXboxController mDriver = new CommandXboxController(0);
 	public static final CommandXboxController mOperator = new CommandXboxController(1);
@@ -66,12 +69,15 @@ public class RobotContainer {
 			AlertType.WARNING);
 
 	public static RobotStateEstimator m_stateEstimator;
+
 	public static SystemsCheckManager m_systemCheckManager;
 	private final LoggedDashboardChooser<Command> mChooser;
 
-	//private PowerDistribution mPowerDistribution = new PowerDistribution(1, ModuleType.kRev);
+	// private PowerDistribution mPowerDistribution = new PowerDistribution(1,
+	// ModuleType.kRev);
 
 	public RobotContainer() {
+		mLeds = Leds.getInstance();
 		if (kIsReal) {
 			mSwerve = new Swerve(new GyroIOPigeon2(),
 					new ModuleIOKrakenSparkMax(0, kFLDriveMotor, kFLTurnMotor, kFLOffset),
@@ -118,7 +124,7 @@ public class RobotContainer {
 		mChooser = new LoggedDashboardChooser<Command>("Driver/AutonomousChooser");
 
 		SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
-		//SmartDashboard.putData("PDP", mPowerDistribution);
+		// SmartDashboard.putData("PDP", mPowerDistribution);
 
 		m_systemCheckManager = new SystemsCheckManager(mSwerve);
 		m_stateEstimator = RobotStateEstimator.getInstance();
@@ -171,8 +177,12 @@ public class RobotContainer {
 						.withName("Teleop Ejecting"));
 
 		/* COASTING */
-		mOperator.leftTrigger().whileTrue(Commands.parallel(mArm.forceCoast(), mSwerve.forceCoast())
-				.ignoringDisable(true).withName("ForceCoast"));
+		mOperator.leftTrigger()
+				.whileTrue(Commands
+						.parallel(mArm.forceCoast(), mSwerve.forceCoast(),
+								new StartEndCommand(() -> Leds.getInstance().armCoast = true,
+										() -> Leds.getInstance().armCoast = false))
+						.ignoringDisable(true).withName("ForceCoast"));
 
 		/* SHOOTING */
 		mOperator.a().whileTrue(
@@ -224,15 +234,28 @@ public class RobotContainer {
 		/* SIGNALING */
 		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootTrap)
 				.whileTrue(
-						Commands.run(
-								() -> mOperator.getHID().setRumble(
-										GenericHID.RumbleType.kBothRumble,
-										1.0)))
-				.whileFalse(
-						Commands.run(
-								() -> mOperator.getHID().setRumble(
-										GenericHID.RumbleType.kBothRumble,
-										0.0)));
+						Commands.startEnd(
+								() -> {
+									mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 1.0);
+									mLeds.readyForAction = true;
+								},
+								() -> {
+									mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0);
+									mLeds.readyForAction = false;
+								}));
+		/*
+		 * readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootTrap)
+		 * .whileTrue(
+		 * Commands.run(
+		 * () -> mOperator.getHID().setRumble(
+		 * GenericHID.RumbleType.kBothRumble,
+		 * 1.0)))
+		 * .whileFalse(
+		 * Commands.run(
+		 * () -> mOperator.getHID().setRumble(
+		 * GenericHID.RumbleType.kBothRumble,
+		 * 0.0)));
+		 */
 
 		Command pulseControllers = Commands.sequence(Commands.runOnce(() -> {
 			mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
