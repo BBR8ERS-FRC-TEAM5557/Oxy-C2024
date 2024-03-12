@@ -325,8 +325,8 @@ public class RobotContainer {
 								.alongWith(Commands.waitUntil(mArm::atGoal)
 										.andThen(Commands.parallel(
 												mIntake.intake(),
-												mFeeder.intake())
-												.until(mFeeder::hasGamepiece)))));
+												mFeeder.intake())))
+								.until(mFeeder::hasGamepiece)));
 
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 
@@ -335,18 +335,18 @@ public class RobotContainer {
 						.alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shoot())
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
-												Commands.print("feeding started"))
-												.until(() -> !mFeeder
-														.hasGamepiece())))));
+												Commands.print("feeding started"))))
+								.until(() -> !mFeeder
+										.hasGamepiece())));
 
 		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started")
 						.alongWith(Commands.parallel(mArm.aim(), mFlywheels.shoot())
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
-												Commands.print("feeding started"))
-												.until(() -> !mFeeder
-														.hasGamepiece())))));
+												Commands.print("feeding started"))))
+								.until(() -> !mFeeder
+										.hasGamepiece())));
 	}
 
 	public Command getAutonomousCommand() {
