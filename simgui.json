@@ -5,6 +5,7 @@
       "/Shuffleboard/Driver/Field": "Field2d",
       "/SmartDashboard/CommandScheduler": "Scheduler",
       "/SmartDashboard/Driver/AutonomousChooser": "String Chooser",
+      "/SmartDashboard/Driver/ClimbChooser": "String Chooser",
       "/SmartDashboard/Driver/SystemsCheckChooser": "String Chooser"
     }
   },

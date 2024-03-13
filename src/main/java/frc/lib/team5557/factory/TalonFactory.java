@@ -84,7 +84,7 @@ public class TalonFactory {
         if (!Double.isNaN(config.supplyCurrentLimit)) {
             talonFXConfiguration.CurrentLimits.SupplyCurrentLimitEnable = true;
             talonFXConfiguration.CurrentLimits.SupplyCurrentThreshold = 100;
-            talonFXConfiguration.CurrentLimits.SupplyTimeThreshold = 1.0;
+            talonFXConfiguration.CurrentLimits.SupplyTimeThreshold = 0.1;
             talonFXConfiguration.CurrentLimits.SupplyCurrentLimit = config.supplyCurrentLimit;
         }
         if (!Double.isNaN(config.statorCurrentLimit)) {

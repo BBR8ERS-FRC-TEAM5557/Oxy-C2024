@@ -306,7 +306,7 @@ public class RobotContainer {
 
 		mChooser.addDefaultOption("N5_S012_C4", AutoBuilder.buildAuto("N5_S012_C4"));
 
-		mChooser.addDefaultOption("N6_S012_C34", AutoBuilder.buildAuto("N6_S012_C34"));
+		mChooser.addDefaultOption("N6_S012_C43", AutoBuilder.buildAuto("N6_S012_C43"));
 
 		// Set up feedforward characterization
 		mChooser.addOption(
@@ -325,41 +325,34 @@ public class RobotContainer {
 	}
 
 	private void generateEventMap() {
-		/*NamedCommands.registerCommand("intakeNote",
+		NamedCommands.registerCommand("intakeNote",
 				Commands.print("intaking started")
 						.alongWith(mArm.intake()
 								.alongWith(Commands.waitUntil(mArm::atGoal)
 										.andThen(Commands.parallel(
 												mIntake.intake(),
 												mFeeder.intake())))
-								.until(mFeeder::hasGamepiece)));*/
-		NamedCommands.registerCommand("intakeNote",
-				Commands.print("intaking started"));
+								.until(mFeeder::hasGamepiece)));
 
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 
-		/*NamedCommands.registerCommand("shootFender",
+		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
 						.alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shoot())
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
-										.hasGamepiece())));*/
-		NamedCommands.registerCommand("shootFender",
-				Commands.print("shooting fender started"));
+										.hasGamepiece())));
 
-		/*NamedCommands.registerCommand("shootDistance",
+		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started")
 						.alongWith(Commands.parallel(mArm.aim(), mFlywheels.shoot())
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
-										.hasGamepiece())));*/
-
-		NamedCommands.registerCommand("shootDistance",
-				Commands.print("shooting distance started"));
+										.hasGamepiece())));
 	}
 
 	public Command getAutonomousCommand() {
