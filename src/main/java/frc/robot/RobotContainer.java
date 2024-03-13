@@ -45,6 +45,7 @@ import frc.robot.subsystems.swerve.module.ModuleIOKrakenSparkMax;
 import frc.robot.subsystems.swerve.module.ModuleIOSim;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.ClimbLocation;
 import frc.robot.util.FeedForwardCharacterization;
 
 import static frc.robot.Constants.*;
@@ -56,6 +57,9 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 public class RobotContainer {
+	public static final CommandXboxController mDriver = new CommandXboxController(0);
+	public static final CommandXboxController mOperator = new CommandXboxController(1);
+
 	public static Swerve mSwerve;
 	public static Intake mIntake;
 	public static Feeder mFeeder;
@@ -63,17 +67,16 @@ public class RobotContainer {
 	public static Arm mArm;
 	public static Leds mLeds;
 
-	public static final CommandXboxController mDriver = new CommandXboxController(0);
-	public static final CommandXboxController mOperator = new CommandXboxController(1);
+	public static RobotStateEstimator m_stateEstimator;
+	public static SystemsCheckManager m_systemCheckManager;
+
+	private final LoggedDashboardChooser<Command> mChooser;
+	public static LoggedDashboardChooser<ClimbLocation> mClimbChooser;
+
 	private final Alert driverDisconnected = new Alert("Driver controller disconnected (port 0).",
 			AlertType.WARNING);
 	private final Alert operatorDisconnected = new Alert("Operator controller disconnected (port 0).",
 			AlertType.WARNING);
-
-	public static RobotStateEstimator m_stateEstimator;
-
-	public static SystemsCheckManager m_systemCheckManager;
-	private final LoggedDashboardChooser<Command> mChooser;
 
 	// private PowerDistribution mPowerDistribution = new PowerDistribution(1,
 	// ModuleType.kRev);
@@ -125,8 +128,15 @@ public class RobotContainer {
 
 		mChooser = new LoggedDashboardChooser<Command>("Driver/AutonomousChooser");
 
-		SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
-		// SmartDashboard.putData("PDP", mPowerDistribution);
+		mClimbChooser = new LoggedDashboardChooser<ClimbLocation>("Driver/ClimbChooser");
+		mClimbChooser.addDefaultOption("Left", ClimbLocation.STAGE_LEFT);
+		mClimbChooser.addOption("Center", ClimbLocation.STAGE_CENTER);
+		mClimbChooser.addOption("Right", ClimbLocation.STAGE_RIGHT);
+
+		if (Constants.kTuningMode) {
+			SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
+			// SmartDashboard.putData("PDH", mPowerDistribution);
+		}
 
 		// Alerts for constants
 		if (Constants.kTuningMode) {
@@ -155,6 +165,7 @@ public class RobotContainer {
 				this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput,
 				this::getWantsAutoAimInput,
 				this::getWantsAmpSnapInput,
+				this::getWantsClimbSnapInput,
 				this::getWantsSnapInput);
 		mSwerve.setDefaultCommand(teleop.withName("Teleop Drive"));
 
@@ -251,19 +262,6 @@ public class RobotContainer {
 									mOperator.getHID().setRumble(GenericHID.RumbleType.kBothRumble, 0.0);
 									mLeds.readyForAction = false;
 								}));
-		/*
-		 * readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootTrap)
-		 * .whileTrue(
-		 * Commands.run(
-		 * () -> mOperator.getHID().setRumble(
-		 * GenericHID.RumbleType.kBothRumble,
-		 * 1.0)))
-		 * .whileFalse(
-		 * Commands.run(
-		 * () -> mOperator.getHID().setRumble(
-		 * GenericHID.RumbleType.kBothRumble,
-		 * 0.0)));
-		 */
 
 		Command pulseControllers = Commands.sequence(Commands.runOnce(() -> {
 			mDriver.getHID().setRumble(RumbleType.kBothRumble, 1.0);
@@ -394,6 +392,10 @@ public class RobotContainer {
 
 	public boolean getWantsAmpSnapInput() {
 		return mDriver.x().getAsBoolean();
+	}
+
+	public boolean getWantsClimbSnapInput() {
+		return mDriver.y().getAsBoolean();
 	}
 
 	public boolean getWantsSnapInput() {

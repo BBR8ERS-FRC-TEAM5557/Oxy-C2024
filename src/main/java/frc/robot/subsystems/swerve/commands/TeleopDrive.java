@@ -30,6 +30,7 @@ public class TeleopDrive extends Command {
     private final DoubleSupplier mAimbotYSupplier;
     private final BooleanSupplier mAutoaimSupplier;
     private final BooleanSupplier mWantsAmpSnapSupplier;
+    private final BooleanSupplier mWantsClimbSnapSupplier;
     private final BooleanSupplier mWantsSnapSupplier;
 
     private LoggedTunableNumber headingPadding = new LoggedTunableNumber("Aiming/HeadingPaddingDeg", 1.0);
@@ -37,7 +38,8 @@ public class TeleopDrive extends Command {
 
     public TeleopDrive(DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
             DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier,
-            BooleanSupplier autoAimSupplier, BooleanSupplier wantsAmpSnapSupplier, BooleanSupplier wantsSnapSupplier) {
+            BooleanSupplier autoAimSupplier, BooleanSupplier wantsAmpSnapSupplier,
+            BooleanSupplier wantsClimbSnapSupplier, BooleanSupplier wantsSnapSupplier) {
         this.swerve = RobotContainer.mSwerve;
         this.mTranslationXSupplier = translationXSupplier;
         this.mTranslationYSupplier = translationYSupplier;
@@ -46,6 +48,7 @@ public class TeleopDrive extends Command {
         this.mAimbotYSupplier = aimbotYSupplier;
         this.mAutoaimSupplier = autoAimSupplier;
         this.mWantsAmpSnapSupplier = wantsAmpSnapSupplier;
+        this.mWantsClimbSnapSupplier = wantsClimbSnapSupplier;
         this.mWantsSnapSupplier = wantsSnapSupplier;
 
         addRequirements(swerve);
@@ -77,7 +80,8 @@ public class TeleopDrive extends Command {
         }
 
         boolean wantsAutoAim = false;// mAutoaimSupplier.getAsBoolean();
-        boolean wantsAmpSnap = mWantsSnapSupplier.getAsBoolean();
+        boolean wantsAmpSnap = mWantsAmpSnapSupplier.getAsBoolean();
+        boolean wantsClimbSnap = mWantsClimbSnapSupplier.getAsBoolean();
         if (r > 0.05 || wantsAutoAim || wantsAmpSnap) {
             if (wantsAutoAim) {
                 Leds.getInstance().autoDrive = true;
@@ -85,6 +89,12 @@ public class TeleopDrive extends Command {
             } else if (wantsAmpSnap) {
                 Leds.getInstance().autoDrive = true;
                 theta = Rotation2d.fromDegrees(270.0);
+            } else if (wantsClimbSnap) {
+                Leds.getInstance().autoDrive = true;
+                theta = RobotContainer.mClimbChooser.get().getPose().getRotation();
+
+                if (AllianceFlipUtil.shouldFlip())
+                    theta = theta.rotateBy(Rotation2d.fromDegrees(180.0));
             }
 
             rotationalVelocity = DriveMotionPlanner.calculateSnap(theta);
