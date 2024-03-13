@@ -130,7 +130,8 @@ public class Leds extends VirtualSubsystem {
 		loadingNotifier.stop();
 
 		// Select LED mode
-		solid(Color.kBlack); // Default to off
+		//solid(Color.kBlack); // Default to off
+		breath(allianceColor, Color.kBlack); // default to alliance Breath
 		if (estopped) {
 			solid(Color.kRed);
 		} else if (DriverStation.isDisabled()) {
