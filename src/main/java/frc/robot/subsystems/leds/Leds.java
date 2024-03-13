@@ -99,7 +99,7 @@ public class Leds extends VirtualSubsystem {
 
 	public synchronized void periodic() {
 		// Update alliance color
-		if (DriverStation.isFMSAttached()) {
+		if (DriverStation.isFMSAttached() || true) {
 			alliance = DriverStation.getAlliance();
 			allianceColor = alliance
 					.map(alliance -> alliance == Alliance.Blue ? Color.kBlue : Color.kRed)
