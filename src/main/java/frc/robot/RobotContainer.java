@@ -325,34 +325,41 @@ public class RobotContainer {
 	}
 
 	private void generateEventMap() {
-		NamedCommands.registerCommand("intakeNote",
+		/*NamedCommands.registerCommand("intakeNote",
 				Commands.print("intaking started")
 						.alongWith(mArm.intake()
 								.alongWith(Commands.waitUntil(mArm::atGoal)
 										.andThen(Commands.parallel(
 												mIntake.intake(),
 												mFeeder.intake())))
-								.until(mFeeder::hasGamepiece)));
+								.until(mFeeder::hasGamepiece)));*/
+		NamedCommands.registerCommand("intakeNote",
+				Commands.print("intaking started"));
 
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 
-		NamedCommands.registerCommand("shootFender",
+		/*NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
 						.alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shoot())
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
-										.hasGamepiece())));
+										.hasGamepiece())));*/
+		NamedCommands.registerCommand("shootFender",
+				Commands.print("shooting fender started"));
 
-		NamedCommands.registerCommand("shootDistance",
+		/*NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started")
 						.alongWith(Commands.parallel(mArm.aim(), mFlywheels.shoot())
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
-										.hasGamepiece())));
+										.hasGamepiece())));*/
+
+		NamedCommands.registerCommand("shootDistance",
+				Commands.print("shooting distance started"));
 	}
 
 	public Command getAutonomousCommand() {

@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.3240456204897635,
-        "y": 6.370604198235483
+        "x": 6.19282068204153,
+        "y": 7.2761554854335975
       },
       "isLocked": false,
       "linkedName": "C34-Shot"
     },
     {
       "anchor": {
-        "x": 8.136530344241244,
-        "y": 5.8999112596749494
+        "x": 8.29561251068742,
+        "y": 5.729437860496552
       },
       "prevControl": {
-        "x": 8.136530344241244,
-        "y": 5.4773758841131714
+        "x": 8.264042211983071,
+        "y": 5.53738119003659
       },
       "nextControl": {
-        "x": 8.136530344241244,
-        "y": 6.1210844587377755
+        "x": 8.331487532213048,
+        "y": 5.947682142928467
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 6.2675036391697825
       },
       "prevControl": {
-        "x": 4.412909702804154,
-        "y": 6.336775516139462
+        "x": 5.066537528027104,
+        "y": 7.188519632639795
       },
       "nextControl": null,
       "isLocked": false,
@@ -60,7 +60,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 6.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
