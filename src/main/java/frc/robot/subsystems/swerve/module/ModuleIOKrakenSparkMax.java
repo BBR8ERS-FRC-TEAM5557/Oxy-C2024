@@ -44,7 +44,7 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     // Control Signals?
     private final VoltageOut driveVoltage = new VoltageOut(0).withUpdateFreqHz(0);
     private final VelocityVoltage driveVelocityControl = new VelocityVoltage(0).withUpdateFreqHz(0);
-    private final TorqueCurrentFOC driveCurrent = new TorqueCurrentFOC(0).withUpdateFreqHz(0);
+    private final VelocityTorqueCurrentFOC driveCurrent = new VelocityTorqueCurrentFOC(0).withUpdateFreqHz(0);
     private final NeutralOut driveNeutral = new NeutralOut().withUpdateFreqHz(0);
 
 
