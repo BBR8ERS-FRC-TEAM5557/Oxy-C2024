@@ -6,11 +6,13 @@ import static frc.robot.subsystems.flywheels.FlywheelsConstants.kRightMotorConfi
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.lib.team5557.factory.TalonFactory;
 
@@ -140,5 +142,11 @@ public class FlywheelsIOKraken implements FlywheelsIO {
         rightFeedbackConfig.kI = kI;
         rightFeedbackConfig.kD = kD;
         mRightMotor.getConfigurator().apply(rightFeedbackConfig, 0.01);
+	}
+
+	@Override
+	public void setBrakeMode(boolean enable) {
+		mRightMotor.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+		mLeftMotor.setNeutralMode(enable ? NeutralModeValue.Brake : NeutralModeValue.Coast);
 	}
 }

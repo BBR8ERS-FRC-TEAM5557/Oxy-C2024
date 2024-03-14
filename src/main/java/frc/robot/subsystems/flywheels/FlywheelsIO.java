@@ -63,4 +63,7 @@ public interface FlywheelsIO {
     /** Config PID values for both motors */
     default void setPID(double kP, double kI, double kD) {
     }
+
+    default void setBrakeMode(boolean enable) {
+    }
 }

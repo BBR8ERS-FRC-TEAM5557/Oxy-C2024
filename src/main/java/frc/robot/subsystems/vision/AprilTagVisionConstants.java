@@ -28,16 +28,16 @@ public class AprilTagVisionConstants {
                     Units.inchesToMeters(-(7.823 + SwerveConstants.kTrueChassisCenterOffset)),
                     Units.inchesToMeters(10.189),
                     Units.inchesToMeters(9.17),
-                    new Rotation3d(0.0, Units.degreesToRadians(-28.125), 0.0)
-                            .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(180.0 - 10.0)))),
+                    new Rotation3d(0.0, Units.degreesToRadians(68.125 - 90.0), 0.0) // -28.125
+                            .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(180.0 - 30.0)))), //180 - 10
 
         //RIGHT SHOOTER
             new Pose3d(
                     Units.inchesToMeters(-(7.823 + SwerveConstants.kTrueChassisCenterOffset)),
                     Units.inchesToMeters(-10.189),
                     Units.inchesToMeters(9.17),
-                    new Rotation3d(0.0, Units.degreesToRadians(-28.125), 0.0)
-                            .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(180.0 + 10.0))))
+                    new Rotation3d(0.0, Units.degreesToRadians(68.125 - 90.0), 0.0)
+                            .rotateBy(new Rotation3d(0.0, 0.0, Units.degreesToRadians(180.0 + 30.0))))
     };
 
     public static final String[] instanceNames = { "leftShooter", "rightShooter" };

@@ -20,7 +20,7 @@ public class Intake extends SubsystemBase {
 
     private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Intake/IntakeVoltage", 12.0);
     private static final LoggedTunableNumber mIdleVoltage = new LoggedTunableNumber("Intake/IdleVoltage", 0.0);
-    private static final LoggedTunableNumber mEjectingVoltage = new LoggedTunableNumber("Intake/EjectingVoltage", -8.0);
+    private static final LoggedTunableNumber mEjectingVoltage = new LoggedTunableNumber("Intake/EjectingVoltage", -12.0);
 
     private static final LoggedTunableNumber mVelocityThreshold = new LoggedTunableNumber("Intake/VelocityThreshold", 200.0);
     private static final LoggedTunableNumber mCurrentThreshold = new LoggedTunableNumber("Intake/CurrentThreshold", 25.0);

@@ -16,13 +16,13 @@ public interface AprilTagVisionIO {
         @Override
         public void toLog(LogTable table) {
             // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'toLog'");
+            //throw new UnsupportedOperationException("Unimplemented method 'toLog'");
         }
 
         @Override
         public void fromLog(LogTable table) {
             // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'fromLog'");
+            //throw new UnsupportedOperationException("Unimplemented method 'fromLog'");
         }
     }
 

@@ -50,7 +50,7 @@ public class Vision extends VirtualSubsystem {
     public void periodic() {
         for (int i = 0; i < io.length; i++) {
             io[i].updateInputs(inputs[i]);
-            Logger.processInputs("AprilTagVision/Inst" + i, inputs[i]);
+            Logger.processInputs("AprilTagVision/" + instanceNames[i], inputs[i]);
         }
 
         // Loop over instances
@@ -63,13 +63,13 @@ public class Vision extends VirtualSubsystem {
 
             // Exit if no new data
             if (!hasUpdate) {
-                Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose", new Pose2d());
-                Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose3d",
-                        new Pose3d());
+                //Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose", new Pose2d());
+                //Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose3d",
+                //        new Pose3d());
 
                 // If no recent frames from instance, clear tag poses
                 if (Timer.getFPGATimestamp() - lastFrameTimes.get(instanceIndex) > targetLogTimeSecs) {
-                    Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/TagPoses",
+                    Logger.recordOutput("AprilTagVision/" + instanceNames[instanceIndex] + "/TagPoses",
                             new Pose3d[] {});
                 }
                 continue;
@@ -82,14 +82,14 @@ public class Vision extends VirtualSubsystem {
             Pose3d cameraPose3d = robotPose3d.transformBy(GeometryUtil.pose3dToTransform3d(cameraPoses[instanceIndex]));
 
             // Exit if robot pose is off the field
-            if (robotPose3d.getX() < -fieldBorderMargin
+            /*if (robotPose3d.getX() < -fieldBorderMargin
                     || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin
                     || robotPose3d.getY() < -fieldBorderMargin
                     || robotPose3d.getY() > FieldConstants.fieldWidth + fieldBorderMargin
                     || robotPose3d.getZ() < -zMargin
                     || robotPose3d.getZ() > zMargin) {
                 continue;
-            }
+            }*/
 
             // Get tag poses and update last detection times
             List<Pose3d> tagPoses = new ArrayList<>();
@@ -129,12 +129,12 @@ public class Vision extends VirtualSubsystem {
 
             // Log data from instance
             Logger.recordOutput(
-                    "AprilTagVision/Inst" + instanceNames[instanceIndex] + "/LatencySecs",
+                    "AprilTagVision/" + instanceNames[instanceIndex] + "/LatencySecs",
                     Timer.getFPGATimestamp() - timestamp);
-            Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose", robotPose);
-            Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose3d", robotPose3d);
+            Logger.recordOutput("AprilTagVision/" + instanceNames[instanceIndex] + "/RobotPose", robotPose);
+            Logger.recordOutput("AprilTagVision/" + instanceNames[instanceIndex] + "/RobotPose3d", robotPose3d);
             Logger.recordOutput(
-                    "AprilTagVision/Inst" + instanceNames[instanceIndex] + "/TagPoses", tagPoses.toArray(Pose3d[]::new));
+                    "AprilTagVision/" + instanceNames[instanceIndex] + "/TagPoses", tagPoses.toArray(Pose3d[]::new));
 
         }
 
