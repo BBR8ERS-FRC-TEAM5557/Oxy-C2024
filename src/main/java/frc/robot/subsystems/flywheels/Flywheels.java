@@ -24,10 +24,10 @@ public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber kV = new LoggedTunableNumber("Flywheels/kV", kFlywheelV);
     private static final LoggedTunableNumber kA = new LoggedTunableNumber("Flywheels/kA", kFlywheelA);
 
-    private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 7250.0);
+    private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 5500.0);
     private static final LoggedTunableNumber mShootingFenderRpm = new LoggedTunableNumber("Flywheels/ShootingFenderRpm",
-            7000.0);
-    private static final LoggedTunableNumber mIdleRpm = new LoggedTunableNumber("Flywheels/IdleRpm", 1500.0);
+            4250.0);
+    private static final LoggedTunableNumber mIdleRpm = new LoggedTunableNumber("Flywheels/IdleRpm", 2500.0);
     private static final LoggedTunableNumber mIntakingRpm = new LoggedTunableNumber("Flywheels/IntakingRpm", -2000.0);
     private static final LoggedTunableNumber mEjectingRpm = new LoggedTunableNumber("Flywheels/EjectingRpm", 2500.0);
 

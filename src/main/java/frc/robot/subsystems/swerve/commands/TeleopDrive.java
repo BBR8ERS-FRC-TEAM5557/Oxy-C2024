@@ -78,7 +78,7 @@ public class TeleopDrive extends Command {
         boolean wantsAutoAim = false;// mAutoaimSupplier.getAsBoolean();
         boolean wantsAmpSnap = mWantsAmpSnapSupplier.getAsBoolean();
         boolean wantsClimbSnap = mWantsClimbSnapSupplier.getAsBoolean();
-        if (r > 0.05 || wantsAutoAim || wantsAmpSnap) {
+        if (r > 0.05 || wantsAutoAim || wantsAmpSnap || wantsClimbSnap) {
             if (wantsAutoAim) {
                 Leds.getInstance().autoDrive = true;
                 theta = RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
