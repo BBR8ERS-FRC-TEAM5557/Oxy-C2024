@@ -44,12 +44,18 @@ import frc.robot.subsystems.swerve.module.ModuleIO;
 import frc.robot.subsystems.swerve.module.ModuleIOKrakenSparkMax;
 import frc.robot.subsystems.swerve.module.ModuleIOSim;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
+import frc.robot.subsystems.vision.AprilTagVisionIO;
+import frc.robot.subsystems.vision.AprilTagVisionIOPhotonvision;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ClimbLocation;
 import frc.robot.util.FeedForwardCharacterization;
+import frc.robot.util.GeometryUtil;
 
 import static frc.robot.Constants.*;
 import static frc.robot.Constants.RobotMap.*;
+import static frc.robot.subsystems.vision.AprilTagVisionConstants.cameraPoses;
+import static frc.robot.subsystems.vision.AprilTagVisionConstants.instanceNames;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -67,8 +73,9 @@ public class RobotContainer {
 	public static Arm mArm;
 	public static Leds mLeds;
 
-	public static RobotStateEstimator m_stateEstimator;
-	public static SystemsCheckManager m_systemCheckManager;
+	public static Vision mVision;
+	public static RobotStateEstimator mStateEstimator;
+	public static SystemsCheckManager mSystemCheckManager;
 
 	private final LoggedDashboardChooser<Command> mChooser;
 	public static LoggedDashboardChooser<ClimbLocation> mClimbChooser;
@@ -93,6 +100,13 @@ public class RobotContainer {
 			mFeeder = new Feeder(new FeederIOSparkMax());
 			mFlywheels = new Flywheels(new FlywheelsIOKraken());
 			mArm = new Arm(new ArmIOSparkMax());
+
+			mVision = new Vision(
+					new AprilTagVisionIOPhotonvision(instanceNames[0],
+							GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
+					new AprilTagVisionIOPhotonvision(instanceNames[1],
+							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
+
 		} else {
 			mSwerve = new Swerve(new GyroIO() {
 			}, new ModuleIOSim(), new ModuleIOSim(),
@@ -125,6 +139,13 @@ public class RobotContainer {
 			mArm = new Arm(new ArmIO() {
 			});
 		}
+		if (mVision == null) {
+			mVision = new Vision(
+					new AprilTagVisionIO() {
+					},
+					new AprilTagVisionIO() {
+					});
+		}
 
 		mChooser = new LoggedDashboardChooser<Command>("Driver/AutonomousChooser");
 
@@ -146,8 +167,8 @@ public class RobotContainer {
 			new Alert("Burning flash enabled, consider disabling before competeing", AlertType.INFO).set(true);
 		}
 
-		m_systemCheckManager = new SystemsCheckManager(mSwerve);
-		m_stateEstimator = RobotStateEstimator.getInstance();
+		mSystemCheckManager = new SystemsCheckManager(mSwerve);
+		mStateEstimator = RobotStateEstimator.getInstance();
 		DriveMotionPlanner.configureControllers();
 
 		configureBindings();
@@ -171,9 +192,9 @@ public class RobotContainer {
 
 		mDriver.start()
 				.onTrue(Commands.runOnce(
-						() -> m_stateEstimator.setPose(
+						() -> mStateEstimator.setPose(
 								new Pose2d(
-										m_stateEstimator.getEstimatedPose()
+										mStateEstimator.getEstimatedPose()
 												.getTranslation(),
 										AllianceFlipUtil.apply(
 												new Rotation2d()))))
@@ -360,7 +381,7 @@ public class RobotContainer {
 	}
 
 	public Command getSubsystemCheckCommand() {
-		return m_systemCheckManager.getCheckCommand();
+		return mSystemCheckManager.getCheckCommand();
 	}
 
 	public double getForwardInput() {
