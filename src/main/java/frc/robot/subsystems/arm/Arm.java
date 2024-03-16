@@ -38,9 +38,9 @@ public class Arm extends SubsystemBase {
     private static final LoggedTunableNumber kD = new LoggedTunableNumber("Arm/kD", kArmD);
 
     private static final LoggedTunableNumber kS = new LoggedTunableNumber("Arm/kS", kArmS);
+    private static final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kG", kArmG);
     private static final LoggedTunableNumber kV = new LoggedTunableNumber("Arm/kV", kArmV);
     private static final LoggedTunableNumber kA = new LoggedTunableNumber("Arm/kA", kArmA);
-    private static final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kG", kArmG);
 
     private static final LoggedTunableNumber cruiseVelocity = new LoggedTunableNumber("Arm/Velocity", kCruiseVelocity);
     private static final LoggedTunableNumber timeToCruise = new LoggedTunableNumber("Arm/TimeToCruise",
@@ -92,7 +92,7 @@ public class Arm extends SubsystemBase {
                 hashCode(), () -> mIO.setPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(
                 hashCode(),
-                () -> mFeedforward = new ArmFeedforward(kS.get(), kV.get(), kA.get(), kG.get()),
+                () -> mFeedforward = new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get()),
                 kS,
                 kV,
                 kA,
@@ -115,7 +115,7 @@ public class Arm extends SubsystemBase {
                                     // mInputs.armAbsoluteVelocityDegPerSec),
                     new TrapezoidProfile.State(goal, 0.0));
 
-            double ff = mFeedforward.calculate(mSetpointState.position, mSetpointState.velocity);
+            double ff = mFeedforward.calculate(360.0 - mSetpointState.position, mSetpointState.velocity); // (360 - setpoint) accounts for our weird encoder offset
             mIO.setPosition(mSetpointState.position, ff);
         }
 
