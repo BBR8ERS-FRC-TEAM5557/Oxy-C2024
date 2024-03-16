@@ -409,23 +409,19 @@ public class RobotContainer {
 	}
 
 	public boolean getWantsAutoAimInput() {
-		return mDriver.a().getAsBoolean();
+		return mDriver.getHID().getAButton();
 	}
 
 	public boolean getWantsAmpSnapInput() {
-		return mDriver.x().getAsBoolean();
+		return mDriver.getHID().getXButton();
 	}
 
 	public boolean getWantsClimbSnapInput() {
-		return mDriver.y().getAsBoolean();
+		return mDriver.getHID().getYButton();
 	}
 
 	public boolean getWantsSnapInput() {
-		return mDriver.rightBumper().getAsBoolean();
-	}
-
-	public double getArmJogger() {
-		return -square(deadband(mOperator.getRightY(), 0.15));
+		return mDriver.getHID().getRightBumper();
 	}
 
 	private static double deadband(double value, double tolerance) {
