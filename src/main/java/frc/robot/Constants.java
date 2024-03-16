@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public class Constants {
 
   public static boolean kIsReal = Robot.isReal();
-  public static boolean kTuningMode = false;
+  public static boolean kTuningMode = true;
 
   public class RobotMap {
     public static final int kPigeon = 5;

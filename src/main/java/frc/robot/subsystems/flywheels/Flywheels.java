@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+
 public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber kP = new LoggedTunableNumber("Flywheels/kP", kFlywheelP);
     private static final LoggedTunableNumber kI = new LoggedTunableNumber("Flywheels/kI", kFlywheelI);
@@ -26,7 +28,7 @@ public class Flywheels extends SubsystemBase {
 
     private static final LoggedTunableNumber mShootingRpm = new LoggedTunableNumber("Flywheels/ShootingRpm", 5500.0);
     private static final LoggedTunableNumber mShootingFenderRpm = new LoggedTunableNumber("Flywheels/ShootingFenderRpm",
-            4250.0);
+            4000.0);
     private static final LoggedTunableNumber mIdleRpm = new LoggedTunableNumber("Flywheels/IdleRpm", 2500.0);
     private static final LoggedTunableNumber mIntakingRpm = new LoggedTunableNumber("Flywheels/IntakingRpm", -2000.0);
     private static final LoggedTunableNumber mEjectingRpm = new LoggedTunableNumber("Flywheels/EjectingRpm", 2500.0);
@@ -100,7 +102,15 @@ public class Flywheels extends SubsystemBase {
         }
 
         if (mState != State.CHARACTERIZING || mState != State.STOP) {
-            mIO.runVelocity(mState.getRPM(), mFeedforward.calculate(mState.getRPM()));
+            if (mState == State.IDLE) {
+                if (mIdleMode == IdleMode.AUTO) {
+                    mIO.runVelocity(State.SHOOT.getRPM(), mFeedforward.calculate(State.SHOOT.getRPM()));
+                } else {
+                    mIO.runVelocity(State.IDLE.getRPM(), mFeedforward.calculate(State.IDLE.getRPM()));
+                }
+            } else {
+                mIO.runVelocity(mState.getRPM(), mFeedforward.calculate(mState.getRPM()));
+            }
         } else if (mState == State.STOP) {
             mIO.stop();
         }

@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -101,11 +102,11 @@ public class RobotContainer {
 			mFlywheels = new Flywheels(new FlywheelsIOKraken());
 			mArm = new Arm(new ArmIOSparkMax());
 
-			mVision = new Vision(
+			/*mVision = new Vision(
 					new AprilTagVisionIOPhotonvision(instanceNames[0],
 							GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
 					new AprilTagVisionIOPhotonvision(instanceNames[1],
-							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
+							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));*/
 
 		} else {
 			mSwerve = new Swerve(new GyroIO() {
@@ -359,7 +360,7 @@ public class RobotContainer {
 
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
-						.alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shoot())
+						.alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender())
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
@@ -368,7 +369,7 @@ public class RobotContainer {
 
 		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started")
-						.alongWith(Commands.parallel(mArm.aim(), mFlywheels.shoot())
+						.alongWith(Commands.parallel(mArm.aim(), mFlywheels.shoot(), new RunCommand(() -> mSwerve.snapToSpeaker()))
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))

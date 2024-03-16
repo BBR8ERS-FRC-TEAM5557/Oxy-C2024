@@ -69,7 +69,7 @@ public class SwerveConstants {
 	public static final double kTranslationkI = 0.0;
 	public static final double kTranslationkD = 0.0;
 
-	public static final double kRotationkP = 4.0;
+	public static final double kRotationkP = 3.0;
 	public static final double kRotationkI = 0.0;
 	public static final double kRotationkD = 0.0;
 
@@ -108,7 +108,7 @@ public class SwerveConstants {
 		kDriveMotorConfiguration.pid = kDrivePIDConfiguration;
 		kDriveMotorConfiguration.neutralMode = NeutralModeValue.Brake;
 		kDriveMotorConfiguration.supplyCurrentLimit = 50.0;
-		kDriveMotorConfiguration.statorCurrentLimit = 60.0;
+		kDriveMotorConfiguration.statorCurrentLimit = 50.0;
 	}
 
 	// ANGLE MOTOR CONFIGURATION

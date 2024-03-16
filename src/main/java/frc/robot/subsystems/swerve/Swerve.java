@@ -233,8 +233,8 @@ public class Swerve extends SubsystemBase {
 			}
 
 			// Log setpoint states
-			Logger.recordOutput(kSubsystemName + "/ModuleStates/Setpoints", mSwerveSetpoint.moduleStates());
-			Logger.recordOutput(kSubsystemName + "/ModuleStates/SetpointsOptimized", optimizedStates);
+			//Logger.recordOutput(kSubsystemName + "/ModuleStates/Setpoints", mSwerveSetpoint.moduleStates());
+			//Logger.recordOutput(kSubsystemName + "/ModuleStates/SetpointsOptimized", optimizedStates);
 		}
 
 		// Log measured states
@@ -277,7 +277,7 @@ public class Swerve extends SubsystemBase {
 	}
 
 	public void driveVelocity(ChassisSpeeds desSpeed) {
-		if (mControlMode != ControlMode.OPEN_LOOP) {
+		if (mControlMode != ControlMode.VELOCITY) {
 			setKinematicLimits(kDrivingLimits);
 		}
 		this.drive(desSpeed, ControlMode.VELOCITY);
@@ -310,6 +310,14 @@ public class Swerve extends SubsystemBase {
 
 	public void stopWithX() {
 		this.drive(new ChassisSpeeds(), ControlMode.X_OUT);
+	}
+
+	public void snapToSpeaker() {
+		this.driveOpenLoop(new ChassisSpeeds(
+				0.0,
+				0.0,
+				DriveMotionPlanner
+						.calculateSnap(RobotStateEstimator.getInstance().getAimingParameters().driveHeading())));
 	}
 
 	public void resetModuleEncoders() {

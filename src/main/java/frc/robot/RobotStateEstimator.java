@@ -71,17 +71,22 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		armAngleMapSingle.put(Units.inchesToMeters(0.0), 157.0); // lower limit
 
 		armAngleMapSingle.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 157.0); // from subwoofer
-		// armAngleMapSingle.put(Units.inchesToMeters(24.0) + kMeasurementOffset,
-		// 164.0); // 165.5 true
-		armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 174.0); // 172.5 true
-		// armAngleMapSingle.put(Units.inchesToMeters(72.0) + kMeasurementOffset,
-		// 177.0); // 178.5 true
-		armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 182.0); // 182.5 true
-		// armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset,
-		// 181.5); // 182.5 true
-		armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 185.0); // 182.5 true
-		// armAngleMapSingle.put(Units.inchesToMeters(168.0) + kMeasurementOffset,
-		// 184.0); // 182.5 true
+
+		armAngleMapSingle.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 165.0);
+		armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 173.0);
+		armAngleMapSingle.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 178.0);
+		armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 181.5);
+		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 183.5);
+		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 185.0);
+
+		// armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset,
+		// 172.25); // 172.5 true
+
+		// armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset,
+		// 180.25); // 182.5 true
+
+		// armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset,
+		// 183.25); // 182.5 true
 
 		armAngleMapSingle.put(Double.MAX_VALUE, 190.0); // upper limit
 	}
@@ -189,7 +194,8 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
 		Rotation2d vehicleToGoalDirection = predictedVehicleToTargetTranslation.getAngle();
 
-		Rotation2d targetVehicleDirection = predictedVehicleFixedToTargetTranslation.getAngle();
+		Rotation2d targetVehicleDirection = predictedVehicleFixedToTargetTranslation.getAngle()
+				.rotateBy(Rotation2d.fromDegrees(180.0));
 		double targetDistance = predictedVehicleToTargetTranslation.getNorm();
 
 		double feedVelocity = mRobotVelocity.dx * vehicleToGoalDirection.getSin() / targetDistance
@@ -197,9 +203,10 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
 		mLatestParameters = new AimingParameters(
 				targetVehicleDirection,
-				Rotation2d.fromDegrees(177.0 - 0.8 + mShotCompensationDegrees.getDouble(0.0)),
-				// Rotation2d.fromDegrees(armAngleMapSingle.get(targetDistance) +
+				// Rotation2d.fromDegrees(177.0 - 0.8 +
 				// mShotCompensationDegrees.getDouble(0.0)),
+				Rotation2d.fromDegrees(armAngleMapSingle.get(targetDistance) +
+						mShotCompensationDegrees.getDouble(0.0)),
 				feedVelocity);
 
 		Logger.recordOutput("RobotState/AimingParameters/TargetDirection", mLatestParameters.driveHeading());

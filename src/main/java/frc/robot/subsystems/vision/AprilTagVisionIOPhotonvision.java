@@ -9,7 +9,11 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
+//import frc.lib.team5557.vision.PhotonvisionPoseEstimator;
+//import frc.lib.team5557.vision.PhotonvisionPoseEstimator.PoseStrategy;
 import frc.lib.team6328.Alert;
+import frc.robot.RobotContainer;
+import frc.robot.RobotStateEstimator;
 import frc.robot.util.FieldConstants;
 
 public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
@@ -34,9 +38,9 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
                 PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 camera,
                 robotToCamera);
-        //this.photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_LAST_POSE);
-        disconnectedAlert = new Alert("No data from \"" + cameraName + "\"", Alert.AlertType.ERROR);
-        disconnectedTimer.start();
+        this.photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        disconnectedAlert = new Alert("No data from \"" + cameraName + "\"", Alert.AlertType.INFO);
+        //disconnectedTimer.start();
     }
 
     /**
@@ -48,6 +52,7 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
      */
     @Override
     public void updateInputs(AprilTagVisionIOInputs inputs) {
+        this.photonEstimator.setReferencePose(RobotStateEstimator.getInstance().getEstimatedPose());
         Optional<EstimatedRobotPose> visionEstimate = this.photonEstimator.update();
         double latestTimestamp = camera.getLatestResult().getTimestampSeconds();
 

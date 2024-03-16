@@ -52,9 +52,9 @@ public class Robot extends LoggedRobot {
 	public void robotInit() {
 
 		if (Constants.kIsReal) {
-			Logger.addDataReceiver(new WPILOGWriter());
+			//Logger.addDataReceiver(new WPILOGWriter());
 			Logger.addDataReceiver(new NT4Publisher());
-			LoggedPowerDistribution.getInstance(0, ModuleType.kRev);
+			LoggedPowerDistribution.getInstance(1, ModuleType.kRev);
 		} else {
 			Logger.addDataReceiver(new NT4Publisher());
 		}
@@ -171,8 +171,8 @@ public class Robot extends LoggedRobot {
 		m_subsystemCheckCommand = m_robotContainer.getSubsystemCheckCommand();
 
 		if (mAutoCommand != null) {
-			mAutoCommand.schedule();
 			RobotContainer.mFlywheels.setIdleMode(IdleMode.AUTO);
+			mAutoCommand.schedule();
 
 		} else if (!DriverStation.isFMSAttached() && m_subsystemCheckCommand != null) {
 			System.out.println("SystemCheck Started");
