@@ -77,7 +77,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		armAngleMapSingle.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 178.0);
 		armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 181.5);
 		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 183.5);
-		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 185.0);
+		armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 185.0);
 
 		// armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset,
 		// 172.25); // 172.5 true

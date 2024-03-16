@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.3533835659459352,
-      "y": 2.965293025085545
+      "x": 1.3675008628209686,
+      "y": 2.77
     },
     "rotation": 0
   },
@@ -12,19 +12,13 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
                   "pathName": "setup-C01Shot"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackGoal"
                 }
               }
             ]

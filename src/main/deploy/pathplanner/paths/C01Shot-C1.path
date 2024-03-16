@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.0307849019922575,
-        "y": 0.8407612404779212
+        "x": 5.604557534878591,
+        "y": -0.27555501248930314
       },
       "isLocked": false,
       "linkedName": "C01-Shot"
     },
     {
       "anchor": {
-        "x": 8.451113386473319,
-        "y": 2.5663788203817806
+        "x": 8.362185186618676,
+        "y": 2.575670728138215
       },
       "prevControl": {
-        "x": 8.48882513807482,
-        "y": 2.473762278710507
+        "x": 8.399896938220177,
+        "y": 2.4830541864669415
       },
       "nextControl": {
-        "x": 8.41752218878818,
-        "y": 2.6488756662739767
+        "x": 8.328593988933537,
+        "y": 2.6581675740304114
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 2.773797903643262
       },
       "prevControl": {
-        "x": 5.328781278222279,
-        "y": 0.7839814241549786
+        "x": 5.734437178684161,
+        "y": -0.18645221283827612
       },
       "nextControl": null,
       "isLocked": false,
@@ -52,7 +52,7 @@
     },
     {
       "waypointRelativePos": 1.15,
-      "rotationDegrees": 20.0,
+      "rotationDegrees": 35.0,
       "rotateFast": false
     },
     {
@@ -71,7 +71,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -45.0,
+    "rotation": -40.0,
     "rotateFast": false
   },
   "reversed": false,

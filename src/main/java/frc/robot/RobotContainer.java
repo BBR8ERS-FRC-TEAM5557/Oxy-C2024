@@ -325,7 +325,8 @@ public class RobotContainer {
 
 		mChooser.addDefaultOption("N3_S_C01", AutoBuilder.buildAuto("N3_S_C01"));
 
-		mChooser.addOption("N4_S012_fender", AutoBuilder.buildAuto("N4_S012_fender"));
+		//mChooser.addOption("N4_S012_fender", AutoBuilder.buildAuto("N4_S012_fender"));
+		mChooser.addOption("N4_C012", AutoBuilder.buildAuto("N4_C012"));
 		mChooser.addOption("N4_S012", AutoBuilder.buildAuto("N4_S012"));
 		mChooser.addOption("N4_S210", AutoBuilder.buildAuto("N4_S210"));
 
@@ -352,7 +353,7 @@ public class RobotContainer {
 	private void generateEventMap() {
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 		Trigger inWing = new Trigger(
-				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX + 1.0);
+				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX - 1.0);
 
 		NamedCommands.registerCommand("intakeNote",
 				Commands.print("intaking started")
@@ -364,7 +365,7 @@ public class RobotContainer {
 								.until(mFeeder::hasGamepiece)));
 
 		NamedCommands.registerCommand("trackGoal",
-				Commands.print("tracking goal").alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
+				Commands.print("tracking goal"));//.alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
 
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
