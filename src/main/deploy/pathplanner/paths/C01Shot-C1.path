@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.1284546662916406,
-        "y": 3.411551902931959
+        "x": 3.3254822252193694,
+        "y": 2.773797903643262
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8568833031821366,
-        "y": 0.7834349154140425
+        "x": 5.0307849019922575,
+        "y": 0.8407612404779212
       },
       "isLocked": false,
       "linkedName": "C01-Shot"
@@ -32,12 +32,12 @@
     },
     {
       "anchor": {
-        "x": 2.1284546662916406,
-        "y": 3.411551902931959
+        "x": 3.3254822252193694,
+        "y": 2.773797903643262
       },
       "prevControl": {
-        "x": 5.138347807605243,
-        "y": 0.4258600460502454
+        "x": 5.328781278222279,
+        "y": 0.7839814241549786
       },
       "nextControl": null,
       "isLocked": false,
@@ -65,17 +65,17 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 4.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -42.5,
+    "rotation": -45.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "SourceSide",
   "previewStartingState": null,
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

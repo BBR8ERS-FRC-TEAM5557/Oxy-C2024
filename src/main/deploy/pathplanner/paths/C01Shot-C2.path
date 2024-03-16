@@ -3,56 +3,51 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.157534839447573,
-        "y": 6.48435467848945
+        "x": 3.3254822252193694,
+        "y": 2.773797903643262
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.3928553211923225,
-        "y": 7.493006524753265
+        "x": 5.123111802983008,
+        "y": 5.02530692508784
       },
       "isLocked": false,
-      "linkedName": "C34-Shot"
+      "linkedName": "C01-Shot"
     },
     {
       "anchor": {
-        "x": 8.29561251068742,
-        "y": 5.729437860496552
+        "x": 8.382838186683319,
+        "y": 4.126366189798352
       },
       "prevControl": {
-        "x": 8.264042211983071,
-        "y": 5.53738119003659
+        "x": 8.226937844278135,
+        "y": 3.835930254273188
       },
       "nextControl": {
-        "x": 8.331487532213048,
-        "y": 5.947682142928467
+        "x": 8.429969762294201,
+        "y": 4.214170379604072
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 4.157534839447573,
-        "y": 6.48435467848945
+        "x": 4.187305898338648,
+        "y": 5.152200700162396
       },
       "prevControl": {
-        "x": 6.2665721671778964,
-        "y": 7.405370671959463
+        "x": 5.173791810667246,
+        "y": 3.709277184839113
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "C34-Shot"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.5,
-      "rotationDegrees": -30.0,
-      "rotateFast": false
-    },
-    {
-      "waypointRelativePos": 0.4,
-      "rotationDegrees": -30.0,
+      "waypointRelativePos": 0.25,
+      "rotationDegrees": 0,
       "rotateFast": false
     }
   ],
@@ -66,11 +61,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 15.0,
+    "rotation": -5.0,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "FenderSide",
+  "folder": "SourceSide",
   "previewStartingState": null,
   "useDefaultConstraints": true
 }

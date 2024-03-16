@@ -12,44 +12,19 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "shootFender"
-          }
-        },
-        {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Fender-S0"
+                  "pathName": "setup-C01Shot"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "intakeNote"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.75
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeNote"
+                  "name": "trackGoal"
                 }
               }
             ]
@@ -68,32 +43,26 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "S0-S1"
+                  "pathName": "C01Shot-C0"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "intakeNote"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.75
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeNote"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeNote"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "trackGoal"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -112,26 +81,45 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "S1-S2"
+                  "pathName": "C01Shot-C1"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "intakeNote"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeNote"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "trackGoal"
+                      }
+                    }
+                  ]
                 }
               }
             ]
           }
         },
         {
-          "type": "race",
+          "type": "named",
+          "data": {
+            "name": "shootDistance"
+          }
+        },
+        {
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "wait",
+                "type": "path",
                 "data": {
-                  "waitTime": 0.75
+                  "pathName": "C01Shot-C2"
                 }
               },
               {

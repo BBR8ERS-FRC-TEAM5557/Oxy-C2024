@@ -51,6 +51,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ClimbLocation;
 import frc.robot.util.FeedForwardCharacterization;
+import frc.robot.util.FieldConstants;
 import frc.robot.util.GeometryUtil;
 
 import static frc.robot.Constants.*;
@@ -102,11 +103,13 @@ public class RobotContainer {
 			mFlywheels = new Flywheels(new FlywheelsIOKraken());
 			mArm = new Arm(new ArmIOSparkMax());
 
-			/*mVision = new Vision(
-					new AprilTagVisionIOPhotonvision(instanceNames[0],
-							GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
-					new AprilTagVisionIOPhotonvision(instanceNames[1],
-							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));*/
+			/*
+			 * mVision = new Vision(
+			 * new AprilTagVisionIOPhotonvision(instanceNames[0],
+			 * GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
+			 * new AprilTagVisionIOPhotonvision(instanceNames[1],
+			 * GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
+			 */
 
 		} else {
 			mSwerve = new Swerve(new GyroIO() {
@@ -347,6 +350,10 @@ public class RobotContainer {
 	}
 
 	private void generateEventMap() {
+		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
+		Trigger inWing = new Trigger(
+				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX);
+
 		NamedCommands.registerCommand("intakeNote",
 				Commands.print("intaking started")
 						.alongWith(mArm.intake()
@@ -356,7 +363,8 @@ public class RobotContainer {
 												mFeeder.intake())))
 								.until(mFeeder::hasGamepiece)));
 
-		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
+		NamedCommands.registerCommand("trackGoal",
+				Commands.print("tracking goal").alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
 
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
@@ -369,7 +377,8 @@ public class RobotContainer {
 
 		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started")
-						.alongWith(Commands.parallel(mArm.aim(), mFlywheels.shoot(), new RunCommand(() -> mSwerve.snapToSpeaker()))
+						.alongWith(Commands
+								.parallel(mArm.aim(), mFlywheels.shoot(), new RunCommand(() -> mSwerve.snapToSpeaker()))
 								.raceWith(Commands.waitUntil(readyToShoot)
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
