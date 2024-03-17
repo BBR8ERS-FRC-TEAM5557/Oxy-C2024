@@ -75,13 +75,13 @@ public class TeleopDrive extends Command {
             yVelocity = -yVelocity;
         }
 
-        boolean wantsAutoAim = false;// mAutoaimSupplier.getAsBoolean();
+        boolean wantsAutoAim = mAutoaimSupplier.getAsBoolean();
         boolean wantsAmpSnap = mWantsAmpSnapSupplier.getAsBoolean();
         boolean wantsClimbSnap = mWantsClimbSnapSupplier.getAsBoolean();
         if (r > 0.05 || wantsAutoAim || wantsAmpSnap || wantsClimbSnap) {
             if (wantsAutoAim) {
                 Leds.getInstance().autoDrive = true;
-                theta = RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
+                theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-25.0));//RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
             } else if (wantsAmpSnap) {
                 Leds.getInstance().autoDrive = true;
                 theta = Rotation2d.fromDegrees(270.0);

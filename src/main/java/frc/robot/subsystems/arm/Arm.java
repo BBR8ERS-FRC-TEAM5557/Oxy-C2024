@@ -60,7 +60,7 @@ public class Arm extends SubsystemBase {
             157.0);
     private static final LoggedTunableNumber customShotDegrees = new LoggedTunableNumber(
             "Superstructure/ArmCustomShotDegrees",
-            176.0);
+            174.0);
     private static final LoggedTunableNumber climbPrepDegrees = new LoggedTunableNumber(
             "Superstructure/ArmClimbPrepDegrees",
             270.0);

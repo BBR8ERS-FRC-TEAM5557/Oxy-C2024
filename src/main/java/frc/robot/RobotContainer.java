@@ -215,10 +215,9 @@ public class RobotContainer {
 								.until(mFeeder::hasGamepiece)))
 						.withName("Teleop Intaking"));
 
-		mOperator.leftBumper().whileTrue(
-				mArm.intake().alongWith(Commands.waitUntil(mArm::atGoal)
-						.andThen(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor())))
-						.withName("Teleop Ejecting"));
+		mOperator.leftBumper()
+				.whileTrue(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor())
+				.withName("Teleop Ejecting"));
 
 		/* COASTING */
 		mOperator.leftTrigger()
@@ -325,7 +324,8 @@ public class RobotContainer {
 
 		mChooser.addDefaultOption("N3_S_C01", AutoBuilder.buildAuto("N3_S_C01"));
 
-		//mChooser.addOption("N4_S012_fender", AutoBuilder.buildAuto("N4_S012_fender"));
+		// mChooser.addOption("N4_S012_fender",
+		// AutoBuilder.buildAuto("N4_S012_fender"));
 		mChooser.addOption("N4_C012", AutoBuilder.buildAuto("N4_C012"));
 		mChooser.addOption("N4_S012", AutoBuilder.buildAuto("N4_S012"));
 		mChooser.addOption("N4_S210", AutoBuilder.buildAuto("N4_S210"));
@@ -365,7 +365,8 @@ public class RobotContainer {
 								.until(mFeeder::hasGamepiece)));
 
 		NamedCommands.registerCommand("trackGoal",
-				Commands.print("tracking goal"));//.alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
+				Commands.print("tracking goal"));// .alongWith(Commands.sequence(Commands.waitUntil(inWing),
+													// mArm.aim())));
 
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
