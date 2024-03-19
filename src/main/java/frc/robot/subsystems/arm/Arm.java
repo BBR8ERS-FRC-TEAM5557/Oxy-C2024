@@ -21,6 +21,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -94,9 +95,9 @@ public class Arm extends SubsystemBase {
                 hashCode(),
                 () -> mFeedforward = new ArmFeedforward(kS.get(), kG.get(), kV.get(), kA.get()),
                 kS,
+                kG,
                 kV,
-                kA,
-                kG);
+                kA);
         LoggedTunableNumber.ifChanged(
                 hashCode(),
                 () -> mMotionProfile = new TrapezoidProfile(
@@ -115,7 +116,7 @@ public class Arm extends SubsystemBase {
                                     // mInputs.armAbsoluteVelocityDegPerSec),
                     new TrapezoidProfile.State(goal, 0.0));
 
-            double ff = mFeedforward.calculate(360.0 - mSetpointState.position, mSetpointState.velocity); // (360 - setpoint) accounts for our weird encoder offset
+            double ff = mFeedforward.calculate(Units.degreesToRadians(180.0 - mSetpointState.position), mSetpointState.velocity); // (180 - setpoint) accounts for our weird encoder offset
             mIO.setPosition(mSetpointState.position, ff);
         }
 

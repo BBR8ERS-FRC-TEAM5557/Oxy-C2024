@@ -4,7 +4,7 @@ import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.Timer;
 
 public class BurnManager {
-  private static boolean shouldBurn = false;
+  private static boolean shouldBurn = true;
 
   public static void restoreFactoryDefaults(CANSparkMax sparkMax) {
     if (shouldBurn) {

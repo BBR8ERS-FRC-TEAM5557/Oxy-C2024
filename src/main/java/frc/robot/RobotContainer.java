@@ -87,8 +87,7 @@ public class RobotContainer {
 	private final Alert operatorDisconnected = new Alert("Operator controller disconnected (port 0).",
 			AlertType.WARNING);
 
-	// private PowerDistribution mPowerDistribution = new PowerDistribution(1,
-	// ModuleType.kRev);
+	//private PowerDistribution mPowerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
 	public RobotContainer() {
 		mLeds = Leds.getInstance();
@@ -160,7 +159,7 @@ public class RobotContainer {
 
 		if (Constants.kTuningMode) {
 			SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
-			// SmartDashboard.putData("PDH", mPowerDistribution);
+			//SmartDashboard.putData("PDH", mPowerDistribution);
 		}
 
 		// Alerts for constants

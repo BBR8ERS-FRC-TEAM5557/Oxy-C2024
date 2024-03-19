@@ -24,12 +24,12 @@ public class ArmConstants {
     public static final double kMinAngle = 155.0; // degrees
     public static final double kMaxAngle = 280.0; // degrees
 
-    public static final double kArmP = 15.0;
+    public static final double kArmP = 10.0;
     public static final double kArmI = 0.0;
     public static final double kArmD = 0.0;
 
     public static final double kArmS = 0.0;
-    public static final double kArmG = 0.0;
+    public static final double kArmG = 0.3;
     public static final double kArmV = 0.0;
     public static final double kArmA = 0.0;
 

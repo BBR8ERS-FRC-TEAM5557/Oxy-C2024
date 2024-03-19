@@ -34,7 +34,6 @@ public interface FlywheelsIO {
             table.put("rightAppliedVolts", rightAppliedVolts);
             table.put("rightSupplyCurrentAmps", rightSupplyCurrentAmps);
             table.put("rightTorqueCurrentAmps", rightTorqueCurrentAmps);
-
         }
 
         @Override

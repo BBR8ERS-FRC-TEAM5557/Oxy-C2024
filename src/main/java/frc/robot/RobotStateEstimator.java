@@ -79,34 +79,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 183.5);
 		armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 185.0);
 
-		// armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset,
-		// 172.25); // 172.5 true
-
-		// armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset,
-		// 180.25); // 182.5 true
-
-		// armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset,
-		// 183.25); // 182.5 true
-
 		armAngleMapSingle.put(Double.MAX_VALUE, 190.0); // upper limit
-	}
-
-	/**
-	 * Arm angle (double side flywheels) look up table key: meters, values: degrees
-	 */
-	// THIS ONE WAS DONE PROPERLY
-	private static final InterpolatingDoubleTreeMap armAngleMapDouble = new InterpolatingDoubleTreeMap();
-	static {
-		armAngleMapDouble.put(Units.inchesToMeters(0.0), 157.0); // lower limit
-
-		armAngleMapDouble.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 160.0); // from subwoofer
-		armAngleMapDouble.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 166.0); // 165.5 true
-		armAngleMapDouble.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 172.0); // 172.5 true
-		armAngleMapDouble.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 179.0); // 178.5 true
-		armAngleMapDouble.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 183.0); // 182.5 true
-		armAngleMapDouble.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 185.5); // 182.5 true
-
-		armAngleMapDouble.put(Double.MAX_VALUE, 190.0); // upper limit
 	}
 
 	private final SwerveDrivePoseEstimator mPoseEstimator;

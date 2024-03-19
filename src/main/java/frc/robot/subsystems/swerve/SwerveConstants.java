@@ -59,8 +59,8 @@ public class SwerveConstants {
 	public static final double kDrivekI = 0.0;
 	public static final double kDrivekD = 0.0;
 
-	public static final double kDrivekS = 0.0;
-	public static final double kDrivekV = 12.0 / kTheoreticalMaxSpeed;
+	public static final double kDrivekS = 0.16083;
+	public static final double kDrivekV = 1.88797;//12.0 / kTheoreticalMaxSpeed;
 	public static final double kDrivekA = 0.0;
 
 	/* MOTION PLANNER PID */
