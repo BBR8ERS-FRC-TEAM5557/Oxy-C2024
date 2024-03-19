@@ -22,6 +22,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import frc.lib.team5557.factory.BurnManager;
 import frc.lib.team5557.factory.SparkMaxFactory;
 import frc.lib.team5557.factory.TalonFactory;
+import frc.robot.util.Util;
+
 import static frc.robot.subsystems.swerve.SwerveConstants.*;
 
 public class ModuleIOKrakenSparkMax implements ModuleIO {
@@ -46,7 +48,6 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     private final VelocityVoltage driveVelocityControl = new VelocityVoltage(0).withUpdateFreqHz(0);
     private final VelocityTorqueCurrentFOC driveCurrent = new VelocityTorqueCurrentFOC(0).withUpdateFreqHz(0);
     private final NeutralOut driveNeutral = new NeutralOut().withUpdateFreqHz(0);
-
 
     public ModuleIOKrakenSparkMax(int moduleNumber, int driveMotorID, int angleMotorID, Rotation2d angleOffset) {
         System.out.println("[Init] Creating ModuleIOKrakenSparkMax" + moduleNumber);
@@ -190,8 +191,12 @@ public class ModuleIOKrakenSparkMax implements ModuleIO {
     @Override
     public boolean resetToAbsolute() {
         double absoluteAngle = getAbsoluteRotation().getRadians();
-        return mAngleMotorEncoder
-                .setPosition(radiansToRotations(absoluteAngle, kAngleGearReduction)) == REVLibError.kOk;
+        if (!Util.epsilonEquals(absoluteAngle, 0, 0.02)) {
+            return mAngleMotorEncoder
+                    .setPosition(radiansToRotations(absoluteAngle, kAngleGearReduction)) == REVLibError.kOk;
+        } else {
+            return false;
+        }
     }
 
     private Rotation2d getAbsoluteRotation() {
