@@ -167,6 +167,11 @@ public class Flywheels extends SubsystemBase {
                 || Util.epsilonEquals(mInputs.rightVelocityRpm, goalRpm, kPadding);
     }
 
+    public boolean atGoalFake() {
+        double goalRpm = mInputs.leftVelocityRpm;
+        return goalRpm > 4000.0;
+    }
+
     public Command shoot() {
         return startEnd(() -> setState(State.SHOOT), () -> setState(State.IDLE)).withName("FlywheelsShoot");
     }
