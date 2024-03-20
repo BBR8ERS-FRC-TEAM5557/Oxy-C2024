@@ -350,7 +350,7 @@ public class RobotContainer {
 	}
 
 	private void generateEventMap() {
-		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoalFake());
+		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
 		Trigger inWing = new Trigger(
 				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX - 1.0);
 

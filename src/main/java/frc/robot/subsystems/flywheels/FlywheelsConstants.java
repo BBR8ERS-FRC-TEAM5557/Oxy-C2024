@@ -18,8 +18,8 @@ public class FlywheelsConstants {
     public static final double kFlywheelI = 0.0;
     public static final double kFlywheelD = 0.0;
 
-    public static final double kFlywheelS = 0.41407;
-    public static final double kFlywheelV = 0.00264/2;//12.0 / kMaxRPM; //theoretical
+    public static final double kFlywheelS = 0.26385;
+    public static final double kFlywheelV = 0.00243/2;//12.0 / kMaxRPM; //theoretical
     public static final double kFlywheelA = 0.0;
 
     public static final double kPadding = 200.0;
