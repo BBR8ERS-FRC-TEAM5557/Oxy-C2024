@@ -33,7 +33,7 @@ public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber mIntakingRpm = new LoggedTunableNumber("Flywheels/IntakingRpm", -2000.0);
     private static final LoggedTunableNumber mEjectingRpm = new LoggedTunableNumber("Flywheels/EjectingRpm", 2500.0);
 
-    private static final LoggedTunableNumber mPrepTrapRpm = new LoggedTunableNumber("Flywheels/PrepTrapRpm", 600.0);
+    private static final LoggedTunableNumber mPrepTrapRpm = new LoggedTunableNumber("Flywheels/PrepTrapRpm", 0.0);
     private static final LoggedTunableNumber mShootTrapRpm = new LoggedTunableNumber("Flywheels/ShootingTrapRpm",
             -4000.0);
 
@@ -187,11 +187,17 @@ public class Flywheels extends SubsystemBase {
     }
 
     public Command prepareTrap() {
-        return startEnd(() -> setState(State.PREP_TRAP), () -> setState(State.STOP));
+        return startEnd(() -> {
+            setState(State.PREP_TRAP);
+            mIO.setBrakeMode(true);
+        }, () -> setState(State.STOP));
     }
 
     public Command shootTrap() {
-        return startEnd(() -> setState(State.SHOOT_TRAP), () -> setState(State.IDLE));
+        return startEnd(() -> setState(State.SHOOT_TRAP), () -> {
+            setState(State.IDLE);
+            mIO.setBrakeMode(false);
+        });
     }
 
     public Command intake() {

@@ -55,7 +55,7 @@ public class Arm extends SubsystemBase {
     private static final LoggedTunableNumber ampDegrees = new LoggedTunableNumber("Superstructure/ArmAmpDegrees",
             250.0);
     private static final LoggedTunableNumber trapDegrees = new LoggedTunableNumber("Superstructure/ArmTrapDegrees",
-            270.0);
+            260.0);
     private static final LoggedTunableNumber fenderShotDegrees = new LoggedTunableNumber(
             "Superstructure/ArmFenderShotDegrees",
             156.5);

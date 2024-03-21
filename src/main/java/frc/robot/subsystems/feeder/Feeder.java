@@ -27,7 +27,7 @@ public class Feeder extends SubsystemBase {
             "Feeder/EjectingFloorVoltage", -8.0);
 
     private static final LoggedTunableNumber mPreppingTrapVoltage = new LoggedTunableNumber(
-            "Feeder/PreppingTrapVoltage", 1.0);
+            "Feeder/PreppingTrapVoltage", 3.0);
     private static final LoggedTunableNumber mShootTrapVoltage = new LoggedTunableNumber(
             "Feeder/ShootTrapVoltage", -12.0);
 
