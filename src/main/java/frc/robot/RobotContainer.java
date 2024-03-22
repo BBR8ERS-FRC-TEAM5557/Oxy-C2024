@@ -87,8 +87,6 @@ public class RobotContainer {
 	private final Alert operatorDisconnected = new Alert("Operator controller disconnected (port 0).",
 			AlertType.WARNING);
 
-	//private PowerDistribution mPowerDistribution = new PowerDistribution(1, ModuleType.kRev);
-
 	public RobotContainer() {
 		mLeds = Leds.getInstance();
 		if (kIsReal) {
