@@ -248,6 +248,14 @@ public class RobotStateEstimator extends VirtualSubsystem {
 		}
 	}
 
+	public boolean setShotCompensation(double value) {
+		return mShotCompensationDegrees.setDouble(value);
+	}
+
+	public boolean adjustShotCompensation(double value) {
+		return setShotCompensation(mShotCompensationDegrees.getDouble(0.0) + value);
+	}
+
 	private void updateFieldWidget() {
 		Pose2d robotPose = getEstimatedPose();
 		mField2d.setRobotPose(robotPose);

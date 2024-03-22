@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -157,7 +158,7 @@ public class RobotContainer {
 
 		if (Constants.kTuningMode) {
 			SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());
-			//SmartDashboard.putData("PDH", mPowerDistribution);
+			// SmartDashboard.putData("PDH", mPowerDistribution);
 		}
 
 		// Alerts for constants
@@ -214,7 +215,7 @@ public class RobotContainer {
 
 		mOperator.leftBumper()
 				.whileTrue(Commands.parallel(mIntake.eject(), mFeeder.ejectFloor())
-				.withName("Teleop Ejecting"));
+						.withName("Teleop Ejecting"));
 
 		/* COASTING */
 		mOperator.leftTrigger()
@@ -383,6 +384,12 @@ public class RobotContainer {
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
 										.hasGamepiece())));
+
+		NamedCommands.registerCommand("raiseShot", Commands.print("adjusting to shoot higher")
+				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(-0.75))));
+
+		NamedCommands.registerCommand("lowerShot", Commands.print("adjusting to shoot lower")
+				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(0.75))));
 	}
 
 	public Command getAutonomousCommand() {

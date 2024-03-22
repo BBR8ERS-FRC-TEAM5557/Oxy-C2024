@@ -171,6 +171,12 @@
         {
           "type": "named",
           "data": {
+            "name": "lowerShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "shootDistance"
           }
         }
