@@ -58,7 +58,7 @@ public class Flywheels extends SubsystemBase {
         PREP_TRAP(mPrepTrapRpm),
         SHOOT_TRAP(mShootTrapRpm),
 
-        PASS(() -> 4500.0),
+        PASS(() -> 3500.0),
         SHOOT(mShootingRpm),
         SHOOT_FENDER(mShootingFenderRpm),
 

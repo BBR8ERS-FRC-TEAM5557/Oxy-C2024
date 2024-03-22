@@ -226,6 +226,9 @@ public class RobotContainer {
 						.ignoringDisable(true).withName("ForceCoast"));
 
 		/* SHOOTING */
+		mOperator.back().whileTrue(mFlywheels.shoot().withName("SpinUpFlywheels"));
+
+
 		mOperator.a().whileTrue(
 				Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepCustomShot"));
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
