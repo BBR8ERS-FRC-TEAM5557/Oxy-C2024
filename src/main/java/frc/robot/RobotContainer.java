@@ -246,18 +246,33 @@ public class RobotContainer {
 						.deadlineWith(mFeeder.shoot()).withName("ScoreFender"));
 
 		/* TRAPPING */
-		mOperator.y().whileTrue(
-				Commands.parallel(mArm.trap(), mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-						.raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
-						.withName("PrepTrap"));
-		Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(mOperator.y());
+		/*
+		 * mOperator.y().whileTrue(
+		 * Commands.parallel(mArm.trap(),
+		 * mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
+		 * .raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
+		 * .withName("PrepTrap"));
+		 * Trigger readyToShootTrap = new Trigger(() ->
+		 * mArm.atGoal()).and(mOperator.y());
+		 * mOperator.rightTrigger().and(mOperator.y())
+		 * .onTrue(Commands.parallel(
+		 * Commands.waitSeconds(0.5),
+		 * Commands.waitUntil(mOperator.rightTrigger().negate()))
+		 * .deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
+		 * mFeeder.shootTrap()))
+		 * .withName("ScoreTrap"));
+		 */
+
+		/* PASSING */
+		mOperator.y()
+				.whileTrue(Commands.parallel(mArm.pass(), mFlywheels.pass())
+						.withName("PrepPassShot"));
+		Trigger readyToPass = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.y());
 		mOperator.rightTrigger().and(mOperator.y())
 				.onTrue(Commands.parallel(
 						Commands.waitSeconds(0.5),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
-						.deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
-								mFeeder.shootTrap()))
-						.withName("ScoreTrap"));
+						.deadlineWith(mFeeder.shoot()).withName("PassNote"));
 
 		/* CLIMBING */
 		mOperator.pov(0).onTrue(mArm.prepClimb().alongWith(mFlywheels.stop()));
@@ -273,7 +288,7 @@ public class RobotContainer {
 						.deadlineWith(mFeeder.ejectAmp()).withName("ScoreAmp"));
 
 		/* SIGNALING */
-		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToShootTrap)
+		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass)
 				.whileTrue(
 						Commands.startEnd(
 								() -> {

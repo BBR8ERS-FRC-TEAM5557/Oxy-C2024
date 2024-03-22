@@ -136,6 +136,7 @@ public class Arm extends SubsystemBase {
         STOW(() -> stowDegrees.get()),
         FLOOR_INTAKE(() -> intakeDegrees.get()),
         AMP(() -> ampDegrees.get()),
+        PASS(() -> 165.0), //potentially add supplier thing
         FENDER_SHOT(() -> fenderShotDegrees.get()),
         AIM(() -> RobotStateEstimator.getInstance().getAimingParameters().armAngle().getDegrees()),
         TRAP(() -> trapDegrees.get()),
@@ -169,6 +170,10 @@ public class Arm extends SubsystemBase {
 
     public Command aimFender() {
         return startEnd(() -> setState(State.FENDER_SHOT), () -> setState(State.STOW));
+    }
+
+    public Command pass() {
+        return startEnd(() -> setState(State.PASS), () -> setState(State.STOW));
     }
 
     public Command aimCustom() {

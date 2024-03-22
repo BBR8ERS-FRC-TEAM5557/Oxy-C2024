@@ -58,6 +58,7 @@ public class Flywheels extends SubsystemBase {
         PREP_TRAP(mPrepTrapRpm),
         SHOOT_TRAP(mShootTrapRpm),
 
+        PASS(() -> 4500.0),
         SHOOT(mShootingRpm),
         SHOOT_FENDER(mShootingFenderRpm),
 
@@ -184,6 +185,11 @@ public class Flywheels extends SubsystemBase {
     public Command eject() {
         return startEnd(() -> setState(State.EJECT), () -> setState(State.IDLE))
                 .withName("FlywheelsEject");
+    }
+
+    public Command pass() {
+        return startEnd(() -> setState(State.PASS), () -> setState(State.IDLE))
+                .withName("FlywheelsPass");
     }
 
     public Command prepareTrap() {
