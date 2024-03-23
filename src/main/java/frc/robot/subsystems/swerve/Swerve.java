@@ -386,7 +386,7 @@ public class Swerve extends SubsystemBase {
 
 	public boolean atHeadingGoal() {
 		double goalRotationDeg = RobotStateEstimator.getInstance().getAimingParameters().driveHeading().getDegrees();
-		return Util.epsilonEquals(RobotStateEstimator.getInstance().getEstimatedPose().getRotation().getDegrees(), goalRotationDeg, 1.0);
+		return Util.epsilonEquals(RobotStateEstimator.getInstance().getEstimatedPose().getRotation().getDegrees(), goalRotationDeg, 4.0);
 	}
 
 	public boolean isUnderKinematicLimit(KinematicLimits limits) {
