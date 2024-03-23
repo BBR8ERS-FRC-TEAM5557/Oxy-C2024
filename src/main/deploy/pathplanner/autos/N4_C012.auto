@@ -109,7 +109,13 @@
         {
           "type": "named",
           "data": {
-            "name": "lowerShot"
+            "name": "raiseShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "raiseShot"
           }
         },
         {

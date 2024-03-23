@@ -409,7 +409,7 @@ public class RobotContainer {
 				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(-0.75))));
 
 		NamedCommands.registerCommand("lowerShot", Commands.print("adjusting to shoot lower")
-				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(0.75))));
+				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(1.0))));
 	}
 
 	public Command getAutonomousCommand() {
