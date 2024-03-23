@@ -17,7 +17,7 @@ public class ArmConstants {
     public static final double kPlanetaryReduction = 4.0 * 5.0;
     public static final double kGearRatio = kPlanetaryReduction * (64.0 / 16.0) * (64.0 / 36.0);
 
-    public static final double kPadding = 1.0; // degrees
+    public static final double kPadding = 0.5; // degrees
     public static final double kCruiseVelocity = 200.0; // degrees/sec
     public static final double kTimeToCruise = 0.5; // sec
 

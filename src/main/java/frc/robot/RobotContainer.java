@@ -399,7 +399,7 @@ public class RobotContainer {
 				Commands.print("shooting distance started")
 						.alongWith(Commands
 								.parallel(mArm.aim(), mFlywheels.shoot(), new RunCommand(() -> mSwerve.snapToSpeaker()))
-								.raceWith(Commands.parallel(Commands.waitUntil(readyToShoot), Commands.waitUntil(headingReady).withTimeout(1.5))
+								.raceWith(Commands.parallel(Commands.waitUntil(readyToShoot).withTimeout(2.0), Commands.waitUntil(headingReady).withTimeout(1.5))
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
