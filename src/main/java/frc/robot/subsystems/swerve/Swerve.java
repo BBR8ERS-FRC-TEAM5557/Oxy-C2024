@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -381,6 +382,11 @@ public class Swerve extends SubsystemBase {
 
 	public ControlMode getControlMode() {
 		return mControlMode;
+	}
+
+	public boolean atHeadingGoal() {
+		double goalRotationDeg = RobotStateEstimator.getInstance().getAimingParameters().driveHeading().getDegrees();
+		return Util.epsilonEquals(RobotStateEstimator.getInstance().getEstimatedPose().getRotation().getDegrees(), goalRotationDeg, 1.0);
 	}
 
 	public boolean isUnderKinematicLimit(KinematicLimits limits) {

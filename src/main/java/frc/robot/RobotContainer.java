@@ -368,6 +368,8 @@ public class RobotContainer {
 
 	private void generateEventMap() {
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal());
+		Trigger headingReady = new Trigger(() -> mSwerve.atHeadingGoal());
+
 		Trigger inWing = new Trigger(
 				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX - 1.0);
 
@@ -397,7 +399,7 @@ public class RobotContainer {
 				Commands.print("shooting distance started")
 						.alongWith(Commands
 								.parallel(mArm.aim(), mFlywheels.shoot(), new RunCommand(() -> mSwerve.snapToSpeaker()))
-								.raceWith(Commands.waitUntil(readyToShoot)
+								.raceWith(Commands.parallel(Commands.waitUntil(readyToShoot), Commands.waitUntil(headingReady).withTimeout(3.0))
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
