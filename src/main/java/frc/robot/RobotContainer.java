@@ -386,7 +386,7 @@ public class RobotContainer {
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
 						.alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender())
-								.raceWith(Commands.waitUntil(() -> mFlywheels.atGoal())
+								.raceWith(Commands.waitUntil(() -> mFlywheels.atGoalFender())
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
