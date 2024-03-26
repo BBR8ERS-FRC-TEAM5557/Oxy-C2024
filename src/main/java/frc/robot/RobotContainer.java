@@ -208,7 +208,7 @@ public class RobotContainer {
 
 		/* INTAKING */
 		mOperator.rightBumper().whileTrue(
-				mArm.intake().alongWith(Commands.waitUntil(mArm::atGoal)
+				mArm.intake().alongWith(Commands.waitUntil(mArm::atGoalRough)
 						.andThen(Commands.parallel(mIntake.intake(), mFeeder.intake())
 								.until(mFeeder::hasGamepiece)))
 						.withName("Teleop Intaking"));
@@ -389,7 +389,7 @@ public class RobotContainer {
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
 						.alongWith(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender())
-								.raceWith(Commands.waitUntil(readyToShoot)
+								.raceWith(Commands.waitUntil(() -> mFlywheels.atGoal())
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder

@@ -11,6 +11,7 @@ import static frc.robot.subsystems.arm.ArmConstants.kCruiseVelocity;
 import static frc.robot.subsystems.arm.ArmConstants.kMaxAngle;
 import static frc.robot.subsystems.arm.ArmConstants.kMinAngle;
 import static frc.robot.subsystems.arm.ArmConstants.kPadding;
+import static frc.robot.subsystems.arm.ArmConstants.kRoughPadding;
 import static frc.robot.subsystems.arm.ArmConstants.kTimeToCruise;
 
 import java.util.function.DoubleSupplier;
@@ -211,5 +212,9 @@ public class Arm extends SubsystemBase {
 
     public boolean atGoal() {
         return Util.epsilonEquals(mInputs.armAbsolutePositionDeg, mState.getDegrees(), kPadding);
+    }
+
+    public boolean atGoalRough() {
+        return Util.epsilonEquals(mInputs.armAbsolutePositionDeg, mState.getDegrees(), kRoughPadding);
     }
 }
