@@ -368,7 +368,7 @@ public class RobotContainer {
 		Trigger headingReady = new Trigger(() -> mSwerve.atHeadingGoal());
 
 		Trigger inWing = new Trigger(
-				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX - 1.0);
+				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX);
 
 		NamedCommands.registerCommand("intakeNote",
 				Commands.print("intaking started")
@@ -380,8 +380,7 @@ public class RobotContainer {
 								.until(mFeeder::hasGamepiece)));
 
 		NamedCommands.registerCommand("trackGoal",
-				Commands.print("tracking goal"));// .alongWith(Commands.sequence(Commands.waitUntil(inWing),
-													// mArm.aim())));
+				Commands.print("tracking goal").alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
 
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
@@ -395,7 +394,7 @@ public class RobotContainer {
 		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started")
 						.alongWith(Commands
-								.parallel(mArm.aim(), mFlywheels.shoot(), new RunCommand(() -> mSwerve.snapToSpeaker()))
+								.parallel(mArm.aim(), mFlywheels.shootDynamic(), new RunCommand(() -> mSwerve.snapToSpeaker()))
 								.raceWith(Commands
 										.parallel(Commands.waitUntil(readyToShoot).withTimeout(2.0),
 												Commands.waitUntil(headingReady).withTimeout(1.5))
