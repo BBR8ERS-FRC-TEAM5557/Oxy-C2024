@@ -44,7 +44,7 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	}
 
 	public record AimingParameters(
-			Rotation2d driveHeading, Rotation2d armAngle, double driveFeedVelocity) {
+			Rotation2d driveHeading, Rotation2d armAngle, double flywheelRPM, double driveFeedVelocity) {
 	}
 
 	private static RobotStateEstimator mInstance = null;
@@ -66,20 +66,38 @@ public class RobotStateEstimator extends VirtualSubsystem {
 	 * Arm angle (single side flywheels) look up table key: meters, values: degrees
 	 */
 	// STILL NEEDS TO BE FILLED IN
-	private static final InterpolatingDoubleTreeMap armAngleMapSingle = new InterpolatingDoubleTreeMap();
+	private static final InterpolatingDoubleTreeMap armAngleMap = new InterpolatingDoubleTreeMap();
 	static {
-		armAngleMapSingle.put(Units.inchesToMeters(0.0), 157.0); // lower limit
+		armAngleMap.put(Units.inchesToMeters(0.0), 157.0); // lower limit
 
-		armAngleMapSingle.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 157.0); // from subwoofer
+		armAngleMap.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 157.0); // from subwoofer
+		armAngleMap.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 167.0);
+		armAngleMap.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 174.0);
+		armAngleMap.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 177.75);
+		armAngleMap.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 180.5);
+		armAngleMap.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 182.5);
+		armAngleMap.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 183.0);
 
-		armAngleMapSingle.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 165.0);
-		armAngleMapSingle.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 173.0);
-		armAngleMapSingle.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 178.0);
-		armAngleMapSingle.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 181.5);
-		armAngleMapSingle.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 183.5);
-		armAngleMapSingle.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 185.0);
+		armAngleMap.put(Double.MAX_VALUE, 190.0); // upper limit
+	}
 
-		armAngleMapSingle.put(Double.MAX_VALUE, 190.0); // upper limit
+		/**
+	 * Arm angle (single side flywheels) look up table key: meters, values: degrees
+	 */
+	// STILL NEEDS TO BE FILLED IN
+	private static final InterpolatingDoubleTreeMap flywheelRPMMap = new InterpolatingDoubleTreeMap();
+	static {
+		flywheelRPMMap.put(Units.inchesToMeters(0.0), 5000.0); // lower limit
+
+		flywheelRPMMap.put(Units.inchesToMeters(0.0) + kMeasurementOffset, 5000.0); // from subwoofer
+		flywheelRPMMap.put(Units.inchesToMeters(24.0) + kMeasurementOffset, 5000.0);
+		flywheelRPMMap.put(Units.inchesToMeters(48.0) + kMeasurementOffset, 5000.0);
+		flywheelRPMMap.put(Units.inchesToMeters(72.0) + kMeasurementOffset, 5000.0);
+		flywheelRPMMap.put(Units.inchesToMeters(96.0) + kMeasurementOffset, 5500.0);
+		flywheelRPMMap.put(Units.inchesToMeters(120.0) + kMeasurementOffset, 5750.0);
+		flywheelRPMMap.put(Units.inchesToMeters(144.0) + kMeasurementOffset, 6000.0);
+
+		flywheelRPMMap.put(Double.MAX_VALUE, 6000.0); // upper limit
 	}
 
 	private final SwerveDrivePoseEstimator mPoseEstimator;
@@ -176,10 +194,9 @@ public class RobotStateEstimator extends VirtualSubsystem {
 
 		mLatestParameters = new AimingParameters(
 				targetVehicleDirection,
-				// Rotation2d.fromDegrees(177.0 - 0.8 +
-				// mShotCompensationDegrees.getDouble(0.0)),
-				Rotation2d.fromDegrees(armAngleMapSingle.get(targetDistance) +
+				Rotation2d.fromDegrees(armAngleMap.get(targetDistance) +
 						mShotCompensationDegrees.getDouble(0.0)),
+				flywheelRPMMap.get(targetDistance),
 				feedVelocity);
 
 		Logger.recordOutput("RobotState/AimingParameters/TargetDirection", mLatestParameters.driveHeading());

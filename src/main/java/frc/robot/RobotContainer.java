@@ -227,7 +227,7 @@ public class RobotContainer {
 		mOperator.back().whileTrue(mFlywheels.shoot().withName("SpinUpFlywheels"));
 
 		mOperator.a().whileTrue(
-				Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepCustomShot"));
+				Commands.parallel(mArm.aim(), mFlywheels.shootDynamic()).withName("PrepDynamicShot"));
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
 		mOperator.rightTrigger().and(mOperator.a())
 				.onTrue(Commands.parallel(

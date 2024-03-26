@@ -110,7 +110,7 @@ public class Vision extends VirtualSubsystem {
             double avgDistance = totalDistance / tagPoses.size();
 
             // Add observation to list
-            boolean useVisionRotation = false; //tagPoses.size() > 1;
+            boolean useVisionRotation = tagPoses.size() > 1;
             double xyStdDev = xyStdDevCoefficient
                     * Math.pow(avgDistance, 2.0)
                     / tagPoses.size()

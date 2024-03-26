@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotStateEstimator;
 import frc.robot.subsystems.flywheels.FlywheelsIO.FlywheelsIOInputs;
 import frc.robot.util.Util;
 import frc.lib.team6328.Alert;
@@ -60,6 +61,7 @@ public class Flywheels extends SubsystemBase {
 
         PASS(() -> 3000.0),
         SHOOT(mShootingRpm),
+        SHOOT_DYNAMIC(() -> RobotStateEstimator.getInstance().getAimingParameters().flywheelRPM()),
         SHOOT_FENDER(mShootingFenderRpm),
 
         CHARACTERIZING(() -> 0.0);
@@ -168,13 +170,17 @@ public class Flywheels extends SubsystemBase {
                 || Util.epsilonEquals(mInputs.rightVelocityRpm, goalRpm, kPadding);
     }
 
-    public boolean atGoalFake() {
-        double goalRpm = mInputs.leftVelocityRpm;
-        return goalRpm > 4000.0;
+    public boolean atGoalFender() {
+        double rpm = mInputs.leftVelocityRpm;
+        return rpm > 3000.0;
     }
 
     public Command shoot() {
         return startEnd(() -> setState(State.SHOOT), () -> setState(State.IDLE)).withName("FlywheelsShoot");
+    }
+
+    public Command shootDynamic() {
+        return startEnd(() -> setState(State.SHOOT_DYNAMIC), () -> setState(State.IDLE)).withName("FlywheelsShootDynamic");
     }
 
     public Command shootFender() {
