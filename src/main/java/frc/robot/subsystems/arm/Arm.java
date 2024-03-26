@@ -49,9 +49,9 @@ public class Arm extends SubsystemBase {
             kTimeToCruise);
 
     private static final LoggedTunableNumber stowDegrees = new LoggedTunableNumber("Superstructure/ArmStowDegrees",
-            157.0);
+            157.5);
     private static final LoggedTunableNumber intakeDegrees = new LoggedTunableNumber("Superstructure/ArmIntakeDegrees",
-            157.0);
+            157.5);
 
     private static final LoggedTunableNumber ampDegrees = new LoggedTunableNumber("Superstructure/ArmAmpDegrees",
             250.0);
@@ -59,7 +59,7 @@ public class Arm extends SubsystemBase {
             260.0);
     private static final LoggedTunableNumber fenderShotDegrees = new LoggedTunableNumber(
             "Superstructure/ArmFenderShotDegrees",
-            156.5);
+            157.5);
     private static final LoggedTunableNumber customShotDegrees = new LoggedTunableNumber(
             "Superstructure/ArmCustomShotDegrees",
             175.0);
