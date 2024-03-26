@@ -101,13 +101,11 @@ public class RobotContainer {
 			mFlywheels = new Flywheels(new FlywheelsIOKraken());
 			mArm = new Arm(new ArmIOSparkMax());
 
-			/*
-			 * mVision = new Vision(
-			 * new AprilTagVisionIOPhotonvision(instanceNames[0],
-			 * GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
-			 * new AprilTagVisionIOPhotonvision(instanceNames[1],
-			 * GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
-			 */
+			mVision = new Vision(
+					new AprilTagVisionIOPhotonvision(instanceNames[0],
+							GeometryUtil.pose3dToTransform3d(cameraPoses[0])));
+					//new AprilTagVisionIOPhotonvision(instanceNames[1],
+					//		GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
 
 		} else {
 			mSwerve = new Swerve(new GyroIO() {
@@ -227,7 +225,6 @@ public class RobotContainer {
 
 		/* SHOOTING */
 		mOperator.back().whileTrue(mFlywheels.shoot().withName("SpinUpFlywheels"));
-
 
 		mOperator.a().whileTrue(
 				Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepCustomShot"));
@@ -399,7 +396,9 @@ public class RobotContainer {
 				Commands.print("shooting distance started")
 						.alongWith(Commands
 								.parallel(mArm.aim(), mFlywheels.shoot(), new RunCommand(() -> mSwerve.snapToSpeaker()))
-								.raceWith(Commands.parallel(Commands.waitUntil(readyToShoot).withTimeout(2.0), Commands.waitUntil(headingReady).withTimeout(1.5))
+								.raceWith(Commands
+										.parallel(Commands.waitUntil(readyToShoot).withTimeout(2.0),
+												Commands.waitUntil(headingReady).withTimeout(1.5))
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder

@@ -82,14 +82,14 @@ public class Vision extends VirtualSubsystem {
             Pose3d cameraPose3d = robotPose3d.transformBy(GeometryUtil.pose3dToTransform3d(cameraPoses[instanceIndex]));
 
             // Exit if robot pose is off the field
-            /*if (robotPose3d.getX() < -fieldBorderMargin
+            if (robotPose3d.getX() < -fieldBorderMargin
                     || robotPose3d.getX() > FieldConstants.fieldLength + fieldBorderMargin
                     || robotPose3d.getY() < -fieldBorderMargin
                     || robotPose3d.getY() > FieldConstants.fieldWidth + fieldBorderMargin
                     || robotPose3d.getZ() < -zMargin
                     || robotPose3d.getZ() > zMargin) {
                 continue;
-            }*/
+            }
 
             // Get tag poses and update last detection times
             List<Pose3d> tagPoses = new ArrayList<>();
