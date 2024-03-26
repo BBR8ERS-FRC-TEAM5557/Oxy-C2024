@@ -160,15 +160,22 @@
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "intakeNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackGoal"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeNote"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "trackGoal"
+                      }
+                    }
+                  ]
                 }
               }
             ]

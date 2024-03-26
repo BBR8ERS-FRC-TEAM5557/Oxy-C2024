@@ -380,7 +380,7 @@ public class RobotContainer {
 								.until(mFeeder::hasGamepiece)));
 
 		NamedCommands.registerCommand("trackGoal",
-				Commands.print("tracking goal").alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
+				Commands.print("tracking goal"));//.alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
 
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
