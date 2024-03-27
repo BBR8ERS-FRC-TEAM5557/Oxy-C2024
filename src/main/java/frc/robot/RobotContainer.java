@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -64,6 +65,10 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.PathPlannerTrajectory;
 
 public class RobotContainer {
 	public static final CommandXboxController mDriver = new CommandXboxController(0);
@@ -103,9 +108,9 @@ public class RobotContainer {
 
 			mVision = new Vision(
 					new AprilTagVisionIOPhotonvision(instanceNames[0],
-							GeometryUtil.pose3dToTransform3d(cameraPoses[0])));
-					//new AprilTagVisionIOPhotonvision(instanceNames[1],
-					//		GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
+							GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
+					new AprilTagVisionIOPhotonvision(instanceNames[1],
+							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
 
 		} else {
 			mSwerve = new Swerve(new GyroIO() {
@@ -246,22 +251,20 @@ public class RobotContainer {
 						.deadlineWith(mFeeder.shoot()).withName("ScoreFender"));
 
 		/* TRAPPING */
-		/*
-		 * mOperator.y().whileTrue(
-		 * Commands.parallel(mArm.trap(),
-		 * mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-		 * .raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
-		 * .withName("PrepTrap"));
-		 * Trigger readyToShootTrap = new Trigger(() ->
-		 * mArm.atGoal()).and(mOperator.y());
-		 * mOperator.rightTrigger().and(mOperator.y())
-		 * .onTrue(Commands.parallel(
-		 * Commands.waitSeconds(0.5),
-		 * Commands.waitUntil(mOperator.rightTrigger().negate()))
-		 * .deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
-		 * mFeeder.shootTrap()))
-		 * .withName("ScoreTrap"));
-		 */
+		/*mOperator.pov(90).whileTrue(
+				Commands.parallel(mArm.trap(),
+						mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
+								.raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
+						.withName("PrepTrap"));
+		Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(mOperator.pov(90));
+		mOperator.rightTrigger().and(mOperator.pov(90))
+				.onTrue(Commands.parallel(
+						Commands.waitSeconds(0.5),
+						Commands.waitUntil(mOperator.rightTrigger().negate()))
+						.deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
+								mFeeder.shootTrap()))
+						.finallyDo(() -> new RunCommand(() -> mFlywheels.stop().schedule()).withTimeout(1500.0).schedule())
+						.withName("ScoreTrap"));*/
 
 		/* PASSING */
 		mOperator.y()
@@ -286,6 +289,16 @@ public class RobotContainer {
 						Commands.waitSeconds(0.5),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
 						.deadlineWith(mFeeder.ejectAmp()).withName("ScoreAmp"));
+
+		PathPlannerPath path = PathPlannerPath.fromPathFile("alignAmp");
+		PathConstraints constraints = new PathConstraints(
+				3.0, 4.5,
+				Units.degreesToRadians(540), Units.degreesToRadians(720));
+		Command pathfindToAmp = AutoBuilder.pathfindThenFollowPath(
+				path,
+				constraints,
+				0.0);
+		mDriver.rightBumper().and(mDriver.x()).whileTrue(pathfindToAmp);
 
 		/* SIGNALING */
 		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass)
@@ -380,7 +393,8 @@ public class RobotContainer {
 								.until(mFeeder::hasGamepiece)));
 
 		NamedCommands.registerCommand("trackGoal",
-				Commands.print("tracking goal"));//.alongWith(Commands.sequence(Commands.waitUntil(inWing), mArm.aim())));
+				Commands.print("tracking goal"));// .alongWith(Commands.sequence(Commands.waitUntil(inWing),
+													// mArm.aim())));
 
 		NamedCommands.registerCommand("shootFender",
 				Commands.print("shooting fender started")
@@ -394,7 +408,8 @@ public class RobotContainer {
 		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started")
 						.alongWith(Commands
-								.parallel(mArm.aim(), mFlywheels.shootDynamic(), new RunCommand(() -> mSwerve.snapToSpeaker()))
+								.parallel(mArm.aim(), mFlywheels.shootDynamic(),
+										new RunCommand(() -> mSwerve.snapToSpeaker()))
 								.raceWith(Commands
 										.parallel(Commands.waitUntil(readyToShoot).withTimeout(2.0),
 												Commands.waitUntil(headingReady).withTimeout(1.5))
@@ -442,7 +457,7 @@ public class RobotContainer {
 	}
 
 	public boolean getWantsAutoAimInput() {
-		return mDriver.getHID().getAButton();
+		return mDriver.getHID().getLeftBumper();
 	}
 
 	public boolean getWantsAmpSnapInput() {

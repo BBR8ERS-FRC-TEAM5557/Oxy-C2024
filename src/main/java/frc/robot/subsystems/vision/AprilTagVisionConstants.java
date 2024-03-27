@@ -36,7 +36,7 @@ public class AprilTagVisionConstants {
                                         Units.inchesToMeters(-(7.823 + SwerveConstants.kTrueChassisCenterOffset)),
                                         Units.inchesToMeters(10.189),
                                         Units.inchesToMeters(9.17),
-                                        new Rotation3d(Units.degreesToRadians(-28.125), 0.0, 0.0) // -28.125
+                                        new Rotation3d(0.0, Units.degreesToRadians(-28.125), 0.0) // -28.125
                                                         .rotateBy(new Rotation3d(0.0, 0.0,
                                                                         Units.degreesToRadians(180.0 - 10.0)))) // 180 -
                                                                                                                 // 10

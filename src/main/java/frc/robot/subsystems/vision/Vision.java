@@ -24,9 +24,6 @@ import frc.robot.util.FieldConstants;
 import frc.robot.util.GeometryUtil;
 
 public class Vision extends VirtualSubsystem {
-    private static final LoggedTunableNumber timestampOffset = new LoggedTunableNumber("AprilTagVision/TimestampOffset",
-            -(1.0 / 50.0));
-
     private final AprilTagVisionIO[] io;
     private final AprilTagVisionIOInputs[] inputs;
 
@@ -50,7 +47,7 @@ public class Vision extends VirtualSubsystem {
     public void periodic() {
         for (int i = 0; i < io.length; i++) {
             io[i].updateInputs(inputs[i]);
-            Logger.processInputs("AprilTagVision/" + instanceNames[i], inputs[i]);
+            //Logger.processInputs("AprilTagVision/" + instanceNames[i], inputs[i]);
         }
 
         // Loop over instances
@@ -76,7 +73,7 @@ public class Vision extends VirtualSubsystem {
             }
 
             lastFrameTimes.put(instanceIndex, Timer.getFPGATimestamp());
-            var timestamp = inputs[instanceIndex].lastCameraTimestamp + timestampOffset.get();
+            var timestamp = inputs[instanceIndex].lastCameraTimestamp;
             Pose3d robotPose3d = inputs[instanceIndex].estimatedRobotPose;
             Pose2d robotPose = robotPose3d.toPose2d();
             Pose3d cameraPose3d = robotPose3d.transformBy(GeometryUtil.pose3dToTransform3d(cameraPoses[instanceIndex]));
@@ -128,19 +125,21 @@ public class Vision extends VirtualSubsystem {
             allRobotPoses3d.add(robotPose3d);
 
             // Log data from instance
+            /*
             Logger.recordOutput(
                     "AprilTagVision/" + instanceNames[instanceIndex] + "/LatencySecs",
                     Timer.getFPGATimestamp() - timestamp);
             Logger.recordOutput("AprilTagVision/" + instanceNames[instanceIndex] + "/RobotPose", robotPose);
             Logger.recordOutput("AprilTagVision/" + instanceNames[instanceIndex] + "/RobotPose3d", robotPose3d);
             Logger.recordOutput(
-                    "AprilTagVision/" + instanceNames[instanceIndex] + "/TagPoses", tagPoses.toArray(Pose3d[]::new));
+                    "AprilTagVision/" + instanceNames[instanceIndex] + "/TagPoses", tagPoses.toArray(Pose3d[]::new));*/
 
         }
 
         // Log robot poses
+        /*
         Logger.recordOutput("AprilTagVision/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
-        Logger.recordOutput("AprilTagVision/RobotPoses3d", allRobotPoses3d.toArray(Pose3d[]::new));
+        Logger.recordOutput("AprilTagVision/RobotPoses3d", allRobotPoses3d.toArray(Pose3d[]::new));*/
 
         // Send results to robot state
         allVisionObservations.stream().sorted(Comparator.comparingDouble(VisionObservation::timestamp))
