@@ -36,6 +36,9 @@ public class Leds extends VirtualSubsystem {
 	public boolean intaking = false;
 	public boolean hasNote = false;
 	public boolean readyForAction = false;
+	public boolean seesRelevantTags = false;
+	public boolean seesTags = false;
+	public boolean inWing = false;
 
 	public boolean endgameAlert = false;
 
@@ -130,7 +133,7 @@ public class Leds extends VirtualSubsystem {
 		loadingNotifier.stop();
 
 		// Select LED mode
-		//solid(Color.kBlack); // Default to off
+		// solid(Color.kBlack); // Default to off
 		breath(allianceColor, Color.kBlack); // default to alliance Breath
 		if (estopped) {
 			solid(Color.kRed);
@@ -163,7 +166,13 @@ public class Leds extends VirtualSubsystem {
 			} else if (readyForAction) {
 				solid(Color.kGreen);
 			} else if (hasNote) {
-				strobe(Color.kGreen, strobeSlowDuration);
+				if (seesRelevantTags && inWing) {
+					strobe(Color.kGreen, Color.kWhite, strobeFastDuration);
+				} else if (seesTags) {
+					strobe(Color.kGreen, Color.kBlue, strobeSlowDuration);
+				} else {
+					strobe(Color.kGreen, strobeSlowDuration);
+				}
 			} else if (intaking) {
 				strobe(Color.kOrangeRed, strobeSlowDuration);
 			} else if (trapping || climbing || autoDrive || autoShoot) {
@@ -196,6 +205,11 @@ public class Leds extends VirtualSubsystem {
 	private void strobe(Color color, double duration) {
 		boolean on = ((Timer.getFPGATimestamp() % duration) / duration) > 0.5;
 		solid(on ? color : Color.kBlack);
+	}
+
+	private void strobe(Color color1, Color color2, double duration) {
+		boolean on = ((Timer.getFPGATimestamp() % duration) / duration) > 0.5;
+		solid(on ? color1 : color2);
 	}
 
 	private void breath(Color c1, Color c2) {

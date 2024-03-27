@@ -19,7 +19,9 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
 import frc.robot.RobotStateEstimator;
 import frc.robot.RobotStateEstimator.VisionObservation;
+import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.vision.AprilTagVisionIO.AprilTagVisionIOInputs;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.GeometryUtil;
 
@@ -45,6 +47,8 @@ public class Vision extends VirtualSubsystem {
 
     @Override
     public void periodic() {
+        Leds.getInstance().seesTags = false;
+
         for (int i = 0; i < io.length; i++) {
             io[i].updateInputs(inputs[i]);
             //Logger.processInputs("AprilTagVision/" + instanceNames[i], inputs[i]);
@@ -96,8 +100,11 @@ public class Vision extends VirtualSubsystem {
                 Optional<Pose3d> tagPose = FieldConstants.aprilTags.getTagPose(tagId);
                 tagPose.ifPresent(tagPoses::add);
             }
-            if (tagPoses.size() == 0)
+            if (tagPoses.size() == 0) {
                 continue;
+            } else {
+                Leds.getInstance().seesTags = true;
+            }
 
             // Calculate average distance to tag
             double totalDistance = 0.0;
@@ -144,5 +151,13 @@ public class Vision extends VirtualSubsystem {
         // Send results to robot state
         allVisionObservations.stream().sorted(Comparator.comparingDouble(VisionObservation::timestamp))
                 .forEach(RobotStateEstimator.getInstance()::addVisionObservation);
+
+
+        boolean seesRelevantTag = AllianceFlipUtil.shouldFlip() ? seesTag(3) || seesTag(4) || seesTag(5) : seesTag(6) || seesTag(7) || seesTag(8);
+        Leds.getInstance().seesRelevantTags = seesRelevantTag;
+    }
+
+    public boolean seesTag(int tagID) {
+        return Timer.getFPGATimestamp() - lastTagDetectionTimes.getOrDefault(tagID, Double.NEGATIVE_INFINITY) < 0.25;
     }
 }

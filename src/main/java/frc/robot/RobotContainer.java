@@ -251,20 +251,24 @@ public class RobotContainer {
 						.deadlineWith(mFeeder.shoot()).withName("ScoreFender"));
 
 		/* TRAPPING */
-		/*mOperator.pov(90).whileTrue(
-				Commands.parallel(mArm.trap(),
-						mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-								.raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
-						.withName("PrepTrap"));
-		Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(mOperator.pov(90));
-		mOperator.rightTrigger().and(mOperator.pov(90))
-				.onTrue(Commands.parallel(
-						Commands.waitSeconds(0.5),
-						Commands.waitUntil(mOperator.rightTrigger().negate()))
-						.deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
-								mFeeder.shootTrap()))
-						.finallyDo(() -> new RunCommand(() -> mFlywheels.stop().schedule()).withTimeout(1500.0).schedule())
-						.withName("ScoreTrap"));*/
+		/*
+		 * mOperator.pov(90).whileTrue(
+		 * Commands.parallel(mArm.trap(),
+		 * mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
+		 * .raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
+		 * .withName("PrepTrap"));
+		 * Trigger readyToShootTrap = new Trigger(() ->
+		 * mArm.atGoal()).and(mOperator.pov(90));
+		 * mOperator.rightTrigger().and(mOperator.pov(90))
+		 * .onTrue(Commands.parallel(
+		 * Commands.waitSeconds(0.5),
+		 * Commands.waitUntil(mOperator.rightTrigger().negate()))
+		 * .deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
+		 * mFeeder.shootTrap()))
+		 * .finallyDo(() -> new RunCommand(() ->
+		 * mFlywheels.stop().schedule()).withTimeout(1500.0).schedule())
+		 * .withName("ScoreTrap"));
+		 */
 
 		/* PASSING */
 		mOperator.y()
@@ -301,6 +305,11 @@ public class RobotContainer {
 		mDriver.rightBumper().and(mDriver.x()).whileTrue(pathfindToAmp);
 
 		/* SIGNALING */
+		Trigger inWing = new Trigger(
+				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX);
+		inWing.whileTrue(
+				new StartEndCommand(() -> Leds.getInstance().inWing = true, () -> Leds.getInstance().inWing = false));
+
 		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass)
 				.whileTrue(
 						Commands.startEnd(
