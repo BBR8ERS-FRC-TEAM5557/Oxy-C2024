@@ -18,8 +18,8 @@ public class Feeder extends SubsystemBase {
 
     private State mState = State.STOP;
 
-    private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Feeder/IntakeVoltage", 1.0);
-    private static final LoggedTunableNumber mShootVoltage = new LoggedTunableNumber("Feeder/ShootingVoltage", 8.0);
+    private static final LoggedTunableNumber mIntakeVoltage = new LoggedTunableNumber("Feeder/IntakeVoltage", 1.5);
+    private static final LoggedTunableNumber mShootVoltage = new LoggedTunableNumber("Feeder/ShootingVoltage", 12.0);
     private static final LoggedTunableNumber mIdleVoltage = new LoggedTunableNumber("Feeder/IdleVoltage", 0.0);
     private static final LoggedTunableNumber mEjectingAmpVoltage = new LoggedTunableNumber("Feeder/EjectingAmpVoltage",
             4.0);

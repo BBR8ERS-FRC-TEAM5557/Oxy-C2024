@@ -5,6 +5,7 @@ import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.team6328.LoggedTunableNumber;
@@ -14,10 +15,13 @@ import frc.robot.subsystems.leds.Leds;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.util.DriveMotionPlanner;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.FieldConstants;
 import frc.robot.util.Util;
 
 public class TeleopDrive extends Command {
     private final Swerve swerve;
+    private final Translation2d passTarget = FieldConstants.Speaker.centerSpeakerOpening.toTranslation2d()
+            .interpolate(FieldConstants.ampCenter, 0.5);
 
     private final DoubleSupplier mTranslationXSupplier;
     private final DoubleSupplier mTranslationYSupplier;
@@ -80,14 +84,22 @@ public class TeleopDrive extends Command {
         boolean wantsClimbSnap = mWantsClimbSnapSupplier.getAsBoolean();
         if (r > 0.05 || wantsAutoAim || wantsAmpSnap || wantsClimbSnap) {
             if (wantsAutoAim) {
-                Leds.getInstance().autoDrive = true;
-                //theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-30.0));
-                theta = RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
+                Leds.getInstance().autoDrive = false;
+                if (false) {
+                    theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-30.0));
+                } else if (AllianceFlipUtil
+                        .apply(RobotStateEstimator.getInstance().getEstimatedPose().getX()) < FieldConstants.wingX) {
+                    theta = RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
+                } else {
+                    theta = AllianceFlipUtil.apply(passTarget)
+                            .minus(RobotStateEstimator.getInstance().getEstimatedPose().getTranslation()).getAngle()
+                            .plus(Rotation2d.fromDegrees(180.0));
+                }
             } else if (wantsAmpSnap) {
-                Leds.getInstance().autoDrive = true;
+                Leds.getInstance().autoDrive = false;
                 theta = Rotation2d.fromDegrees(270.0);
             } else if (wantsClimbSnap) {
-                Leds.getInstance().autoDrive = true;
+                Leds.getInstance().autoDrive = false;
                 theta = RobotContainer.mClimbChooser.get().getPose().getRotation();
 
                 if (AllianceFlipUtil.shouldFlip())

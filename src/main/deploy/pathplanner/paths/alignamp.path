@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 1.8374597108325443,
-        "y": 7.3
+        "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
         "x": 1.8374597108325443,
-        "y": 7.35
+        "y": 7.05
       },
       "isLocked": false,
       "linkedName": null
@@ -46,7 +46,7 @@
   "folder": "Teleop",
   "previewStartingState": {
     "rotation": -90.0,
-    "velocity": 1.0
+    "velocity": 2.0
   },
   "useDefaultConstraints": false
 }

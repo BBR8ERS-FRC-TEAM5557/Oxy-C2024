@@ -296,7 +296,7 @@ public class RobotContainer {
 
 		PathPlannerPath path = PathPlannerPath.fromPathFile("alignAmp");
 		PathConstraints constraints = new PathConstraints(
-				3.0, 4.5,
+				4.0, 4.5,
 				Units.degreesToRadians(540), Units.degreesToRadians(720));
 		Command pathfindToAmp = AutoBuilder.pathfindThenFollowPath(
 				path,

@@ -20,6 +20,6 @@ public class FeederConstants {
         kMotorConfiguration.kOpenLoopRampRate = 0.25;
         kMotorConfiguration.kShouldInvert = true;
         kMotorConfiguration.kVoltageCompensation = 12.0;
-        kMotorConfiguration.kIdleMode = IdleMode.kCoast;
+        kMotorConfiguration.kIdleMode = IdleMode.kBrake;
     }
 }

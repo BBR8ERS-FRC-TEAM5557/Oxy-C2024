@@ -102,13 +102,11 @@ public class Leds extends VirtualSubsystem {
 
 	public synchronized void periodic() {
 		// Update alliance color
-		if (DriverStation.isFMSAttached() || true) {
-			alliance = DriverStation.getAlliance();
-			allianceColor = alliance
-					.map(alliance -> alliance == Alliance.Blue ? Color.kBlue : Color.kRed)
-					.orElse(Color.kGold);
-			secondaryDisabledColor = alliance.isPresent() ? Color.kWhite : Color.kBlack;
-		}
+		alliance = DriverStation.getAlliance();
+		allianceColor = alliance
+				.map(alliance -> alliance == Alliance.Blue ? Color.kBlue : Color.kRed)
+				.orElse(Color.kWhite);
+		secondaryDisabledColor = alliance.isPresent() ? Color.kWhite : Color.kBlack;
 
 		// Update auto state
 		if (DriverStation.isDisabled()) {
@@ -167,9 +165,9 @@ public class Leds extends VirtualSubsystem {
 				solid(Color.kGreen);
 			} else if (hasNote) {
 				if (seesRelevantTags && inWing) {
-					strobe(Color.kGreen, Color.kWhite, strobeFastDuration);
+					strobe(Color.kGreen, Color.kWhite, strobeSlowDuration);
 				} else if (seesTags) {
-					strobe(Color.kGreen, Color.kBlue, strobeSlowDuration);
+					strobe(Color.kGreen, strobeFastDuration);
 				} else {
 					strobe(Color.kGreen, strobeSlowDuration);
 				}
