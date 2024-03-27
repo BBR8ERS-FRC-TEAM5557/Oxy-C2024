@@ -39,6 +39,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.RobotStateEstimator;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -397,7 +399,7 @@ public class PhotonvisionPoseEstimator {
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
                 break;
             case CLOSEST_TO_REFERENCE_ROTATION:
-                estimatedPose = closestToReferenceRotationStrategy(cameraResult, referencePose);
+                estimatedPose = closestToReferenceRotationStrategy(cameraResult);
             case CLOSEST_TO_LAST_POSE:
                 setReferencePose(lastPose);
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
@@ -676,13 +678,7 @@ public class PhotonvisionPoseEstimator {
      *     estimation.
      */
     private Optional<EstimatedRobotPose> closestToReferenceRotationStrategy(
-            PhotonPipelineResult result, Pose3d referencePose) {
-        if (referencePose == null) {
-            DriverStation.reportError(
-                    "[PhotonPoseEstimator] Tried to use reference pose strategy without setting the reference!",
-                    false);
-            return Optional.empty();
-        }
+            PhotonPipelineResult result) {
 
         double smallestRotationDelta = 10e9;
         EstimatedRobotPose lowestDeltaPose = null;
@@ -713,7 +709,7 @@ public class PhotonvisionPoseEstimator {
                             .transformBy(target.getBestCameraToTarget().inverse())
                             .transformBy(robotToCamera.inverse());
 
-            Rotation2d referenceRotation = referencePose.getRotation().toRotation2d();
+            Rotation2d referenceRotation = RobotStateEstimator.getInstance().getEstimatedPose().getRotation();
             double altDifference = Math.abs(referenceRotation.getDegrees() - altTransformPosition.getRotation().toRotation2d().getDegrees());
             double bestDifference = Math.abs(referenceRotation.getDegrees() - bestTransformPosition.getRotation().toRotation2d().getDegrees());
 
