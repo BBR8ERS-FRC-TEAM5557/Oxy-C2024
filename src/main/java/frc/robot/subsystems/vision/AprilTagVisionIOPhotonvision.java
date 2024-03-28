@@ -4,11 +4,13 @@ import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+//import org.photonvision.PhotonPoseEstimator;
+//import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
+import frc.lib.team5557.vision.PhotonvisionPoseEstimator;
+import frc.lib.team5557.vision.PhotonvisionPoseEstimator.PoseStrategy;
 //import frc.lib.team5557.vision.PhotonvisionPoseEstimator;
 //import frc.lib.team5557.vision.PhotonvisionPoseEstimator.PoseStrategy;
 import frc.lib.team6328.Alert;
@@ -18,7 +20,7 @@ import frc.robot.util.FieldConstants;
 
 public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
     private final PhotonCamera camera;
-    private final PhotonPoseEstimator photonEstimator;
+    private final PhotonvisionPoseEstimator photonEstimator;
     private double lastTimestamp = 0;
 
     private static final double disconnectedTimeout = 0.5;
@@ -33,12 +35,12 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
      */
     public AprilTagVisionIOPhotonvision(String cameraName, Transform3d robotToCamera) {
         this.camera = new PhotonCamera(cameraName);
-        this.photonEstimator = new PhotonPoseEstimator(
+        this.photonEstimator = new PhotonvisionPoseEstimator(
                 FieldConstants.aprilTags,
                 PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 camera,
                 robotToCamera);
-        this.photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        this.photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_ROTATION);
         disconnectedAlert = new Alert("No data from \"" + cameraName + "\"", Alert.AlertType.INFO);
         //disconnectedTimer.start();
     }
@@ -52,7 +54,6 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
      */
     @Override
     public void updateInputs(AprilTagVisionIOInputs inputs) {
-        this.photonEstimator.setReferencePose(RobotStateEstimator.getInstance().getEstimatedPose());
         Optional<EstimatedRobotPose> visionEstimate = this.photonEstimator.update();
         double latestTimestamp = camera.getLatestResult().getTimestampSeconds();
 

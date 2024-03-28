@@ -18,7 +18,7 @@ public class AprilTagVisionConstants {
         public static final double fieldBorderMargin = 0.5;
         public static final double zMargin = 0.75;
         public static final double xyStdDevCoefficient = 0.05; // was 0.005
-        public static final double thetaStdDevCoefficient = 0.01;
+        public static final double thetaStdDevCoefficient = 0.05;
 
         public static final double[] stdDevFactors = new double[] { 1.0, 1.0 };
 
