@@ -231,6 +231,9 @@ public class RobotContainer {
 		/* SHOOTING */
 		mOperator.back().whileTrue(mFlywheels.shoot().withName("SpinUpFlywheels"));
 
+		mOperator.pov(90).onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(0.05)).ignoringDisable(true));
+		mOperator.pov(270).onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(-0.05)).ignoringDisable(true));
+
 		mOperator.a().whileTrue(
 				Commands.parallel(mArm.aim(), mFlywheels.shootDynamic()).withName("PrepDynamicShot"));
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
