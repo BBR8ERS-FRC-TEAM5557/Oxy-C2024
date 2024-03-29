@@ -217,25 +217,30 @@ public class Swerve extends SubsystemBase {
 					setpointTwist.dy / Robot.defaultPeriodSecs,
 					mDesiredSpeeds.omegaRadiansPerSecond);
 
-			mSwerveSetpoint = mSetpointGenerator.generateSetpoint(
-					kModuleLimits, kinematicLimits, mSwerveSetpoint, mDesiredSpeeds, Robot.defaultPeriodSecs);
-
 			// Send setpoints to modules
 			SwerveModuleState[] optimizedStates = new SwerveModuleState[4];
 
 			if (mControlMode == ControlMode.PATH_FOLLOWING) {
+				mSwerveSetpoint = mSetpointGenerator.generateSetpoint(
+						kAutoModuleLimits, kinematicLimits, mSwerveSetpoint, mDesiredSpeeds, Robot.defaultPeriodSecs);
+
 				for (int i = 0; i < 4; i++) {
 					optimizedStates[i] = mModules[i].runSetpoint(mSwerveSetpoint.moduleStates()[i], false, false);
 				}
 			} else {
+				mSwerveSetpoint = mSetpointGenerator.generateSetpoint(
+						kTeleopModuleLimits, kinematicLimits, mSwerveSetpoint, mDesiredSpeeds, Robot.defaultPeriodSecs);
+						
 				for (int i = 0; i < 4; i++) {
 					optimizedStates[i] = mModules[i].runSetpoint(mSwerveSetpoint.moduleStates()[i], true, false);
 				}
 			}
 
 			// Log setpoint states
-			//Logger.recordOutput(kSubsystemName + "/ModuleStates/Setpoints", mSwerveSetpoint.moduleStates());
-			//Logger.recordOutput(kSubsystemName + "/ModuleStates/SetpointsOptimized", optimizedStates);
+			// Logger.recordOutput(kSubsystemName + "/ModuleStates/Setpoints",
+			// mSwerveSetpoint.moduleStates());
+			// Logger.recordOutput(kSubsystemName + "/ModuleStates/SetpointsOptimized",
+			// optimizedStates);
 		}
 
 		// Log measured states
@@ -386,7 +391,8 @@ public class Swerve extends SubsystemBase {
 
 	public boolean atHeadingGoal() {
 		double goalRotationDeg = RobotStateEstimator.getInstance().getAimingParameters().driveHeading().getDegrees();
-		return Util.epsilonEquals(RobotStateEstimator.getInstance().getEstimatedPose().getRotation().getDegrees(), goalRotationDeg, 4.0);
+		return Util.epsilonEquals(RobotStateEstimator.getInstance().getEstimatedPose().getRotation().getDegrees(),
+				goalRotationDeg, 4.0);
 	}
 
 	public boolean isUnderKinematicLimit(KinematicLimits limits) {

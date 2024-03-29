@@ -34,8 +34,7 @@ public class SwerveConstants {
 	public static final double kKrakenFreeSpeedFOC = 5800;
 
 	/* Swerve Profiling Values */
-	public static final double kTheoreticalMaxSpeed = kWheelCircumference * (kKrakenFreeSpeed / kDriveGearReduction)
-			/ 60.0; // meters per second
+	public static final double kTheoreticalMaxSpeed = kWheelCircumference * ((kKrakenFreeSpeed/60.0) / kDriveGearReduction); // meters per second
 	public static final double kTheoreticalMaxAcceleration = 10.0; // m/s^2
 	public static final double kTheoreticalMaxOmega = 11.5; // radians per second
 
@@ -77,7 +76,9 @@ public class SwerveConstants {
 	public static final double kSnapMaxAlpha = kSnapMaxOmega / 0.15;
 
 	// MODULE LIMITS
-	public static final ModuleLimits kModuleLimits = new ModuleLimits(kTrueMaxSpeed, kTrueMaxSpeed * 5,
+	public static final ModuleLimits kAutoModuleLimits = new ModuleLimits(kTrueMaxSpeed, kTrueMaxSpeed * 5,
+			Units.degreesToRadians(1080.0));
+	public static final ModuleLimits kTeleopModuleLimits = new ModuleLimits(kTheoreticalMaxSpeed, kTrueMaxSpeed * 5,
 			Units.degreesToRadians(1080.0));
 
 	// KINEMATIC LIMITS
