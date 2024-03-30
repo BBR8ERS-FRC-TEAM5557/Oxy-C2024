@@ -1,5 +1,7 @@
 package frc.robot.subsystems.swerve.commands;
 
+import static frc.robot.subsystems.swerve.SwerveConstants.kRotationkP;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -7,6 +9,7 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.RobotContainer;
@@ -19,6 +22,8 @@ import frc.robot.util.FieldConstants;
 import frc.robot.util.Util;
 
 public class TeleopDrive extends Command {
+    private static final double TURNING_DEADBAND = 2.0;
+
     private final Swerve swerve;
     private final Translation2d passTarget = FieldConstants.Speaker.centerSpeakerOpening.toTranslation2d()
             .interpolate(FieldConstants.ampCenter, 0.5);
@@ -35,6 +40,10 @@ public class TeleopDrive extends Command {
 
     private LoggedTunableNumber headingPadding = new LoggedTunableNumber("Aiming/HeadingPaddingDeg", 1.0);
     private boolean atHeadingGoal = false;
+
+    private Rotation2d targetHeading;
+    private double previousT;
+    private double offT;
 
     public TeleopDrive(DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
             DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier,
@@ -120,6 +129,8 @@ public class TeleopDrive extends Command {
                 Util.clamp(rotationalVelocity, -limit.maxAngularVelocity(), limit.maxAngularVelocity()),
                 driveRotation);
 
+        correctHeading(velocity, driveRotation); //potential failure point idek??
+
         swerve.driveOpenLoop(velocity);
 
         Logger.recordOutput("RobotState/Aiming/HeadingGoal", theta);
@@ -133,6 +144,60 @@ public class TeleopDrive extends Command {
 
     public boolean atHeadingGoal() {
         return atHeadingGoal;
+    }
+
+    /**
+     * Optimizes the chassis speed that is put into the kinematics object to allow
+     * the robot to hold its heading
+     * when no angular velocity is input.
+     * The robot will therefore correct itself when it turns without telling it to
+     * do so.
+     *
+     * @param desiredSpeed desired chassis speed that is input by the controller
+     * @return corrected {@code ChassisSpeeds} which takes into account that the
+     *         robot needs to have the same heading
+     *         when no rotational speed is input
+     */
+    private ChassisSpeeds correctHeading(ChassisSpeeds desiredSpeed, Rotation2d driveRotation) {
+
+        // Determine time interval
+        double currentT = Timer.getFPGATimestamp();
+        double dt = currentT - previousT;
+
+        // Get desired rotational speed in radians per second and absolute translational
+        // speed in m/s
+        double vr = desiredSpeed.omegaRadiansPerSecond;
+        double v = Math.hypot(desiredSpeed.vxMetersPerSecond, desiredSpeed.vyMetersPerSecond);
+
+        if (vr > 0.01 || vr < -0.01) {
+            offT = currentT;
+            targetHeading = driveRotation;
+            return desiredSpeed;
+        }
+        if (currentT - offT < 0.5) {
+            targetHeading = driveRotation;
+            return desiredSpeed;
+        }
+        if (v < 0.1) {
+            targetHeading = driveRotation;
+            return desiredSpeed;
+        }
+
+        // Determine target and current heading
+        // Update target heading to account for any requested vr less than 0.01
+        targetHeading = targetHeading.plus(new Rotation2d(vr * dt));
+
+        // Calculate the change in heading that is needed to achieve the target
+        Rotation2d deltaHeading = targetHeading.minus(driveRotation);
+
+        if (Math.abs(deltaHeading.getDegrees()) < TURNING_DEADBAND) {
+            return desiredSpeed;
+        }
+        double correctedVr = deltaHeading.getRadians() / dt * kRotationkP;
+
+        previousT = currentT;
+
+        return new ChassisSpeeds(desiredSpeed.vxMetersPerSecond, desiredSpeed.vyMetersPerSecond, correctedVr);
     }
 
 }
