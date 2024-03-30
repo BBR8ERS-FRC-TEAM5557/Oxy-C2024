@@ -35,7 +35,7 @@ public class SwerveConstants {
 
 	/* Swerve Profiling Values */
 	public static final double kTheoreticalMaxSpeed = kWheelCircumference * ((kKrakenFreeSpeed/60.0) / kDriveGearReduction); // meters per second
-	public static final double kTheoreticalMaxAcceleration = 10.0; // m/s^2
+	public static final double kTheoreticalMaxAcceleration = 7.090; // m/s^2
 	public static final double kTheoreticalMaxOmega = 11.5; // radians per second
 
 	public static final double kTrueMaxSpeed = kTheoreticalMaxSpeed * 0.8; // Max out at 85% to make sure speeds are
@@ -76,7 +76,7 @@ public class SwerveConstants {
 	public static final double kSnapMaxAlpha = kSnapMaxOmega / 0.15;
 
 	// MODULE LIMITS
-	public static final ModuleLimits kAutoModuleLimits = new ModuleLimits(kTrueMaxSpeed, kTrueMaxSpeed * 5,
+	public static final ModuleLimits kAutoModuleLimits = new ModuleLimits(kTrueMaxSpeed, kTrueMaxAcceleration,
 			Units.degreesToRadians(1080.0));
 	public static final ModuleLimits kTeleopModuleLimits = new ModuleLimits(kTheoreticalMaxSpeed, kTrueMaxSpeed * 5,
 			Units.degreesToRadians(1080.0));
@@ -108,8 +108,8 @@ public class SwerveConstants {
 		kDriveMotorConfiguration.setInverted = true;
 		kDriveMotorConfiguration.pid = kDrivePIDConfiguration;
 		kDriveMotorConfiguration.neutralMode = NeutralModeValue.Brake;
-		kDriveMotorConfiguration.supplyCurrentLimit = 50.0;
-		kDriveMotorConfiguration.statorCurrentLimit = 50.0;
+		kDriveMotorConfiguration.supplyCurrentLimit = 60.0;
+		kDriveMotorConfiguration.statorCurrentLimit = 60.0;
 	}
 
 	// ANGLE MOTOR CONFIGURATION
@@ -136,6 +136,8 @@ public class SwerveConstants {
 			new Translation2d((-kWheelBase / 2.0) - kTrueChassisCenterOffset, kTrackWidth / 2.0),
 			new Translation2d((-kWheelBase / 2.0) - kTrueChassisCenterOffset, -kTrackWidth / 2.0)
 	};
+
+	public static double kDriveBaseRadius = kSwerveModuleLocations[3].getNorm();
 
 	public static final SwerveModuleState[] kXOutSwerveModuleStates = {
 			new SwerveModuleState(0.0, Rotation2d.fromDegrees(45)),
