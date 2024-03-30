@@ -129,7 +129,7 @@ public class TeleopDrive extends Command {
                 Util.clamp(rotationalVelocity, -limit.maxAngularVelocity(), limit.maxAngularVelocity()),
                 driveRotation);
 
-        correctHeading(velocity, driveRotation); //potential failure point idek??
+        //correctHeading(velocity, driveRotation); //potential failure point idek??
 
         swerve.driveOpenLoop(velocity);
 

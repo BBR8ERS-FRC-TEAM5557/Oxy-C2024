@@ -68,7 +68,7 @@ public class Arm extends SubsystemBase {
             270.0);
     private static final LoggedTunableNumber climbRetractDegrees = new LoggedTunableNumber(
             "Superstructure/ArmClimbRetractDegrees",
-            157.0);
+            170.0);
 
     private final ArmIO mIO;
     private final ArmIOInputs mInputs = new ArmIOInputs();
