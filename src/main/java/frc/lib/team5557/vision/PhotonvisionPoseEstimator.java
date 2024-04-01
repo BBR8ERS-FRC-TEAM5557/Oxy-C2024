@@ -39,6 +39,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.Robot;
 import frc.robot.RobotStateEstimator;
 
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class PhotonvisionPoseEstimator {
 
     private AprilTagFieldLayout fieldTags;
     private TargetModel tagModel = TargetModel.kAprilTag16h5;
-    private PoseStrategy primaryStrategy;
+    private PoseStrategy primaryStrategy = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
     private PoseStrategy multiTagFallbackStrategy = PoseStrategy.CLOSEST_TO_REFERENCE_ROTATION;
     private final PhotonCamera camera;
     private Transform3d robotToCamera;
@@ -607,6 +608,7 @@ public class PhotonvisionPoseEstimator {
      */
     private Optional<EstimatedRobotPose> closestToReferencePoseStrategy(
             PhotonPipelineResult result, Pose3d referencePose) {
+        var ref = RobotStateEstimator.getInstance().getEstimatedPose();
         if (referencePose == null) {
             DriverStation.reportError(
                     "[PhotonPoseEstimator] Tried to use reference pose strategy without setting the reference!",
@@ -727,7 +729,7 @@ public class PhotonvisionPoseEstimator {
                                 altTransformPosition,
                                 result.getTimestampSeconds(),
                                 result.getTargets(),
-                                PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+                                PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY);
             }
             if (bestDifference < smallestRotationDelta) {
                 smallestRotationDelta = bestDifference;
@@ -736,7 +738,7 @@ public class PhotonvisionPoseEstimator {
                                 bestTransformPosition,
                                 result.getTimestampSeconds(),
                                 result.getTargets(),
-                                PhotonPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_POSE);
+                                PhotonPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY);
             }
         }
         return Optional.ofNullable(lowestDeltaPose);

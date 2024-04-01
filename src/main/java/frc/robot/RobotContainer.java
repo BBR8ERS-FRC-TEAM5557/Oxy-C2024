@@ -255,7 +255,7 @@ public class RobotContainer {
 						.deadlineWith(mFeeder.shoot()).withName("ScoreCustom"));
 
 		mOperator.b()
-				.whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender())
+				.whileTrue(Commands.parallel(mArm.aimFender(), mFlywheels.shootFender(), mBlower.blow())
 						.withName("PrepFenderShot"));
 		Trigger readyToShootFender = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.b());
 		mOperator.rightTrigger().and(mOperator.b())
@@ -269,17 +269,17 @@ public class RobotContainer {
 		trapTrigger.whileTrue(
 				Commands.parallel(mArm.trap(), mBlower.blow(),
 						mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-								.raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
+								.raceWith((Commands.waitSeconds(2.0))).andThen(mFeeder.shootTrap()))
 						.withName("PrepTrap"));
 		Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(trapTrigger);
 		mOperator.rightTrigger().and(trapTrigger)
 				.onTrue(Commands.parallel(
-						Commands.waitSeconds(1.5),
+						Commands.waitSeconds(2.5),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
 						.deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
-								mFeeder.shootTrap()))
+								mFeeder.shootTrap(), mBlower.blow()))
 						.finallyDo(
-								() -> new RunCommand(() -> mFlywheels.stop().schedule(), mFlywheels).withTimeout(1500.0)
+								() -> new RunCommand(() -> mFlywheels.stop().schedule()).withTimeout(15.0)
 										.schedule())
 						.withName("ScoreTrap"));
 
@@ -469,9 +469,9 @@ public class RobotContainer {
 		double leftTrigger = square(deadband(mDriver.getLeftTriggerAxis(), 0.05));
 		double rightTrigger = square(deadband(mDriver.getRightTriggerAxis(), 0.05));
 
-		return -square(deadband(mDriver.getRightX(), 0.05));
+		//return -square(deadband(mDriver.getRightX(), 0.05));
 
-		// return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
+		return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
 	}
 
 	public double getAimBotXInput() {

@@ -68,7 +68,7 @@ public class Leds extends VirtualSubsystem {
 
 	// Constants
 	private static final int minLoopCycleCount = 10;
-	private static final int length = 30;
+	private static final int length = 32;
 	private static final double strobeFastDuration = 0.1;
 	private static final double strobeSlowDuration = 0.2;
 	private static final double breathDuration = 1.0;

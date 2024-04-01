@@ -38,7 +38,7 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
                 PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 camera,
                 robotToCamera);
-        this.photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_ROTATION);
+        //this.photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_ROTATION);
         disconnectedAlert = new Alert("No data from \"" + cameraName + "\"", Alert.AlertType.INFO);
     }
 

@@ -35,8 +35,8 @@ public class Flywheels extends SubsystemBase {
     private static final LoggedTunableNumber mEjectingRpm = new LoggedTunableNumber("Flywheels/EjectingRpm", 2500.0);
 
     private static final LoggedTunableNumber mPrepTrapRpm = new LoggedTunableNumber("Flywheels/PrepTrapRpm", 0.0);
-    private static final LoggedTunableNumber mShootTrapRpm = new LoggedTunableNumber("Flywheels/ShootingTrapRpm",
-            -4000.0);
+    private static final LoggedTunableNumber mShootTrapRpm = new LoggedTunableNumber("Flywheels/ShootingTrapVoltage",
+            -4.0);
 
     private final FlywheelsIO mIO;
     private final FlywheelsIOInputs mInputs = new FlywheelsIOInputs();
@@ -112,7 +112,12 @@ public class Flywheels extends SubsystemBase {
                     mIO.runVelocity(State.IDLE.getRPM(), mFeedforward.calculate(State.IDLE.getRPM()));
                 }
             } else {
-                mIO.runVelocity(mState.getRPM(), mFeedforward.calculate(mState.getRPM()));
+                if (mState == State.SHOOT_TRAP) {
+                    mIO.runVoltage(State.SHOOT_TRAP.getRPM());
+                } else {
+                    mIO.runVelocity(mState.getRPM(), mFeedforward.calculate(mState.getRPM()));
+                }
+
             }
         } else if (mState == State.STOP) {
             mIO.stop();
@@ -180,7 +185,8 @@ public class Flywheels extends SubsystemBase {
     }
 
     public Command shootDynamic() {
-        return startEnd(() -> setState(State.SHOOT_DYNAMIC), () -> setState(State.IDLE)).withName("FlywheelsShootDynamic");
+        return startEnd(() -> setState(State.SHOOT_DYNAMIC), () -> setState(State.IDLE))
+                .withName("FlywheelsShootDynamic");
     }
 
     public Command shootFender() {
