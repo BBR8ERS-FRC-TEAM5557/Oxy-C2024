@@ -92,10 +92,10 @@ public class FlywheelsIOKraken implements FlywheelsIO {
 				.isOK();
 		inputs.rightMotorConnected = BaseStatusSignal.refreshAll(
 				mRightPosition,
-				mRightPosition,
-				mRightPosition,
-				mRightPosition,
-				mRightPosition)
+				mRightVelocity,
+				mRightAppliedVolts,
+				mRightSupplyCurrent,
+				mRightTorqueCurrent)
 				.isOK();
 
 		inputs.leftPositionRotations = mLeftPosition.getValueAsDouble();

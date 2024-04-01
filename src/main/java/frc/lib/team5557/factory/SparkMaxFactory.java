@@ -54,6 +54,33 @@ public class SparkMaxFactory {
 		return createNEO(config);
 	}
 
+	public static CANSparkMax createBrushed(Configuration config) {
+		can.isDevicePresent(config.canID.getDeviceType(), config.canID.getDeviceNumber(), config.label);
+
+		CANSparkMax sparkMax = new CANSparkMax(config.canID.getDeviceNumber(), MotorType.kBrushed);
+
+		BurnManager.restoreFactoryDefaults(sparkMax);
+
+		sparkMax.setCANTimeout(configCANTimeout);
+
+		for (int i = 0; i < configCount; i++) {
+			if (!Double.isNaN(config.kSmartCurrentLimit)) {
+				sparkMax.setSmartCurrentLimit((int) config.kSmartCurrentLimit);
+			}
+			if (!Double.isNaN(config.kVoltageCompensation)) {
+				sparkMax.enableVoltageCompensation(config.kVoltageCompensation);
+			}
+
+			sparkMax.setIdleMode(config.kIdleMode);
+			sparkMax.setInverted(config.kShouldInvert);
+			sparkMax.setOpenLoopRampRate(config.kOpenLoopRampRate);
+			sparkMax.setClosedLoopRampRate(config.kClosedLoopRampRate);
+		}
+		sparkMax.setCANTimeout(0);
+
+		return sparkMax;
+	}
+
 	public static CANSparkMax createNEO(Configuration config) {
 		can.isDevicePresent(config.canID.getDeviceType(), config.canID.getDeviceNumber(), config.label);
 

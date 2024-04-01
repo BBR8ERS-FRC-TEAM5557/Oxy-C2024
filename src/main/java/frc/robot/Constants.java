@@ -37,5 +37,7 @@ public class Constants {
 
     public static final int kArmLeaderMotor = 26;
     public static final int kArmFollowerMotor = 25;
+
+    public static final int kBlowerMotor = 30;
   }
 }

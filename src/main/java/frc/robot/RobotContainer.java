@@ -29,6 +29,9 @@ import frc.robot.auto.SystemsCheckManager;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIOSparkMax;
+import frc.robot.subsystems.blower.Blower;
+import frc.robot.subsystems.blower.BlowerIO;
+import frc.robot.subsystems.blower.BlowerIOSparkMax;
 import frc.robot.subsystems.feeder.Feeder;
 import frc.robot.subsystems.feeder.FeederIO;
 import frc.robot.subsystems.feeder.FeederIOSparkMax;
@@ -79,6 +82,7 @@ public class RobotContainer {
 	public static Feeder mFeeder;
 	public static Flywheels mFlywheels;
 	public static Arm mArm;
+	public static Blower mBlower;
 	public static Leds mLeds;
 
 	public static Vision mVision;
@@ -105,6 +109,7 @@ public class RobotContainer {
 			mFeeder = new Feeder(new FeederIOSparkMax());
 			mFlywheels = new Flywheels(new FlywheelsIOKraken());
 			mArm = new Arm(new ArmIOSparkMax());
+			mBlower = new Blower(new BlowerIOSparkMax());
 
 			mVision = new Vision(
 					new AprilTagVisionIOPhotonvision(instanceNames[0],
@@ -142,6 +147,10 @@ public class RobotContainer {
 		}
 		if (mArm == null) {
 			mArm = new Arm(new ArmIO() {
+			});
+		}
+		if (mBlower == null) {
+			mBlower = new Blower(new BlowerIO() {
 			});
 		}
 		if (mVision == null) {
@@ -221,7 +230,7 @@ public class RobotContainer {
 						.withName("Teleop Ejecting"));
 
 		/* COASTING */
-		mOperator.leftTrigger()
+		mOperator.leftTrigger().and(() -> DriverStation.isDisabled())
 				.whileTrue(Commands
 						.parallel(mArm.forceCoast(), mSwerve.forceCoast(),
 								new StartEndCommand(() -> Leds.getInstance().armCoast = true,
@@ -231,8 +240,10 @@ public class RobotContainer {
 		/* SHOOTING */
 		mOperator.back().whileTrue(mFlywheels.shoot().withName("SpinUpFlywheels"));
 
-		mOperator.pov(90).onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(0.05)).ignoringDisable(true));
-		mOperator.pov(270).onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(-0.05)).ignoringDisable(true));
+		mOperator.pov(90)
+				.onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(0.05)).ignoringDisable(true));
+		mOperator.pov(270)
+				.onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(-0.05)).ignoringDisable(true));
 
 		mOperator.a().whileTrue(
 				Commands.parallel(mArm.aim(), mFlywheels.shootDynamic()).withName("PrepDynamicShot"));
@@ -254,24 +265,23 @@ public class RobotContainer {
 						.deadlineWith(mFeeder.shoot()).withName("ScoreFender"));
 
 		/* TRAPPING */
-		/*
-		 * mOperator.pov(90).whileTrue(
-		 * Commands.parallel(mArm.trap(),
-		 * mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-		 * .raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
-		 * .withName("PrepTrap"));
-		 * Trigger readyToShootTrap = new Trigger(() ->
-		 * mArm.atGoal()).and(mOperator.pov(90));
-		 * mOperator.rightTrigger().and(mOperator.pov(90))
-		 * .onTrue(Commands.parallel(
-		 * Commands.waitSeconds(0.5),
-		 * Commands.waitUntil(mOperator.rightTrigger().negate()))
-		 * .deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
-		 * mFeeder.shootTrap()))
-		 * .finallyDo(() -> new RunCommand(() ->
-		 * mFlywheels.stop().schedule()).withTimeout(1500.0).schedule())
-		 * .withName("ScoreTrap"));
-		 */
+		Trigger trapTrigger = new Trigger(mOperator.leftTrigger().and(() -> !DriverStation.isDisabled()));
+		trapTrigger.whileTrue(
+				Commands.parallel(mArm.trap(), mBlower.blow(),
+						mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
+								.raceWith((Commands.waitSeconds(1.0))).andThen(mFeeder.shootTrap()))
+						.withName("PrepTrap"));
+		Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(trapTrigger);
+		mOperator.rightTrigger().and(trapTrigger)
+				.onTrue(Commands.parallel(
+						Commands.waitSeconds(1.5),
+						Commands.waitUntil(mOperator.rightTrigger().negate()))
+						.deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
+								mFeeder.shootTrap()))
+						.finallyDo(
+								() -> new RunCommand(() -> mFlywheels.stop().schedule(), mFlywheels).withTimeout(1500.0)
+										.schedule())
+						.withName("ScoreTrap"));
 
 		/* PASSING */
 		mOperator.y()
@@ -459,7 +469,7 @@ public class RobotContainer {
 
 		return -square(deadband(mDriver.getRightX(), 0.05));
 
-		//return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
+		// return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
 	}
 
 	public double getAimBotXInput() {
