@@ -98,7 +98,7 @@ public class PhotonvisionPoseEstimator {
     private AprilTagFieldLayout fieldTags;
     private TargetModel tagModel = TargetModel.kAprilTag16h5;
     private PoseStrategy primaryStrategy;
-    private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
+    private PoseStrategy multiTagFallbackStrategy = PoseStrategy.CLOSEST_TO_REFERENCE_ROTATION;
     private final PhotonCamera camera;
     private Transform3d robotToCamera;
 
