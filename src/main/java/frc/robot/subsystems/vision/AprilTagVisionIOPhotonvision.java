@@ -23,9 +23,7 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
     private final PhotonvisionPoseEstimator photonEstimator;
     private double lastTimestamp = 0;
 
-    private static final double disconnectedTimeout = 0.5;
     private final Alert disconnectedAlert;
-    private final Timer disconnectedTimer = new Timer();
 
     /**
      * Creates a new VisionIOPhotonVision object.
@@ -42,7 +40,6 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
                 robotToCamera);
         this.photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_REFERENCE_ROTATION);
         disconnectedAlert = new Alert("No data from \"" + cameraName + "\"", Alert.AlertType.INFO);
-        //disconnectedTimer.start();
     }
 
     /**
@@ -71,10 +68,8 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
                         inputs.lastCameraTimestamp = latestTimestamp;
                         lastTimestamp = latestTimestamp;
                     });
-        } else {
-            disconnectedTimer.reset();         // Update disconnected alert
         }
 
-        disconnectedAlert.set(disconnectedTimer.hasElapsed(disconnectedTimeout));
+        disconnectedAlert.set(camera.isConnected());
     }
 }

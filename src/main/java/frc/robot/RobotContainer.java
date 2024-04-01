@@ -325,7 +325,7 @@ public class RobotContainer {
 		inWing.whileTrue(
 				new StartEndCommand(() -> Leds.getInstance().inWing = true, () -> Leds.getInstance().inWing = false));
 
-		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass)
+		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass).or(readyToShootTrap)
 				.whileTrue(
 						Commands.startEnd(
 								() -> {
