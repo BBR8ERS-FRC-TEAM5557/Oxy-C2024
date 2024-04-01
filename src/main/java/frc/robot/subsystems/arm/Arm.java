@@ -53,6 +53,8 @@ public class Arm extends SubsystemBase {
     private static final LoggedTunableNumber intakeDegrees = new LoggedTunableNumber("Superstructure/ArmIntakeDegrees",
             157.5);
 
+    private static final LoggedTunableNumber prepAmpDegrees = new LoggedTunableNumber("Superstructure/ArmPrepAmpDegrees",
+            230.0);
     private static final LoggedTunableNumber ampDegrees = new LoggedTunableNumber("Superstructure/ArmAmpDegrees",
             250.0);
     private static final LoggedTunableNumber trapDegrees = new LoggedTunableNumber("Superstructure/ArmTrapDegrees",
@@ -136,6 +138,7 @@ public class Arm extends SubsystemBase {
     public enum State {
         STOW(() -> stowDegrees.get()),
         FLOOR_INTAKE(() -> intakeDegrees.get()),
+        PREP_AMP(() -> prepAmpDegrees.get()),
         AMP(() -> ampDegrees.get()),
         PASS(() -> 165.0), //potentially add supplier thing
         FENDER_SHOT(() -> fenderShotDegrees.get()),
@@ -159,6 +162,10 @@ public class Arm extends SubsystemBase {
 
     public Command intake() {
         return startEnd(() -> setState(State.FLOOR_INTAKE), () -> setState(State.STOW));
+    }
+
+    public Command prepAmp() {
+        return startEnd(() -> setState(State.PREP_AMP), () -> setState(State.STOW));
     }
 
     public Command amp() {

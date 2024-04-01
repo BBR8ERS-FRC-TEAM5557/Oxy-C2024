@@ -299,13 +299,15 @@ public class RobotContainer {
 		mOperator.pov(180).onTrue(mArm.retractClimb().alongWith(mFlywheels.stop()));
 
 		/* AMPING */
-		mOperator.x().whileTrue(Commands.parallel(mArm.amp(), mFlywheels.eject()).withName("PrepAmp"));
+		mOperator.x().whileTrue(Commands.parallel(mArm.prepAmp(), mFlywheels.eject()).withName("PrepAmp"));
 		Trigger readyToEjectAmp = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.x());
 		mOperator.rightTrigger().and(mOperator.x())
 				.onTrue(Commands.parallel(
-						Commands.waitSeconds(0.5),
+						Commands.waitSeconds(1.0),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
-						.deadlineWith(mFeeder.ejectAmp()).withName("ScoreAmp"));
+						.deadlineWith(mArm.amp()
+								.alongWith(Commands.waitUntil(() -> mArm.atGoalRough()).andThen(mFeeder.ejectAmp())))
+						.withName("ScoreAmp"));
 
 		PathPlannerPath path = PathPlannerPath.fromPathFile("alignAmp");
 		PathConstraints constraints = new PathConstraints(
