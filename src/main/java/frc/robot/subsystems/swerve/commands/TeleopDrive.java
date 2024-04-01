@@ -88,6 +88,8 @@ public class TeleopDrive extends Command {
             yVelocity = -yVelocity;
         }
 
+        r = 0.0; //replaced for thing majig
+
         boolean wantsAutoAim = mAutoaimSupplier.getAsBoolean();
         boolean wantsAmpSnap = mWantsAmpSnapSupplier.getAsBoolean();
         boolean wantsClimbSnap = mWantsClimbSnapSupplier.getAsBoolean();

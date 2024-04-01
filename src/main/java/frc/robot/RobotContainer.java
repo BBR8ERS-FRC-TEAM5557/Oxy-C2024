@@ -457,7 +457,9 @@ public class RobotContainer {
 		double leftTrigger = square(deadband(mDriver.getLeftTriggerAxis(), 0.05));
 		double rightTrigger = square(deadband(mDriver.getRightTriggerAxis(), 0.05));
 
-		return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
+		return -square(deadband(mDriver.getRightX(), 0.05));
+
+		//return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
 	}
 
 	public double getAimBotXInput() {
