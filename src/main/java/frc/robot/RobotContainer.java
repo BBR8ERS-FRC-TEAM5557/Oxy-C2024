@@ -111,7 +111,7 @@ public class RobotContainer {
 			mFeeder = new Feeder(new FeederIOSparkMax());
 			mFlywheels = new Flywheels(new FlywheelsIOKraken());
 			mArm = new Arm(new ArmIOSparkMax());
-			//mBlower = new Blower(new BlowerIOSparkMax());
+			// mBlower = new Blower(new BlowerIOSparkMax());
 
 			mVision = new Vision(
 					new AprilTagVisionIOPhotonvision(instanceNames[0],
@@ -270,22 +270,26 @@ public class RobotContainer {
 
 		/* TRAPPING */
 		Trigger trapTrigger = new Trigger(mOperator.leftTrigger().and(() -> !DriverStation.isDisabled()));
-		/*trapTrigger.whileTrue(
-				Commands.parallel(mArm.trap(), mBlower.blow(),
-						mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
-								.raceWith((Commands.waitSeconds(2.0))).andThen(mFeeder.shootTrap()))
-						.withName("PrepTrap"));*/
+		/*
+		 * trapTrigger.whileTrue(
+		 * Commands.parallel(mArm.trap(), mBlower.blow(),
+		 * mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
+		 * .raceWith((Commands.waitSeconds(2.0))).andThen(mFeeder.shootTrap()))
+		 * .withName("PrepTrap"));
+		 */
 		Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(trapTrigger);
-		/*mOperator.rightTrigger().and(trapTrigger)
-				.onTrue(Commands.parallel(
-						Commands.waitSeconds(2.5),
-						Commands.waitUntil(mOperator.rightTrigger().negate()))
-						.deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
-								mFeeder.shootTrap(), mBlower.blow()))
-						.finallyDo(
-								() -> new RunCommand(() -> mFlywheels.stop().schedule()).withTimeout(15.0)
-										.schedule())
-						.withName("ScoreTrap"));*/
+		/*
+		 * mOperator.rightTrigger().and(trapTrigger)
+		 * .onTrue(Commands.parallel(
+		 * Commands.waitSeconds(2.5),
+		 * Commands.waitUntil(mOperator.rightTrigger().negate()))
+		 * .deadlineWith(Commands.parallel(mFlywheels.shootTrap(),
+		 * mFeeder.shootTrap(), mBlower.blow()))
+		 * .finallyDo(
+		 * () -> new RunCommand(() -> mFlywheels.stop().schedule()).withTimeout(15.0)
+		 * .schedule())
+		 * .withName("ScoreTrap"));
+		 */
 
 		/* PASSING */
 		mOperator.y()
@@ -412,7 +416,8 @@ public class RobotContainer {
 				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX);
 
 		NamedCommands.registerCommand("intakeNote",
-				Commands.print("intaking started").alongWith(Commands.runOnce(() -> RobotStateEstimator.getInstance().getAimingParameters()))
+				Commands.print("intaking started")
+						.alongWith(Commands.runOnce(() -> RobotStateEstimator.getInstance().getAimingParameters()))
 						.alongWith(mArm.intake()
 								.alongWith(Commands.waitUntil(mArm::atGoal)
 										.andThen(Commands.parallel(
@@ -434,7 +439,10 @@ public class RobotContainer {
 										.hasGamepiece())));
 
 		NamedCommands.registerCommand("shootDistance",
-				Commands.print("shooting distance started").alongWith(Commands.runOnce(() -> RobotStateEstimator.getInstance().getAimingParameters()))
+				Commands.print("shooting distance started").alongWith(Commands.runOnce(() -> {
+					RobotStateEstimator.getInstance().getAimingParameters();
+					mVisionEnabled.set(true);
+				}))
 						.alongWith(Commands
 								.parallel(mArm.aim(), mFlywheels.shootDynamic(),
 										new RunCommand(() -> mSwerve.snapToSpeaker()))
@@ -444,7 +452,8 @@ public class RobotContainer {
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
-										.hasGamepiece())));
+										.hasGamepiece()))
+						.finallyDo(() -> mVisionEnabled.set(false)));
 
 		NamedCommands.registerCommand("raiseShot", Commands.print("adjusting to shoot higher")
 				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(-0.75))));
@@ -473,7 +482,7 @@ public class RobotContainer {
 		double leftTrigger = square(deadband(mDriver.getLeftTriggerAxis(), 0.05));
 		double rightTrigger = square(deadband(mDriver.getRightTriggerAxis(), 0.05));
 
-		//return -square(deadband(mDriver.getRightX(), 0.05));
+		// return -square(deadband(mDriver.getRightX(), 0.05));
 
 		return leftTrigger > rightTrigger ? leftTrigger : -rightTrigger;
 	}

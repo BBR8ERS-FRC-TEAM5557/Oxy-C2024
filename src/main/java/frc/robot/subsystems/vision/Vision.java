@@ -17,6 +17,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
+import frc.robot.RobotContainer;
 import frc.robot.RobotStateEstimator;
 import frc.robot.RobotStateEstimator.VisionObservation;
 import frc.robot.subsystems.leds.Leds;
@@ -125,6 +126,10 @@ public class Vision extends VirtualSubsystem {
                             / tagPoses.size()
                             * stdDevFactors[instanceIndex]
                     : Double.POSITIVE_INFINITY;
+            if (!RobotContainer.mVisionEnabled.get()) {
+                xyStdDev = Double.POSITIVE_INFINITY;
+                thetaStdDev = Double.POSITIVE_INFINITY;
+            }
             allVisionObservations.add(
                     new VisionObservation(
                             robotPose, timestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
