@@ -64,6 +64,7 @@ import static frc.robot.Constants.RobotMap.*;
 import static frc.robot.subsystems.vision.AprilTagVisionConstants.cameraPoses;
 import static frc.robot.subsystems.vision.AprilTagVisionConstants.instanceNames;
 
+import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -91,6 +92,7 @@ public class RobotContainer {
 
 	private final LoggedDashboardChooser<Command> mChooser;
 	public static LoggedDashboardChooser<ClimbLocation> mClimbChooser;
+	public static LoggedDashboardBoolean mVisionEnabled;
 
 	private final Alert driverDisconnected = new Alert("Driver controller disconnected (port 0).",
 			AlertType.WARNING);
@@ -167,6 +169,8 @@ public class RobotContainer {
 		mClimbChooser.addDefaultOption("Left", ClimbLocation.STAGE_LEFT);
 		mClimbChooser.addOption("Center", ClimbLocation.STAGE_CENTER);
 		mClimbChooser.addOption("Right", ClimbLocation.STAGE_RIGHT);
+
+		mVisionEnabled = new LoggedDashboardBoolean("Driver/VisionEnabled", true);
 
 		if (Constants.kTuningMode) {
 			SmartDashboard.putData("CommandScheduler", CommandScheduler.getInstance());

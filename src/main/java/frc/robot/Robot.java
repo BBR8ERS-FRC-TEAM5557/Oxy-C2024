@@ -167,6 +167,7 @@ public class Robot extends LoggedRobot {
 		autoStart = Timer.getFPGATimestamp();
 		autoMessagePrinted = false;
 		mAutoCommand = m_robotContainer.getAutonomousCommand();
+		RobotContainer.mVisionEnabled.set(false);
 		
 		m_subsystemCheckCommand = m_robotContainer.getSubsystemCheckCommand();
 
@@ -195,6 +196,7 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void teleopInit() {
+		RobotContainer.mVisionEnabled.set(true);
 		if (mAutoCommand != null) {
 			mAutoCommand.cancel();
 		}
