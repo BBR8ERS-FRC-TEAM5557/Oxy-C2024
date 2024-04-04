@@ -408,7 +408,7 @@ public class RobotContainer {
 				() -> AllianceFlipUtil.apply(mStateEstimator.getEstimatedPose().getX()) < FieldConstants.wingX);
 
 		NamedCommands.registerCommand("intakeNote",
-				Commands.print("intaking started")
+				Commands.print("intaking started").alongWith(Commands.runOnce(() -> RobotStateEstimator.getInstance().getAimingParameters()))
 						.alongWith(mArm.intake()
 								.alongWith(Commands.waitUntil(mArm::atGoal)
 										.andThen(Commands.parallel(
@@ -430,7 +430,7 @@ public class RobotContainer {
 										.hasGamepiece())));
 
 		NamedCommands.registerCommand("shootDistance",
-				Commands.print("shooting distance started")
+				Commands.print("shooting distance started").alongWith(Commands.runOnce(() -> RobotStateEstimator.getInstance().getAimingParameters()))
 						.alongWith(Commands
 								.parallel(mArm.aim(), mFlywheels.shootDynamic(),
 										new RunCommand(() -> mSwerve.snapToSpeaker()))
