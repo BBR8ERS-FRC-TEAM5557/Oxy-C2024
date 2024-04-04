@@ -109,7 +109,7 @@ public class RobotContainer {
 			mFeeder = new Feeder(new FeederIOSparkMax());
 			mFlywheels = new Flywheels(new FlywheelsIOKraken());
 			mArm = new Arm(new ArmIOSparkMax());
-			mBlower = new Blower(new BlowerIOSparkMax());
+			//mBlower = new Blower(new BlowerIOSparkMax());
 
 			mVision = new Vision(
 					new AprilTagVisionIOPhotonvision(instanceNames[0],
@@ -266,13 +266,13 @@ public class RobotContainer {
 
 		/* TRAPPING */
 		Trigger trapTrigger = new Trigger(mOperator.leftTrigger().and(() -> !DriverStation.isDisabled()));
-		trapTrigger.whileTrue(
+		/*trapTrigger.whileTrue(
 				Commands.parallel(mArm.trap(), mBlower.blow(),
 						mFlywheels.prepareTrap().alongWith(mFeeder.prepareTrap())
 								.raceWith((Commands.waitSeconds(2.0))).andThen(mFeeder.shootTrap()))
-						.withName("PrepTrap"));
+						.withName("PrepTrap"));*/
 		Trigger readyToShootTrap = new Trigger(() -> mArm.atGoal()).and(trapTrigger);
-		mOperator.rightTrigger().and(trapTrigger)
+		/*mOperator.rightTrigger().and(trapTrigger)
 				.onTrue(Commands.parallel(
 						Commands.waitSeconds(2.5),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
@@ -281,7 +281,7 @@ public class RobotContainer {
 						.finallyDo(
 								() -> new RunCommand(() -> mFlywheels.stop().schedule()).withTimeout(15.0)
 										.schedule())
-						.withName("ScoreTrap"));
+						.withName("ScoreTrap"));*/
 
 		/* PASSING */
 		mOperator.y()
