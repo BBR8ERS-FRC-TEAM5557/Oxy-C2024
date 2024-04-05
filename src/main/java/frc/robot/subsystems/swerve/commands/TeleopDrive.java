@@ -33,7 +33,9 @@ public class TeleopDrive extends Command {
     private final DoubleSupplier mRotationSupplier;
     private final DoubleSupplier mAimbotXSupplier;
     private final DoubleSupplier mAimbotYSupplier;
+
     private final BooleanSupplier mAutoaimSupplier;
+    private final BooleanSupplier mCustomSnapSupplier;
     private final BooleanSupplier mWantsAmpSnapSupplier;
     private final BooleanSupplier mWantsClimbSnapSupplier;
     private final BooleanSupplier mWantsSnapSupplier;
@@ -47,7 +49,7 @@ public class TeleopDrive extends Command {
 
     public TeleopDrive(DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier,
             DoubleSupplier rotationSupplier, DoubleSupplier aimbotXSupplier, DoubleSupplier aimbotYSupplier,
-            BooleanSupplier autoAimSupplier, BooleanSupplier wantsAmpSnapSupplier,
+            BooleanSupplier autoAimSupplier, BooleanSupplier customSnapSupplier, BooleanSupplier wantsAmpSnapSupplier,
             BooleanSupplier wantsClimbSnapSupplier, BooleanSupplier wantsSnapSupplier) {
         this.swerve = RobotContainer.mSwerve;
         this.mTranslationXSupplier = translationXSupplier;
@@ -56,6 +58,7 @@ public class TeleopDrive extends Command {
         this.mAimbotXSupplier = aimbotXSupplier;
         this.mAimbotYSupplier = aimbotYSupplier;
         this.mAutoaimSupplier = autoAimSupplier;
+        this.mCustomSnapSupplier = customSnapSupplier;
         this.mWantsAmpSnapSupplier = wantsAmpSnapSupplier;
         this.mWantsClimbSnapSupplier = wantsClimbSnapSupplier;
         this.mWantsSnapSupplier = wantsSnapSupplier;
@@ -115,6 +118,8 @@ public class TeleopDrive extends Command {
 
                 if (AllianceFlipUtil.shouldFlip())
                     theta = theta.rotateBy(Rotation2d.fromDegrees(180.0));
+            } else if (mCustomSnapSupplier.getAsBoolean()) {
+                theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-30.0));
             }
 
             rotationalVelocity = DriveMotionPlanner.calculateSnap(theta);

@@ -113,11 +113,11 @@ public class RobotContainer {
 			mArm = new Arm(new ArmIOSparkMax());
 			// mBlower = new Blower(new BlowerIOSparkMax());
 
-			mVision = new Vision(
+			/*mVision = new Vision(
 					new AprilTagVisionIOPhotonvision(instanceNames[0],
 							GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
 					new AprilTagVisionIOPhotonvision(instanceNames[1],
-							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
+							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));*/
 
 		} else {
 			mSwerve = new Swerve(new GyroIO() {
@@ -203,6 +203,7 @@ public class RobotContainer {
 		TeleopDrive teleop = new TeleopDrive(this::getForwardInput, this::getStrafeInput,
 				this::getRotationInput, this::getAimBotXInput, this::getAimBotYInput,
 				this::getWantsAutoAimInput,
+				this::getWantsCustomSnapInput,
 				this::getWantsAmpSnapInput,
 				this::getWantsClimbSnapInput,
 				this::getWantsSnapInput);
@@ -250,7 +251,7 @@ public class RobotContainer {
 				.onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(-0.05)).ignoringDisable(true));
 
 		mOperator.a().whileTrue(
-				Commands.parallel(mArm.aim(), mFlywheels.shootDynamic()).withName("PrepDynamicShot"));
+				Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepDynamicShot"));
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
 		mOperator.rightTrigger().and(mOperator.a())
 				.onTrue(Commands.parallel(
@@ -444,7 +445,7 @@ public class RobotContainer {
 					mVisionEnabled.set(true);
 				}))
 						.alongWith(Commands
-								.parallel(mArm.aim(), mFlywheels.shootDynamic(),
+								.parallel(mArm.aimCustom(), mFlywheels.shoot(),
 										new RunCommand(() -> mSwerve.snapToSpeaker()))
 								.raceWith(Commands
 										.parallel(Commands.waitUntil(readyToShoot).withTimeout(2.0),
@@ -453,7 +454,7 @@ public class RobotContainer {
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
 										.hasGamepiece()))
-						.finallyDo(() -> mVisionEnabled.set(false)));
+						.finallyDo(() -> mVisionEnabled.set(true)));
 
 		NamedCommands.registerCommand("raiseShot", Commands.print("adjusting to shoot higher")
 				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(-0.75))));
@@ -497,6 +498,10 @@ public class RobotContainer {
 
 	public boolean getWantsAutoAimInput() {
 		return mDriver.getHID().getLeftBumper();
+	}
+
+	public boolean getWantsCustomSnapInput() {
+		return mDriver.getHID().getAButton();
 	}
 
 	public boolean getWantsAmpSnapInput() {
