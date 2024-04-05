@@ -319,7 +319,8 @@ public class Swerve extends SubsystemBase {
 	}
 
 	public void snapToSpeaker() {
-		RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
+		DriveMotionPlanner
+						.calculateSnap(RobotStateEstimator.getInstance().getAimingParameters().driveHeading());
 		this.driveOpenLoop(new ChassisSpeeds(
 				0.0,
 				0.0,

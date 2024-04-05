@@ -101,7 +101,7 @@ public class TeleopDrive extends Command {
             if (wantsAutoAim) {
                 Leds.getInstance().autoDrive = false;
                 if (false) {
-                    theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-30.0));
+                    theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-25.0));
                 } else if (AllianceFlipUtil
                         .apply(RobotStateEstimator.getInstance().getEstimatedPose().getX()) < FieldConstants.wingX) {
                     theta = RobotStateEstimator.getInstance().getAimingParameters().driveHeading();
