@@ -255,7 +255,7 @@ public class RobotContainer {
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
 		mOperator.rightTrigger().and(mOperator.a())
 				.onTrue(Commands.parallel(
-						Commands.waitSeconds(0.5),
+						Commands.waitSeconds(1.0),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
 						.deadlineWith(mFeeder.shoot()).withName("ScoreCustom"));
 
@@ -265,7 +265,7 @@ public class RobotContainer {
 		Trigger readyToShootFender = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.b());
 		mOperator.rightTrigger().and(mOperator.b())
 				.onTrue(Commands.parallel(
-						Commands.waitSeconds(0.5),
+						Commands.waitSeconds(1.0),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
 						.deadlineWith(mFeeder.shoot()).withName("ScoreFender"));
 
@@ -326,7 +326,7 @@ public class RobotContainer {
 				path,
 				constraints,
 				0.0);
-		mDriver.rightBumper().and(mDriver.x()).whileTrue(pathfindToAmp);
+		//mDriver.rightBumper().and(mDriver.x()).whileTrue(pathfindToAmp);
 
 		/* SIGNALING */
 		Trigger inWing = new Trigger(
@@ -445,7 +445,7 @@ public class RobotContainer {
 					mVisionEnabled.set(true);
 				}))
 						.alongWith(Commands
-								.parallel(mArm.aimCustom(), mFlywheels.shoot(),
+								.parallel(mArm.aim(), mFlywheels.shootDynamic(),
 										new RunCommand(() -> mSwerve.snapToSpeaker()))
 								.raceWith(Commands
 										.parallel(Commands.waitUntil(readyToShoot).withTimeout(2.0),

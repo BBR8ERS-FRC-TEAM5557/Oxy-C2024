@@ -81,8 +81,8 @@ public class TeleopDrive extends Command {
         Rotation2d theta = Rotation2d.fromRadians(rightJoyPolarCoordinate[1]);
 
         if (mWantsSnapSupplier.getAsBoolean()) {
-            var mod = theta.getDegrees() / 45;
-            theta = Rotation2d.fromDegrees(Math.round(mod) * 45);
+            var mod = theta.getDegrees() / 90;
+            theta = Rotation2d.fromDegrees(Math.round(mod) * 90.0);
         }
 
         if (AllianceFlipUtil.shouldFlip()) {
@@ -96,7 +96,8 @@ public class TeleopDrive extends Command {
         boolean wantsAutoAim = mAutoaimSupplier.getAsBoolean();
         boolean wantsAmpSnap = mWantsAmpSnapSupplier.getAsBoolean();
         boolean wantsClimbSnap = mWantsClimbSnapSupplier.getAsBoolean();
-        if (r > 0.05 || wantsAutoAim || wantsAmpSnap || wantsClimbSnap) {
+        boolean wantsCustomSnap = mCustomSnapSupplier.getAsBoolean();
+        if (r > 0.05 || wantsAutoAim || wantsAmpSnap || wantsClimbSnap || wantsCustomSnap) {
             if (wantsAutoAim) {
                 Leds.getInstance().autoDrive = false;
                 if (false) {
@@ -118,7 +119,7 @@ public class TeleopDrive extends Command {
 
                 if (AllianceFlipUtil.shouldFlip())
                     theta = theta.rotateBy(Rotation2d.fromDegrees(180.0));
-            } else if (mCustomSnapSupplier.getAsBoolean()) {
+            } else if (wantsCustomSnap) {
                 theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-30.0));
             }
 
