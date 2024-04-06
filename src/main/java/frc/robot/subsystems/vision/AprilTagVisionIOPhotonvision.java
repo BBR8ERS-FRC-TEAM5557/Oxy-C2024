@@ -70,6 +70,6 @@ public class AprilTagVisionIOPhotonvision implements AprilTagVisionIO {
                     });
         }
 
-        disconnectedAlert.set(camera.isConnected());
+        disconnectedAlert.set(!camera.isConnected());
     }
 }
