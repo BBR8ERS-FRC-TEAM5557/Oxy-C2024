@@ -480,7 +480,7 @@ public class PhotonvisionPoseEstimator {
                             PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR));
         } else {
             return update(result, cameraMatrixOpt, distCoeffsOpt,
-                    PhotonvisionPoseEstimator.PoseStrategy.CLOSEST_TO_REFERENCE_ROTATION);
+                    PhotonvisionPoseEstimator.PoseStrategy.LOWEST_AMBIGUITY);
         }
     }
 

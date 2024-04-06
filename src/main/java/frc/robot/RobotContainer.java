@@ -113,11 +113,11 @@ public class RobotContainer {
 			mArm = new Arm(new ArmIOSparkMax());
 			// mBlower = new Blower(new BlowerIOSparkMax());
 
-			/*mVision = new Vision(
+			mVision = new Vision(
 					new AprilTagVisionIOPhotonvision(instanceNames[0],
 							GeometryUtil.pose3dToTransform3d(cameraPoses[0])),
 					new AprilTagVisionIOPhotonvision(instanceNames[1],
-							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));*/
+							GeometryUtil.pose3dToTransform3d(cameraPoses[1])));
 
 		} else {
 			mSwerve = new Swerve(new GyroIO() {
@@ -251,7 +251,7 @@ public class RobotContainer {
 				.onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(-0.05)).ignoringDisable(true));
 
 		mOperator.a().whileTrue(
-				Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepDynamicShot"));
+				Commands.parallel(mArm.aim(), mFlywheels.shootDynamic()).withName("PrepDynamicShot"));
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
 		mOperator.rightTrigger().and(mOperator.a())
 				.onTrue(Commands.parallel(
