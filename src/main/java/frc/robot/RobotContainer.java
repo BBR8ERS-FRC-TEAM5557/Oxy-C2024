@@ -430,7 +430,7 @@ public class RobotContainer {
 				Commands.print("intaking started")
 						.alongWith(Commands.runOnce(() -> RobotStateEstimator.getInstance().getAimingParameters()))
 						.alongWith(mArm.intake()
-								.alongWith(Commands.waitUntil(mArm::atGoal)
+								.alongWith(Commands.waitUntil(mArm::atGoalRough)
 										.andThen(Commands.parallel(
 												mIntake.intake(),
 												mFeeder.intake())))
@@ -452,7 +452,7 @@ public class RobotContainer {
 		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started").alongWith(Commands.runOnce(() -> {
 					RobotStateEstimator.getInstance().getAimingParameters();
-					mVisionEnabled.set(false);
+					mVisionEnabled.set(true);
 				}))
 						.alongWith(Commands
 								.parallel(mArm.aim(), mFlywheels.shootDynamic(),
@@ -463,8 +463,8 @@ public class RobotContainer {
 										.andThen(mFeeder.shoot().alongWith(
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
-										.hasGamepiece()))
-						.finallyDo(() -> mVisionEnabled.set(false)));
+										.hasGamepiece())));
+						//.finallyDo(() -> mVisionEnabled.set(true)));
 
 		NamedCommands.registerCommand("raiseShot", Commands.print("adjusting to shoot higher")
 				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(-0.75))));

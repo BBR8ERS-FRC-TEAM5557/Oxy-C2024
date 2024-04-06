@@ -107,7 +107,8 @@ public class Flywheels extends SubsystemBase {
         if (mState != State.CHARACTERIZING || mState != State.STOP) {
             if (mState == State.IDLE) {
                 if (mIdleMode == IdleMode.AUTO) {
-                    mIO.runVelocity(State.SHOOT.getRPM(), mFeedforward.calculate(State.SHOOT.getRPM()));
+                    mIO.runVelocity(State.IDLE.getRPM(), mFeedforward.calculate(State.IDLE.getRPM()));
+                    //mIO.runVelocity(State.SHOOT.getRPM() * 0.75, mFeedforward.calculate(State.SHOOT.getRPM() * 0.75));
                 } else {
                     mIO.runVelocity(State.IDLE.getRPM(), mFeedforward.calculate(State.IDLE.getRPM()));
                 }

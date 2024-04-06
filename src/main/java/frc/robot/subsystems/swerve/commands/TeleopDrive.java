@@ -117,7 +117,7 @@ public class TeleopDrive extends Command {
                     theta = theta.rotateBy(Rotation2d.fromDegrees(180.0));
                 }
             } else if (wantsCustomSnap) {
-                theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-30.0));
+                theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-25.0));
             }
 
             rotationalVelocity = DriveMotionPlanner.calculateSnap(theta);
