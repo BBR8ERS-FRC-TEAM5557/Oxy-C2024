@@ -452,7 +452,7 @@ public class RobotContainer {
 		NamedCommands.registerCommand("shootDistance",
 				Commands.print("shooting distance started").alongWith(Commands.runOnce(() -> {
 					RobotStateEstimator.getInstance().getAimingParameters();
-					mVisionEnabled.set(true);
+					mVisionEnabled.set(false);
 				}))
 						.alongWith(Commands
 								.parallel(mArm.aim(), mFlywheels.shootDynamic(),
@@ -464,7 +464,7 @@ public class RobotContainer {
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
 										.hasGamepiece()))
-						.finallyDo(() -> mVisionEnabled.set(true)));
+						.finallyDo(() -> mVisionEnabled.set(false)));
 
 		NamedCommands.registerCommand("raiseShot", Commands.print("adjusting to shoot higher")
 				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(-0.75))));
