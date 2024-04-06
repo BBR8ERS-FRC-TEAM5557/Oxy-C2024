@@ -15,8 +15,8 @@ public interface AprilTagVisionIO {
 
         @Override
         public void toLog(LogTable table) {
-            // TODO Auto-generated method stub
-            //throw new UnsupportedOperationException("Unimplemented method 'toLog'");
+            //table.put("estimatedRobotPose", estimatedRobotPose);
+            //table.put("estimatedRobotPoseTimestamp", estimatedRobotPoseTimestamp);
         }
 
         @Override

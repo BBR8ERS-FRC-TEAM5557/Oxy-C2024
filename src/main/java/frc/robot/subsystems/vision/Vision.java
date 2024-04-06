@@ -15,7 +15,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Timer;
-import frc.lib.team6328.LoggedTunableNumber;
 import frc.lib.team6328.VirtualSubsystem;
 import frc.robot.RobotContainer;
 import frc.robot.RobotStateEstimator;
@@ -65,9 +64,9 @@ public class Vision extends VirtualSubsystem {
 
             // Exit if no new data
             if (!hasUpdate) {
-                //Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose", new Pose2d());
-                //Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose3d",
-                //        new Pose3d());
+                Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose", new Pose2d());
+                Logger.recordOutput("AprilTagVision/Inst" + instanceNames[instanceIndex] + "/RobotPose3d",
+                        new Pose3d());
 
                 // If no recent frames from instance, clear tag poses
                 if (Timer.getFPGATimestamp() - lastFrameTimes.get(instanceIndex) > targetLogTimeSecs) {
@@ -148,7 +147,6 @@ public class Vision extends VirtualSubsystem {
         }
 
         // Log robot poses
-        
         Logger.recordOutput("AprilTagVision/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
         Logger.recordOutput("AprilTagVision/RobotPoses3d", allRobotPoses3d.toArray(Pose3d[]::new));
 
@@ -156,8 +154,8 @@ public class Vision extends VirtualSubsystem {
         allVisionObservations.stream().sorted(Comparator.comparingDouble(VisionObservation::timestamp))
                 .forEach(RobotStateEstimator.getInstance()::addVisionObservation);
 
-
-        boolean seesRelevantTag = AllianceFlipUtil.shouldFlip() ? seesTag(3) || seesTag(4) || seesTag(5) : seesTag(6) || seesTag(7) || seesTag(8);
+        boolean seesRelevantTag = AllianceFlipUtil.shouldFlip() ? seesTag(3) || seesTag(4) || seesTag(5)
+                : seesTag(6) || seesTag(7) || seesTag(8);
         Leds.getInstance().seesRelevantTags = seesRelevantTag;
     }
 
