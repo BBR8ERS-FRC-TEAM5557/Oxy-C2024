@@ -244,6 +244,7 @@ public class RobotContainer {
 
 		/* SHOOTING */
 		mOperator.back().whileTrue(mFlywheels.shoot().withName("SpinUpFlywheels"));
+		mOperator.start().onTrue(Commands.runOnce(() -> mVisionEnabled.set(!mVisionEnabled.get())));
 
 		mOperator.pov(90)
 				.onTrue(Commands.runOnce(() -> mStateEstimator.adjustShotCompensation(0.05)).ignoringDisable(true));
@@ -254,6 +255,15 @@ public class RobotContainer {
 				Commands.parallel(mArm.aim(), mFlywheels.shootDynamic()).withName("PrepDynamicShot"));
 		Trigger readyToShoot = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.a());
 		mOperator.rightTrigger().and(mOperator.a())
+				.onTrue(Commands.parallel(
+						Commands.waitSeconds(1.0),
+						Commands.waitUntil(mOperator.rightTrigger().negate()))
+						.deadlineWith(mFeeder.shoot()).withName("ScoreCustom"));
+
+		mOperator.leftTrigger().whileTrue(
+				Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepDynamicShot"));
+		Trigger readyToShootCustom = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.leftTrigger());
+		mOperator.rightTrigger().and(mOperator.leftTrigger())
 				.onTrue(Commands.parallel(
 						Commands.waitSeconds(1.0),
 						Commands.waitUntil(mOperator.rightTrigger().negate()))
@@ -334,7 +344,7 @@ public class RobotContainer {
 		inWing.whileTrue(
 				new StartEndCommand(() -> Leds.getInstance().inWing = true, () -> Leds.getInstance().inWing = false));
 
-		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass).or(readyToShootTrap)
+		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass).or(readyToShootTrap).or(readyToShootCustom)
 				.whileTrue(
 						Commands.startEnd(
 								() -> {

@@ -91,7 +91,7 @@ public class TeleopDrive extends Command {
             yVelocity = -yVelocity;
         }
 
-        //r = 0.0; //replaced for liam to lucas transition
+        // r = 0.0; //replaced for liam to lucas transition
 
         boolean wantsAutoAim = mAutoaimSupplier.getAsBoolean();
         boolean wantsAmpSnap = mWantsAmpSnapSupplier.getAsBoolean();
@@ -99,7 +99,6 @@ public class TeleopDrive extends Command {
         boolean wantsCustomSnap = mCustomSnapSupplier.getAsBoolean();
         if (r > 0.05 || wantsAutoAim || wantsAmpSnap || wantsClimbSnap || wantsCustomSnap) {
             if (wantsAutoAim) {
-                Leds.getInstance().autoDrive = false;
                 if (false) {
                     theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-25.0));
                 } else if (AllianceFlipUtil
@@ -111,14 +110,12 @@ public class TeleopDrive extends Command {
                             .plus(Rotation2d.fromDegrees(180.0));
                 }
             } else if (wantsAmpSnap) {
-                Leds.getInstance().autoDrive = false;
                 theta = Rotation2d.fromDegrees(270.0);
             } else if (wantsClimbSnap) {
-                Leds.getInstance().autoDrive = false;
                 theta = RobotContainer.mClimbChooser.get().getPose().getRotation();
-
-                if (AllianceFlipUtil.shouldFlip())
+                if (AllianceFlipUtil.shouldFlip()) {
                     theta = theta.rotateBy(Rotation2d.fromDegrees(180.0));
+                }
             } else if (wantsCustomSnap) {
                 theta = AllianceFlipUtil.apply(Rotation2d.fromDegrees(-30.0));
             }
@@ -137,7 +134,7 @@ public class TeleopDrive extends Command {
                 Util.clamp(rotationalVelocity, -limit.maxAngularVelocity(), limit.maxAngularVelocity()),
                 driveRotation);
 
-        //correctHeading(velocity, driveRotation); //potential failure point idek??
+        // correctHeading(velocity, driveRotation); //potential failure point idek??
 
         swerve.driveOpenLoop(velocity);
 
