@@ -76,7 +76,7 @@ public class SwerveConstants {
 	public static final double kSnapMaxAlpha = kSnapMaxOmega / 0.15;
 
 	// MODULE LIMITS
-	public static final ModuleLimits kAutoModuleLimits = new ModuleLimits(kTrueMaxSpeed, 4.5,
+	public static final ModuleLimits kAutoModuleLimits = new ModuleLimits(kTrueMaxSpeed, kTheoreticalMaxAcceleration,
 			Units.degreesToRadians(1080.0));
 	public static final ModuleLimits kTeleopModuleLimits = new ModuleLimits(kTheoreticalMaxSpeed, kTrueMaxSpeed * 5,
 			Units.degreesToRadians(1080.0));
