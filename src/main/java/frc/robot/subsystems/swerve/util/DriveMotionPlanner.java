@@ -45,7 +45,7 @@ public class DriveMotionPlanner extends VirtualSubsystem {
                     new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
                     kTrueMaxSpeed, // Max module speed, in m/s
                     kDriveBaseRadius, // Drive base radius in meters. Distance from robot center to furthest module.
-                    new ReplanningConfig(true, true) // Default path replanning config. See the API for the options here
+                    new ReplanningConfig(true, false) // Default path replanning config. See the API for the options here
             );
 
 	public static void checkForUpdates() {

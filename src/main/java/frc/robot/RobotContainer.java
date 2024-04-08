@@ -395,6 +395,7 @@ public class RobotContainer {
 
 		// mChooser.addOption("N4_S012_fender",
 		// AutoBuilder.buildAuto("N4_S012_fender"));
+		mChooser.addOption("N3_C12", AutoBuilder.buildAuto("N3_C12"));
 		mChooser.addOption("N4_C012", AutoBuilder.buildAuto("N4_C012"));
 		mChooser.addOption("N4_S012", AutoBuilder.buildAuto("N4_S012"));
 		mChooser.addOption("N4_S210", AutoBuilder.buildAuto("N4_S210"));
