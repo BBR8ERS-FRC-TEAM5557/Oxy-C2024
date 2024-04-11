@@ -60,7 +60,7 @@ public class Vision extends VirtualSubsystem {
         List<VisionObservation> allVisionObservations = new ArrayList<>();
 
         for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
-            boolean hasUpdate = inputs[instanceIndex].lastCameraTimestamp - lastFrameTimes.get(instanceIndex) > 1e-5;
+            boolean hasUpdate = inputs[instanceIndex].estimatedRobotPoseTimestamp - lastFrameTimes.get(instanceIndex) > 1e-5;
 
             // Exit if no new data
             if (!hasUpdate) {
@@ -77,7 +77,7 @@ public class Vision extends VirtualSubsystem {
             }
 
             lastFrameTimes.put(instanceIndex, Timer.getFPGATimestamp());
-            var timestamp = inputs[instanceIndex].lastCameraTimestamp;
+            var timestamp = inputs[instanceIndex].estimatedRobotPoseTimestamp;
             Pose3d robotPose3d = inputs[instanceIndex].estimatedRobotPose;
             Pose2d robotPose = robotPose3d.toPose2d();
             Pose3d cameraPose3d = robotPose3d.transformBy(GeometryUtil.pose3dToTransform3d(cameraPoses[instanceIndex]));
