@@ -14,11 +14,12 @@ import frc.robot.subsystems.swerve.SwerveConstants;
 
 public class AprilTagVisionConstants {
         public static final double ambiguityThreshold = 0.4;
+        public static final double solveDistCutoff = 4.0; // meters
         public static final double targetLogTimeSecs = 0.1;
-        public static final double fieldBorderMargin = 0.5;
-        public static final double zMargin = 0.75;
-        public static final double xyStdDevCoefficient = 0.05; // was 0.005
-        public static final double thetaStdDevCoefficient = 0.05;
+        public static final double fieldBorderMargin = 0.25; // meters
+        public static final double zMargin = 0.75; // meters
+        public static final double xyStdDevCoefficient = 0.05; // was 0.005 meters
+        public static final double thetaStdDevCoefficient = 0.05; // radians?
 
         public static final double[] stdDevFactors = new double[] { 1.0, 1.0 };
 
@@ -44,9 +45,4 @@ public class AprilTagVisionConstants {
         };
 
         public static final String[] instanceNames = { "rightShooter", "leftShooter" };
-
-        public static final String[] cameraStreamIds = new String[] {
-                        "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1:1.0-video-index0",
-                        "/dev/v4l/by-path/platform-fc880000.usb-usb-0:1:1.0-video-index0"
-        };
 }

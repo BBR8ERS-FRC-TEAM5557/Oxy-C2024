@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import frc.robot.subsystems.vision.Vision.CalcStrategy;
 
 public interface AprilTagVisionIO {
 
@@ -12,6 +13,7 @@ public interface AprilTagVisionIO {
         double estimatedRobotPoseTimestamp = 0.0;
         double latency = 0.0;
         int[] tagsSeen = new int[] {};
+        CalcStrategy strategy = CalcStrategy.TRIG_AVERAGE;
 
         @Override
         public void toLog(LogTable table) {

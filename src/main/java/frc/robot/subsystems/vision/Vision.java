@@ -45,6 +45,12 @@ public class Vision extends VirtualSubsystem {
         }
     }
 
+    public enum CalcStrategy {
+        MUTI_SOLVEPNP,
+        SINGLE_SOLVEPNP,
+        TRIG_AVERAGE
+    }
+
     @Override
     public void periodic() {
         Leds.getInstance().seesTags = false;
@@ -60,7 +66,8 @@ public class Vision extends VirtualSubsystem {
         List<VisionObservation> allVisionObservations = new ArrayList<>();
 
         for (int instanceIndex = 0; instanceIndex < io.length; instanceIndex++) {
-            boolean hasUpdate = inputs[instanceIndex].estimatedRobotPoseTimestamp - lastFrameTimes.get(instanceIndex) > 1e-5;
+            boolean hasUpdate = inputs[instanceIndex].estimatedRobotPoseTimestamp
+                    - lastFrameTimes.get(instanceIndex) > 1e-5;
 
             // Exit if no new data
             if (!hasUpdate) {
@@ -102,9 +109,9 @@ public class Vision extends VirtualSubsystem {
             }
             if (tagPoses.size() == 0) {
                 continue;
-            } else {
-                Leds.getInstance().seesTags = true;
             }
+                
+            Leds.getInstance().seesTags = true; // only reached if tag size > 0
 
             // Calculate average distance to tag
             double totalDistance = 0.0;
@@ -113,22 +120,29 @@ public class Vision extends VirtualSubsystem {
             }
             double avgDistance = totalDistance / tagPoses.size();
 
-            // Add observation to list
-            boolean useVisionRotation = tagPoses.size() > 1;
+            // calculate standard deviations
             double xyStdDev = xyStdDevCoefficient
                     * Math.pow(avgDistance, 2.0)
                     / tagPoses.size()
                     * stdDevFactors[instanceIndex];
+
+            // only use vision to adjust robot rotation if pose was calculated with multi tag
+            boolean useVisionRotation = inputs[instanceIndex].strategy == CalcStrategy.MUTI_SOLVEPNP;
             double thetaStdDev = useVisionRotation
                     ? thetaStdDevCoefficient
                             * Math.pow(avgDistance, 2.0)
                             / tagPoses.size()
                             * stdDevFactors[instanceIndex]
                     : Double.POSITIVE_INFINITY;
+
             if (!RobotContainer.mVisionEnabled.get()) {
+                // if vision is disabled (via a chooser in robot container) make std devs so large
+                // that it won't impact the pose estimator
                 xyStdDev = Double.POSITIVE_INFINITY;
                 thetaStdDev = Double.POSITIVE_INFINITY;
             }
+
+            //add information to lists
             allVisionObservations.add(
                     new VisionObservation(
                             robotPose, timestamp, VecBuilder.fill(xyStdDev, xyStdDev, thetaStdDev)));
@@ -150,10 +164,11 @@ public class Vision extends VirtualSubsystem {
         Logger.recordOutput("AprilTagVision/RobotPoses", allRobotPoses.toArray(Pose2d[]::new));
         Logger.recordOutput("AprilTagVision/RobotPoses3d", allRobotPoses3d.toArray(Pose3d[]::new));
 
-        // Send results to robot state
+        // Send results to robot state estimator
         allVisionObservations.stream().sorted(Comparator.comparingDouble(VisionObservation::timestamp))
                 .forEach(RobotStateEstimator.getInstance()::addVisionObservation);
 
+        // janky little way to update the state of leds when the "relevant tags" are seen
         boolean seesRelevantTag = AllianceFlipUtil.shouldFlip() ? seesTag(3) || seesTag(4) || seesTag(5)
                 : seesTag(6) || seesTag(7) || seesTag(8);
         Leds.getInstance().seesRelevantTags = seesRelevantTag;

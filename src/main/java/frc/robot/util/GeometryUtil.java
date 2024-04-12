@@ -97,6 +97,17 @@ public class GeometryUtil {
   }
 
   /**
+   * Projects a Transform3d to a Transform2d on the xy axes
+   *
+   * @param pose The transform3d that will represent the transform
+   * @return The resulting transform
+   */
+  public static Transform2d transform3dToTransform2d(Transform3d transform) {
+    return new Transform2d(transform.getTranslation().toTranslation2d(), transform.getRotation().toRotation2d());
+  }
+
+
+  /**
    * Converts a Transform2d to a Pose2d to be used as a position or as the start
    * of a kinematic
    * chain
