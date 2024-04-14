@@ -75,9 +75,11 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.PathPlannerTrajectory;
 
 public class RobotContainer {
+	// create controller instances
 	public static final CommandXboxController mDriver = new CommandXboxController(0);
 	public static final CommandXboxController mOperator = new CommandXboxController(1);
 
+	// create variables for physical subsystems
 	public static Swerve mSwerve;
 	public static Intake mIntake;
 	public static Feeder mFeeder;
@@ -86,21 +88,31 @@ public class RobotContainer {
 	public static Blower mBlower;
 	public static Leds mLeds;
 
+	// create variables for virtual subsystems
 	public static Vision mVision;
 	public static RobotStateEstimator mStateEstimator;
 	public static SystemsCheckManager mSystemCheckManager;
+	// btw system check manager lowkey obsolete i didn't really use this but you can
+	// readd the feature if you want
 
-	private final LoggedDashboardChooser<Command> mChooser;
+	// instantiate dashboard choosers / switches
+	public static LoggedDashboardChooser<Command> mAutoChooser;
 	public static LoggedDashboardChooser<ClimbLocation> mClimbChooser;
 	public static LoggedDashboardBoolean mVisionEnabled;
 
+	// controller alerts
 	private final Alert driverDisconnected = new Alert("Driver controller disconnected (port 0).",
 			AlertType.WARNING);
 	private final Alert operatorDisconnected = new Alert("Operator controller disconnected (port 1).",
 			AlertType.WARNING);
 
 	public RobotContainer() {
-		mLeds = Leds.getInstance();
+		mLeds = Leds.getInstance(); // get leds singleton
+
+		// instantiate subsystems normally if the code is running irl (on a rio),
+		// otherwise create simulation subsystems or blank subsystems (useful for taking
+		// out entire subsystems in code without having to rewrite much)
+	
 		if (kIsReal) {
 			mSwerve = new Swerve(new GyroIOPigeon2(),
 					new ModuleIOKrakenSparkMax(0, kFLDriveMotor, kFLTurnMotor, kFLOffset),
@@ -163,13 +175,15 @@ public class RobotContainer {
 					});
 		}
 
-		mChooser = new LoggedDashboardChooser<Command>("Driver/AutonomousChooser");
+		mAutoChooser = new LoggedDashboardChooser<Command>("Driver/AutonomousChooser");
 
+		// add options for climbing chooser
 		mClimbChooser = new LoggedDashboardChooser<ClimbLocation>("Driver/ClimbChooser");
 		mClimbChooser.addDefaultOption("Left", ClimbLocation.STAGE_LEFT);
 		mClimbChooser.addOption("Center", ClimbLocation.STAGE_CENTER);
 		mClimbChooser.addOption("Right", ClimbLocation.STAGE_RIGHT);
 
+		// set default option for vision enabler
 		mVisionEnabled = new LoggedDashboardBoolean("Driver/VisionEnabled", true);
 
 		if (Constants.kTuningMode) {
@@ -186,8 +200,8 @@ public class RobotContainer {
 		}
 
 		mSystemCheckManager = new SystemsCheckManager(mSwerve);
-		mStateEstimator = RobotStateEstimator.getInstance();
-		DriveMotionPlanner.configureControllers();
+		mStateEstimator = RobotStateEstimator.getInstance(); // get singleton
+		DriveMotionPlanner.configureControllers(); // Drive motion planner should lowkey be rewritten it kinda sucks
 
 		configureBindings();
 		generateEventMap();
@@ -262,7 +276,8 @@ public class RobotContainer {
 
 		mOperator.leftTrigger().whileTrue(
 				Commands.parallel(mArm.aimCustom(), mFlywheels.shoot()).withName("PrepDynamicShot"));
-		Trigger readyToShootCustom = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal()).and(mOperator.leftTrigger());
+		Trigger readyToShootCustom = new Trigger(() -> mArm.atGoal() && mFlywheels.atGoal())
+				.and(mOperator.leftTrigger());
 		mOperator.rightTrigger().and(mOperator.leftTrigger())
 				.onTrue(Commands.parallel(
 						Commands.waitSeconds(1.0),
@@ -336,7 +351,7 @@ public class RobotContainer {
 				path,
 				constraints,
 				0.0);
-		//mDriver.rightBumper().and(mDriver.x()).whileTrue(pathfindToAmp);
+		// mDriver.rightBumper().and(mDriver.x()).whileTrue(pathfindToAmp);
 
 		/* SIGNALING */
 		Trigger inWing = new Trigger(
@@ -344,7 +359,8 @@ public class RobotContainer {
 		inWing.whileTrue(
 				new StartEndCommand(() -> Leds.getInstance().inWing = true, () -> Leds.getInstance().inWing = false));
 
-		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass).or(readyToShootTrap).or(readyToShootCustom)
+		readyToShoot.or(readyToEjectAmp).or(readyToShootFender).or(readyToPass).or(readyToShootTrap)
+				.or(readyToShootCustom)
 				.whileTrue(
 						Commands.startEnd(
 								() -> {
@@ -388,31 +404,29 @@ public class RobotContainer {
 	private void generateAutoChoices() {
 		System.out.println("[Init] Auto Routines");
 
-		mChooser.addDefaultOption("Do Nothing", null);
-		mChooser.addDefaultOption("Drive Back", AutoBuilder.buildAuto("DriveBack"));
+		mAutoChooser.addDefaultOption("Do Nothing", null);
+		mAutoChooser.addDefaultOption("Drive Back", AutoBuilder.buildAuto("DriveBack"));
 
-		mChooser.addDefaultOption("N3_S_C01", AutoBuilder.buildAuto("N3_S_C01"));
+		mAutoChooser.addDefaultOption("N3_S_C01", AutoBuilder.buildAuto("N3_S_C01"));
 
-		// mChooser.addOption("N4_S012_fender",
-		// AutoBuilder.buildAuto("N4_S012_fender"));
-		mChooser.addOption("N3_C12", AutoBuilder.buildAuto("N3_C12"));
-		mChooser.addOption("N4_C012", AutoBuilder.buildAuto("N4_C012"));
-		mChooser.addOption("N4_S012", AutoBuilder.buildAuto("N4_S012"));
-		mChooser.addOption("N4_S210", AutoBuilder.buildAuto("N4_S210"));
+		mAutoChooser.addOption("N3_C12", AutoBuilder.buildAuto("N3_C12"));
+		mAutoChooser.addOption("N4_C012", AutoBuilder.buildAuto("N4_C012"));
+		mAutoChooser.addOption("N4_S012", AutoBuilder.buildAuto("N4_S012"));
+		mAutoChooser.addOption("N4_S210", AutoBuilder.buildAuto("N4_S210"));
 
-		mChooser.addDefaultOption("N5_S012_C4", AutoBuilder.buildAuto("N5_S012_C4"));
+		mAutoChooser.addDefaultOption("N5_S012_C4", AutoBuilder.buildAuto("N5_S012_C4"));
 
-		mChooser.addDefaultOption("N6_S012_C43", AutoBuilder.buildAuto("N6_S012_C43"));
+		mAutoChooser.addDefaultOption("N6_S012_C43", AutoBuilder.buildAuto("N6_S012_C43"));
 
 		// Set up feedforward characterization
-		mChooser.addOption(
+		mAutoChooser.addOption(
 				"Drive FF Characterization",
 				new FeedForwardCharacterization(
 						mSwerve, mSwerve::runCharacterizationVolts,
 						mSwerve::getCharacterizationVelocity)
 						.finallyDo(mSwerve::stop));
 
-		mChooser.addOption(
+		mAutoChooser.addOption(
 				"Flywheels FF Characterization",
 				new FeedForwardCharacterization(
 						mFlywheels, mFlywheels::runCharacterizationVolts,
@@ -465,17 +479,13 @@ public class RobotContainer {
 												Commands.print("feeding started"))))
 								.until(() -> !mFeeder
 										.hasGamepiece())));
-						//.finallyDo(() -> mVisionEnabled.set(true)));
+		// .finallyDo(() -> mVisionEnabled.set(true)));
 
 		NamedCommands.registerCommand("raiseShot", Commands.print("adjusting to shoot higher")
 				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(-0.75))));
 
 		NamedCommands.registerCommand("lowerShot", Commands.print("adjusting to shoot lower")
 				.alongWith(new InstantCommand(() -> mStateEstimator.adjustShotCompensation(1.0))));
-	}
-
-	public Command getAutonomousCommand() {
-		return mChooser.get();
 	}
 
 	public Command getSubsystemCheckCommand() {

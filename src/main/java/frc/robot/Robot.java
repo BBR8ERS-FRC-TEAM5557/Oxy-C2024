@@ -29,13 +29,13 @@ import frc.robot.subsystems.leds.Leds;
 import frc.lib.team6328.VirtualSubsystem;
 
 public class Robot extends LoggedRobot {
-	private RobotContainer m_robotContainer;
+	private RobotContainer mRobotContainer;
 
 	private Command mAutoCommand;
 	private double autoStart;
 	private boolean autoMessagePrinted;
 
-	private Command m_subsystemCheckCommand;
+	private Command mSubsystemCheckCommand;
 
 	private final Timer canErrorTimer = new Timer();
 	private final Timer disabledTimer = new Timer();
@@ -50,9 +50,8 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void robotInit() {
-
 		if (Constants.kIsReal) {
-			//Logger.addDataReceiver(new WPILOGWriter());
+			Logger.addDataReceiver(new WPILOGWriter()); // gotta plug a usb stick into rio 2 to have logging
 			Logger.addDataReceiver(new NT4Publisher());
 			LoggedPowerDistribution.getInstance(1, ModuleType.kRev);
 		} else {
@@ -99,7 +98,7 @@ public class Robot extends LoggedRobot {
 
 		// Instantiate RobotContainer
 		System.out.println("[Init] Instantiating RobotContainer");
-		m_robotContainer = new RobotContainer();
+		mRobotContainer = new RobotContainer();
 	}
 
 	@Override
@@ -144,7 +143,7 @@ public class Robot extends LoggedRobot {
 		}
 
 		// Robot container periodic methods
-		m_robotContainer.checkControllers();
+		mRobotContainer.checkControllers();
 		RobotStateEstimator.getInstance().getAimingParameters();
 
 		Threads.setCurrentThreadPriority(true, 10);
@@ -166,18 +165,18 @@ public class Robot extends LoggedRobot {
 	public void autonomousInit() {
 		autoStart = Timer.getFPGATimestamp();
 		autoMessagePrinted = false;
-		mAutoCommand = m_robotContainer.getAutonomousCommand();
-		RobotContainer.mVisionEnabled.set(false);
+		mAutoCommand = RobotContainer.mAutoChooser.get();
+		RobotContainer.mVisionEnabled.set(true);
 		
-		m_subsystemCheckCommand = m_robotContainer.getSubsystemCheckCommand();
+		mSubsystemCheckCommand = mRobotContainer.getSubsystemCheckCommand();
 
 		if (mAutoCommand != null) {
 			RobotContainer.mFlywheels.setIdleMode(IdleMode.AUTO);
 			mAutoCommand.schedule();
 
-		} else if (!DriverStation.isFMSAttached() && m_subsystemCheckCommand != null) {
+		} else if (!DriverStation.isFMSAttached() && mSubsystemCheckCommand != null) {
 			System.out.println("SystemCheck Started");
-			m_subsystemCheckCommand.schedule();
+			mSubsystemCheckCommand.schedule();
 		} else {
 			System.out.println("No Auto Rountine Selected!!!");
 		}
@@ -189,8 +188,8 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void autonomousExit() {
-		if (m_subsystemCheckCommand != null) {
-			m_subsystemCheckCommand.cancel();
+		if (mSubsystemCheckCommand != null) {
+			mSubsystemCheckCommand.cancel();
 		}
 	}
 
